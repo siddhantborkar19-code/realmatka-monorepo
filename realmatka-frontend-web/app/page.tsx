@@ -229,13 +229,12 @@ export default function HomePage() {
       <main className="mx-auto flex w-full max-w-[1620px] flex-col gap-6 px-3 py-6 sm:px-5 sm:py-8 xl:px-6">
         <section className="section-shell relative overflow-hidden px-5 py-8 sm:px-8 sm:py-10 xl:px-10 xl:py-12">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.2),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.16),transparent_28%)]" />
-          <div className="relative max-w-4xl">
-            <div className="metric-pill">Full Game Rate - All Markets - Charts</div>
+          <div className="relative">
             <a
               href={telegramChannelUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 block overflow-hidden rounded-[24px] border border-white/10 bg-white/5 transition hover:border-sky-300/50 hover:bg-white/[0.06]"
+              className="block overflow-hidden rounded-[24px] border border-white/10 bg-white/5 shadow-[0_20px_60px_-32px_rgba(14,165,233,0.35)] transition hover:border-sky-300/50 hover:bg-white/[0.06]"
             >
               <Image
                 src="/realmatkabanner.jpg"
@@ -243,14 +242,14 @@ export default function HomePage() {
                 width={1600}
                 height={600}
                 priority
-                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 90vw, 1200px"
+                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 92vw, 1600px"
                 className="h-auto w-full object-cover"
               />
             </a>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a href="#rates" className="action-primary">Check Game Rate</a>
-              <a href="/download" className="action-secondary">Download APK</a>
-              <a href="/online-play-satta-matka" className="action-secondary">How To Play Online</a>
+            <div className="hero-actions-row mt-6">
+              <a href="#rates" className="action-primary hero-action-button">Check Game Rate</a>
+              <a href="/download" className="action-secondary hero-action-button">Download APK</a>
+              <a href="/online-play-satta-matka" className="action-secondary hero-action-button">How To Play Online</a>
             </div>
           </div>
         </section>

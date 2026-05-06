@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { MarketsSection, type MarketCard } from "./markets-section";
 import { buildMetadata } from "@/lib/seo";
@@ -25,6 +26,7 @@ export const metadata = buildMetadata({
 const webAppBaseUrl = "https://play.realmatka.in";
 const loginUrl = `${webAppBaseUrl}/auth/login`;
 const registerUrl = `${webAppBaseUrl}/auth/register`;
+const telegramChannelUrl = "https://t.me/realmatka";
 
 const rates = [
   { name: "Single Digit", rate: "10" },
@@ -229,12 +231,22 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.2),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.16),transparent_28%)]" />
           <div className="relative max-w-4xl">
             <div className="metric-pill">Full Game Rate - All Markets - Charts</div>
-            <h1 className="mt-4 max-w-4xl text-3xl font-extrabold leading-tight sm:text-5xl">
-              Real Matka online play app, game rates, market results, jodi charts aur panna charts.
-            </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-lg sm:leading-8">
-              Real Matka par online play satta matka app access, APK download, daily market timing, live result, full game rate, available games, jodi chart aur panna chart clear format me dekho.
-            </p>
+            <a
+              href={telegramChannelUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 block overflow-hidden rounded-[24px] border border-white/10 bg-white/5 transition hover:border-sky-300/50 hover:bg-white/[0.06]"
+            >
+              <Image
+                src="/realmatkabanner.jpg"
+                alt="Join Real Matka Telegram Channel"
+                width={1600}
+                height={600}
+                priority
+                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 90vw, 1200px"
+                className="h-auto w-full object-cover"
+              />
+            </a>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="#rates" className="action-primary">Check Game Rate</a>
               <a href="/download" className="action-secondary">Download APK</a>

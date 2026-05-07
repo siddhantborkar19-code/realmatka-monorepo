@@ -3,6 +3,24 @@ import { getAdminSnapshot, getAppSettings, findUserById, upsertAppSetting } from
 import { findMarketBySlug, getChartRecord, updateMarketRecord, upsertChartRecord } from "../stores/market-store.mjs";
 import { logger } from "../ops/logger.mjs";
 
+const MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX = "market_manual_close_day_india:";
+
+function getIndiaDateKey() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+
+  const lookup = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${lookup.year}-${lookup.month}-${lookup.day}`;
+}
+
+function getMarketManualCloseSettingKey(slug) {
+  return `${MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX}${String(slug || "").trim()}`;
+}
+
 export async function updateChartData({ slug, chartType, rows }, deps) {
   const normalizedRows = deps.normalizeChartRowsForSave(
     chartType,
@@ -42,6 +60,18 @@ export async function updateMarketData(payload, deps) {
   if (!existingMarket) return { ok: false, status: 404, error: "Market not found" };
 
   const updated = await updateMarketRecord(slug, { result, status, action, open, close, category });
+  const normalizedStatus = String(status || "").trim().toLowerCase();
+  const normalizedAction = String(action || "").trim().toLowerCase();
+  const shouldTemporarilyClose =
+    normalizedStatus === "closed" ||
+    normalizedStatus.includes("closed for today") ||
+    normalizedStatus === "paused" ||
+    normalizedAction === "closed" ||
+    normalizedAction === "paused";
+  await upsertAppSetting(
+    getMarketManualCloseSettingKey(slug),
+    shouldTemporarilyClose ? getIndiaDateKey() : ""
+  );
   await deps.syncChartsFromMarketResult(updated);
 
   let broadcast = null;

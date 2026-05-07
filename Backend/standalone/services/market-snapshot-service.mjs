@@ -4,6 +4,7 @@ import { getChartRecord, getChartRecordsForMarkets, listMarkets, updateMarketRec
 const MARKET_SNAPSHOT_TTL_MS = 60_000;
 const MARKET_RESULT_RESET_AFTER_MINUTES = 30;
 const MARKET_RESULT_RESET_SETTING_KEY = "market_results_reset_day_india";
+const MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX = "market_manual_close_day_india:";
 const MARKET_DAY_ROLLOVER_MINUTES = 30;
 const MARKET_TIME_CHANGE_SCHEDULES = [
   {
@@ -103,6 +104,10 @@ function getIndiaWeekday(date = getIndiaNow()) {
   return new Date(date).getUTCDay();
 }
 
+function getMarketManualCloseSettingKey(slug) {
+  return `${MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX}${String(slug || "").trim()}`;
+}
+
 function isMarketWeeklyOff(market, date = getIndiaNow()) {
   const offDays = WEEKDAY_OFF_BY_SLUG.get(String(market?.slug ?? "").trim());
   return Boolean(offDays && offDays.has(getIndiaWeekday(date)));
@@ -151,12 +156,18 @@ export function getMarketRuntimeMeta(market, date = getIndiaNow()) {
   const scheduledMarket = applyScheduledMarketTimeOverride(market, date);
   const savedStatus = String(scheduledMarket?.status || "").trim().toLowerCase();
   const savedAction = String(scheduledMarket?.action || "").trim().toLowerCase();
+  const todayKey = getIndiaDateKey(date);
+  const manualCloseDay = String(scheduledMarket?.manualCloseDay || "").trim();
+  const hasTemporaryCloseToday = manualCloseDay === todayKey;
   const currentMinutes = date.getUTCHours() * 60 + date.getUTCMinutes();
 
   if (
-    savedStatus === "closed" ||
-    savedStatus.includes("closed for today") ||
-    savedAction === "closed"
+    hasTemporaryCloseToday &&
+    (
+      savedStatus === "closed" ||
+      savedStatus.includes("closed for today") ||
+      savedAction === "closed"
+    )
   ) {
     return {
       phase: "closed",
@@ -170,7 +181,7 @@ export function getMarketRuntimeMeta(market, date = getIndiaNow()) {
     };
   }
 
-  if (savedStatus === "paused" || savedAction === "paused") {
+  if (hasTemporaryCloseToday && (savedStatus === "paused" || savedAction === "paused")) {
     return {
       phase: "closed",
       sortBucket: 2,
@@ -418,6 +429,55 @@ function deriveTodayResultFromCharts(market, jodiChart, pannaChart) {
   return isPlaceholderResult(storedResult) ? "***-**-***" : storedResult;
 }
 
+async function applyTemporaryMarketCloseReset(markets) {
+  const settings = await getAppSettings();
+  const todayKey = getIndiaDateKey(getIndiaNow());
+  const manualCloseDayBySlug = new Map(
+    settings
+      .filter((item) => String(item?.key || "").startsWith(MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX))
+      .map((item) => [String(item.key).slice(MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX.length), String(item.value || "").trim()])
+  );
+
+  const staleClosedMarkets = [];
+  const nextMarkets = (Array.isArray(markets) ? markets : []).map((market) => {
+    const manualCloseDay = manualCloseDayBySlug.get(String(market?.slug || "").trim()) || "";
+    const savedStatus = String(market?.status || "").trim().toLowerCase();
+    const savedAction = String(market?.action || "").trim().toLowerCase();
+    const hasTemporaryCloseState =
+      savedStatus === "closed" ||
+      savedStatus.includes("closed for today") ||
+      savedStatus === "paused" ||
+      savedAction === "closed" ||
+      savedAction === "paused";
+
+    if (hasTemporaryCloseState && manualCloseDay !== todayKey) {
+      staleClosedMarkets.push(String(market?.slug || "").trim());
+      return {
+        ...market,
+        status: "Active",
+        action: "Open",
+        manualCloseDay: ""
+      };
+    }
+
+    return {
+      ...market,
+      manualCloseDay
+    };
+  });
+
+  if (staleClosedMarkets.length) {
+    await Promise.all(
+      staleClosedMarkets.flatMap((slug) => [
+        updateMarketRecord(slug, { status: "Active", action: "Open" }).catch(() => null),
+        upsertAppSetting(getMarketManualCloseSettingKey(slug), "").catch(() => null)
+      ])
+    );
+  }
+
+  return nextMarkets;
+}
+
 function buildChartLookup(charts) {
   const lookup = new Map();
 
@@ -457,7 +517,8 @@ function decorateMarketWithLookup(market, chartLookup) {
 
 async function buildMarketSnapshot() {
   const seededMarkets = await listMarkets();
-  const markets = await applyNightlyMarketResultReset(seededMarkets);
+  const normalizedMarkets = await applyTemporaryMarketCloseReset(seededMarkets);
+  const markets = await applyNightlyMarketResultReset(normalizedMarkets);
   if (!markets.length) {
     return markets;
   }

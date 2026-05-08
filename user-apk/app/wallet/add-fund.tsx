@@ -67,6 +67,15 @@ export default function AddFundScreen() {
           } as never);
         } else if (normalized === "FAILED" || normalized === "CANCELLED" || normalized === "EXPIRED") {
           setError(`Payment ${normalized.toLowerCase()} ho gaya. Zarurat ho to dobara try karo.`);
+          router.replace({
+            pathname: "/wallet/history",
+            params: {
+              payment: "failed",
+              reference: next.reference,
+              status: normalized.toLowerCase(),
+              amount: String(next.amount ?? "")
+            }
+          } as never);
         }
 
         return next;

@@ -207,6 +207,7 @@ export function Field({ placeholder, secureTextEntry }: { placeholder: string; s
 
 export function DrawerSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { currentUser, logout } = useAppState();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   return (
     <Modal animationType="fade" onRequestClose={onClose} transparent visible={open}>
@@ -237,16 +238,27 @@ export function DrawerSheet({ open, onClose }: { open: boolean; onClose: () => v
             ))}
 
             <Pressable
+              disabled={loggingOut}
               onPress={async () => {
-                onClose();
-                await logout();
+                if (loggingOut) {
+                  return;
+                }
+
+                try {
+                  setLoggingOut(true);
+                  onClose();
+                  await logout();
+                  router.replace("/auth/login");
+                } finally {
+                  setLoggingOut(false);
+                }
               }}
-              style={styles.drawerItem}
+              style={[styles.drawerItem, loggingOut && styles.drawerItemDisabled]}
             >
               <View style={[styles.drawerItemIcon, styles.drawerLogoutIcon]}>
                 <Ionicons color={colors.surface} name="log-out-outline" size={20} />
               </View>
-              <Text style={styles.drawerItemText}>Logout</Text>
+              <Text style={styles.drawerItemText}>{loggingOut ? "Logging out..." : "Logout"}</Text>
             </Pressable>
           </ScrollView>
         </View>
@@ -570,6 +582,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.md,
     paddingVertical: 11
+  },
+  drawerItemDisabled: {
+    opacity: 0.65
   },
   drawerItemIcon: {
     width: 38,

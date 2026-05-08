@@ -156,7 +156,7 @@ function formatWalletTitle(type: string) {
 }
 
 export default function HistoryScreen() {
-  const params = useLocalSearchParams<{ payment?: string; reference?: string; amount?: string }>();
+  const params = useLocalSearchParams<{ payment?: string; reference?: string; amount?: string; status?: string }>();
   const { bids, walletEntries, loadBidHistory, loadWalletHistory } = useAppState();
   const [isFilterOpen, setFilterOpen] = useState(false);
   const [page, setPage] = useState(0);
@@ -169,10 +169,24 @@ export default function HistoryScreen() {
     const markets = getCachedMarkets(24 * 60 * 60 * 1000) ?? [];
     return new Map(markets.map((market) => [String(market.name || "").toUpperCase(), market]));
   }, []);
-  const paymentBanner =
-    params.payment === "success"
-      ? `Payment successful${params.reference ? ` - Ref ${params.reference}` : ""}${params.amount ? ` - Rs ${params.amount}` : ""}`
-      : "";
+  const paymentBanner = useMemo(() => {
+    if (params.payment === "success") {
+      return {
+        tone: "success" as const,
+        text: `Payment successful${params.reference ? ` - Ref ${params.reference}` : ""}${params.amount ? ` - Rs ${params.amount}` : ""}`
+      };
+    }
+
+    if (params.payment === "failed") {
+      const statusLabel = String(params.status || "failed").trim().toUpperCase();
+      return {
+        tone: "failed" as const,
+        text: `Payment ${statusLabel}${params.reference ? ` - Ref ${params.reference}` : ""}${params.amount ? ` - Rs ${params.amount}` : ""}`
+      };
+    }
+
+    return null;
+  }, [params.amount, params.payment, params.reference, params.status]);
 
   const refreshData = useCallback(async () => {
     setRefreshing(true);
@@ -306,8 +320,8 @@ export default function HistoryScreen() {
       <AppHeader title="History" subtitle={undefined} />
       <AppScreen onRefresh={() => void refreshData()} refreshing={refreshing}>
         {paymentBanner ? (
-          <SurfaceCard style={styles.paymentBanner}>
-            <Text style={styles.paymentBannerText}>{paymentBanner}</Text>
+          <SurfaceCard style={[styles.paymentBanner, paymentBanner.tone === "failed" && styles.paymentBannerFailed]}>
+            <Text style={[styles.paymentBannerText, paymentBanner.tone === "failed" && styles.paymentBannerFailedText]}>{paymentBanner.text}</Text>
           </SurfaceCard>
         ) : null}
 
@@ -497,11 +511,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.successSoft,
     borderColor: "#b7ebc6"
   },
+  paymentBannerFailed: {
+    backgroundColor: colors.dangerSoft,
+    borderColor: "#f3b4b4"
+  },
   paymentBannerText: {
     color: colors.success,
     fontSize: 13,
     fontWeight: "800",
     lineHeight: 18
+  },
+  paymentBannerFailedText: {
+    color: colors.danger
   },
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   toolbarValue: { color: "#475467", fontSize: 14, fontWeight: "800" },

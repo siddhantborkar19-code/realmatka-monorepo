@@ -52,6 +52,25 @@ function getLatestPaymentLinkAttemptStatus(paymentLink) {
   return String(latest?.status || "").trim().toLowerCase();
 }
 
+function getSuccessfulPaymentLinkPaymentId(paymentLink, expectedAmount) {
+  const expectedAmountPaise = roundToPaise(expectedAmount);
+  const directPaymentId = String(paymentLink?.payment_id || "").trim();
+  const directAmountPaid = Number(paymentLink?.amount_paid ?? 0);
+  if (directPaymentId && directAmountPaid === expectedAmountPaise) {
+    return directPaymentId;
+  }
+
+  const items = Array.isArray(paymentLink?.payments) ? paymentLink.payments : [];
+  const successfulAttempt = items.find((item) => {
+    const status = String(item?.status || "").trim().toLowerCase();
+    const paymentId = String(item?.payment_id || item?.id || "").trim();
+    const amountPaise = Number(item?.amount ?? item?.amount_paid ?? 0);
+    return status === "captured" && paymentId && amountPaise === expectedAmountPaise;
+  });
+
+  return String(successfulAttempt?.payment_id || successfulAttempt?.id || "").trim();
+}
+
 export async function createHostedPaymentOrder({ user, amount, createPaymentLink }) {
   const amountPaise = roundToPaise(amount);
   const validationError = validateDepositAmount(amountPaise);
@@ -138,12 +157,13 @@ export async function getPaymentOrderStatusSnapshot({ userId, referenceId, isPro
     const paymentLink = await fetchPaymentLinkStatus(order.gatewayOrderId);
     const remoteStatus = String(paymentLink?.status || "").trim().toLowerCase();
     const latestAttemptStatus = getLatestPaymentLinkAttemptStatus(paymentLink);
+    const successfulPaymentId = getSuccessfulPaymentLinkPaymentId(paymentLink, order.amount);
 
-    if (remoteStatus === "paid") {
+    if (remoteStatus === "paid" && successfulPaymentId) {
       order = await completePaymentLinkOrder({
         reference: order.reference,
         gatewayOrderId: String(order.gatewayOrderId || paymentLink.id || "").trim(),
-        gatewayPaymentId: String(paymentLink.payment_id || paymentLink.payments?.[0]?.payment_id || paymentLink.payments?.[0]?.id || "").trim(),
+        gatewayPaymentId: successfulPaymentId,
         gatewaySignature: "payment_link_status_poll"
       });
     } else if (latestAttemptStatus === "failed") {
@@ -210,12 +230,13 @@ export async function reconcilePendingPaymentOrdersForUser({
         const paymentLink = await fetchPaymentLinkStatus(order.gatewayOrderId);
         const remoteStatus = String(paymentLink?.status || "").trim().toLowerCase();
         const latestAttemptStatus = getLatestPaymentLinkAttemptStatus(paymentLink);
+        const successfulPaymentId = getSuccessfulPaymentLinkPaymentId(paymentLink, order.amount);
 
-        if (remoteStatus === "paid") {
+        if (remoteStatus === "paid" && successfulPaymentId) {
           const updated = await completePaymentLinkOrder({
             reference: order.reference,
             gatewayOrderId: String(order.gatewayOrderId || paymentLink.id || "").trim(),
-            gatewayPaymentId: String(paymentLink.payment_id || paymentLink.payments?.[0]?.payment_id || paymentLink.payments?.[0]?.id || "").trim(),
+            gatewayPaymentId: successfulPaymentId,
             gatewaySignature: "payment_link_background_reconcile"
           });
           if (updated) {

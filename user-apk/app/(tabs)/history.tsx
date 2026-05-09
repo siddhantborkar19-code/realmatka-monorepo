@@ -150,8 +150,8 @@ function formatWalletTitle(type: string) {
   if (normalized.includes("BID WIN REVERSAL")) return "Bid Win Reversal";
   if (normalized.includes("BID PLACED")) return "Bid Placed";
   if (normalized.includes("BID WIN")) return "Bid Win";
-  if (normalized.includes("ADMIN CREDIT")) return "Credit";
-  if (normalized.includes("ADMIN DEBIT")) return "Debit";
+  if (normalized.includes("ADMIN CREDIT")) return "System Credit";
+  if (normalized.includes("ADMIN DEBIT")) return "System Debit";
   return type.replace(/_/g, " ");
 }
 

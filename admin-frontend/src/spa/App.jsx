@@ -11,6 +11,9 @@ import { SupportChatPage } from "./SupportChatPage.jsx";
 
 const SUPPORT_CONVERSATIONS_REFRESH_MS = 15_000;
 const SUPPORT_MESSAGES_REFRESH_MS = 15_000;
+const NAV_BADGES_REFRESH_MS = 10_000;
+const NAV_BADGES_SEEN_KEY = "realmatka-admin-nav-seen-at";
+const NAV_BADGE_ROUTE_KEYS = ["dashboard", "bids", "users", "requests", "deposits", "support"];
 const ADMIN_BUSINESS_DAY_OFFSET_MS = 5 * 60 * 60 * 1000;
 
 function isAllowedAdminRole(role) {
@@ -71,6 +74,9 @@ export function App() {
   const [me, setMe] = useState(null);
   const [bootError, setBootError] = useState("");
   const [authBooting, setAuthBooting] = useState(Boolean(getAdminToken()));
+  const [navSeenAt, setNavSeenAt] = useState(() => loadNavSeenAt());
+  const [navEvents, setNavEvents] = useState([]);
+  const navBadges = useMemo(() => buildNavBadges(navEvents, navSeenAt, route), [navEvents, navSeenAt, route]);
 
   useEffect(() => {
     const onHashChange = () => setRoute(getHashRoute());
@@ -109,6 +115,53 @@ export function App() {
       });
   }, [apiBase, token]);
 
+  useEffect(() => {
+    if (!token || !me || !NAV_BADGE_ROUTE_KEYS.includes(route)) {
+      return;
+    }
+    markNavRouteSeen(route, new Date().toISOString(), setNavSeenAt);
+  }, [me, route, token]);
+
+  useEffect(() => {
+    if (!token || !me) {
+      setNavEvents([]);
+      return undefined;
+    }
+
+    let active = true;
+
+    async function refreshNavEvents() {
+      try {
+        const data = await fetchApi(apiBase, "/api/admin/live-events?limit=80", token);
+        if (active) {
+          setNavEvents(Array.isArray(data?.events) ? data.events : []);
+        }
+      } catch {
+        // Sidebar badges are an operator convenience; transient failures should not interrupt the workspace.
+      }
+    }
+
+    void refreshNavEvents();
+    const timer = window.setInterval(() => {
+      void refreshNavEvents();
+    }, NAV_BADGES_REFRESH_MS);
+
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [apiBase, me, token]);
+
+  useEffect(() => {
+    if (!token || !me || !NAV_BADGE_ROUTE_KEYS.includes(route)) {
+      return;
+    }
+    const newestActiveEventAt = getNewestEventTimeForRoute(navEvents, route);
+    if (newestActiveEventAt) {
+      markNavRouteSeen(route, newestActiveEventAt, setNavSeenAt);
+    }
+  }, [me, navEvents, route, token]);
+
   if (token && authBooting) {
     return (
       <div className="login-shell">
@@ -130,6 +183,7 @@ export function App() {
       apiBase={apiBase}
       me={me}
       navItems={navItems}
+      navBadges={navBadges}
       onLogout={() => {
         clearSession();
         setToken("");
@@ -233,6 +287,93 @@ export function App() {
       token={token}
     />
   );
+}
+
+function loadNavSeenAt() {
+  const fallback = buildInitialNavSeenAt();
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(NAV_BADGES_SEEN_KEY) || "{}");
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && Object.keys(parsed).length) {
+      return { ...fallback, ...parsed };
+    }
+    persistNavSeenAt(fallback);
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function buildInitialNavSeenAt() {
+  const now = new Date().toISOString();
+  return NAV_BADGE_ROUTE_KEYS.reduce((acc, key) => {
+    acc[key] = now;
+    return acc;
+  }, {});
+}
+
+function persistNavSeenAt(value) {
+  try {
+    window.localStorage.setItem(NAV_BADGES_SEEN_KEY, JSON.stringify(value));
+  } catch {
+    // Local storage can be blocked; badges will still work for the active session.
+  }
+}
+
+function markNavRouteSeen(route, seenAt, setNavSeenAt) {
+  setNavSeenAt((current) => {
+    const currentTime = Date.parse(current?.[route] || "");
+    const nextTime = Date.parse(seenAt || "");
+    if (Number.isFinite(currentTime) && Number.isFinite(nextTime) && currentTime >= nextTime) {
+      return current;
+    }
+    const next = { ...current, [route]: seenAt };
+    persistNavSeenAt(next);
+    return next;
+  });
+}
+
+function getEventRoute(type) {
+  if (type === "bid") return "bids";
+  if (type === "deposit") return "deposits";
+  if (type === "withdraw") return "requests";
+  if (type === "user") return "users";
+  if (type === "support") return "support";
+  return "";
+}
+
+function getNewestEventTimeForRoute(events, route) {
+  let newestTime = 0;
+  for (const event of Array.isArray(events) ? events : []) {
+    if (getEventRoute(event?.type) !== route) continue;
+    const eventTime = Date.parse(event?.createdAt || "");
+    if (Number.isFinite(eventTime) && eventTime > newestTime) {
+      newestTime = eventTime;
+    }
+  }
+  return newestTime ? new Date(newestTime).toISOString() : "";
+}
+
+function buildNavBadges(events, seenAt, activeRoute) {
+  const counts = {};
+
+  for (const event of Array.isArray(events) ? events : []) {
+    const route = getEventRoute(event?.type);
+    if (!route || route === activeRoute) continue;
+
+    const eventTime = Date.parse(event?.createdAt || "");
+    const seenTime = Date.parse(seenAt?.[route] || "");
+    if (!Number.isFinite(eventTime)) continue;
+    if (Number.isFinite(seenTime) && eventTime <= seenTime) continue;
+
+    counts[route] = Number(counts[route] || 0) + 1;
+  }
+
+  const dashboardTotal = ["bids", "users", "requests", "deposits", "support"].reduce((sum, key) => sum + Number(counts[key] || 0), 0);
+  if (activeRoute !== "dashboard" && dashboardTotal > 0) {
+    counts.dashboard = dashboardTotal;
+  }
+
+  return counts;
 }
 
 async function fetchApi(apiBase, path, token, options = {}) {

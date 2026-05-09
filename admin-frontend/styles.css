@@ -150,6 +150,35 @@ body {
   font-size: 14px;
 }
 
+.nav-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.nav-badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f97316;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.28);
+}
+
+.nav-link.active .nav-badge {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: none;
+}
+
 .nav-link-caption {
   color: rgba(255, 255, 255, 0.62);
   font-size: 11px;

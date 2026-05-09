@@ -26,7 +26,9 @@ function businessDayKeyToRangeStartIso(key) {
     return "";
   }
   const [, year, month, day] = match;
-  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 19, 0, 0, 0)).toISOString();
+  const start = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 19, 0, 0, 0));
+  start.setUTCDate(start.getUTCDate() - 1);
+  return start.toISOString();
 }
 
 function businessDayKeyToRangeEndIso(key) {

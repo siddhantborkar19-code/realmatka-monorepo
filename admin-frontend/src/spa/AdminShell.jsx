@@ -4,7 +4,7 @@ const LIVE_EVENT_POLL_MS = 10_000;
 const LIVE_EVENT_TOAST_MS = 9_000;
 const LIVE_EVENT_SEEN_KEY = "realmatka-admin-live-event-seen";
 
-export function AdminShell({ apiBase, route, setRoute, me, navItems, routeMeta, onLogout, pageFactory, token, fetchApi }) {
+export function AdminShell({ apiBase, route, setRoute, me, navItems, routeMeta, onLogout, pageFactory, token, fetchApi, navBadges = {} }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const currentMeta = routeMeta[route] || routeMeta.dashboard;
   const hideTopbar = route === "requests";
@@ -32,7 +32,10 @@ export function AdminShell({ apiBase, route, setRoute, me, navItems, routeMeta, 
               href={`#/${item.key}`}
               onClick={() => setRoute(item.key)}
             >
-              <span className="nav-link-title">{item.label}</span>
+              <span className="nav-link-row">
+                <span className="nav-link-title">{item.label}</span>
+                {Number(navBadges[item.key] || 0) > 0 ? <span className="nav-badge">{formatNavBadge(navBadges[item.key])}</span> : null}
+              </span>
               <span className="nav-link-caption">{routeMeta[item.key]?.eyebrow || "Section"}</span>
             </a>
           ))}
@@ -65,6 +68,14 @@ export function AdminShell({ apiBase, route, setRoute, me, navItems, routeMeta, 
       <LiveEventToasts apiBase={apiBase} fetchApi={fetchApi} token={token} />
     </div>
   );
+}
+
+function formatNavBadge(value) {
+  const count = Number(value || 0);
+  if (count > 99) {
+    return "99+";
+  }
+  return String(count);
 }
 
 function LiveEventToasts({ apiBase, token, fetchApi }) {

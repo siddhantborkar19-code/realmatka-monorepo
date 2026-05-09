@@ -79,8 +79,17 @@ function buildMarketExposure(rows) {
     .slice(0, 10);
 }
 
+function businessDateKeyToRangeStartIso(key, fallback) {
+  const match = String(key || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return fallback;
+  const [, year, month, day] = match;
+  const start = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 19, 0, 0, 0));
+  start.setUTCDate(start.getUTCDate() - 1);
+  return start.toISOString();
+}
+
 export async function getDashboardSummaryData(startOfToday, dateKeys = []) {
-  const seriesFrom = dateKeys[0] ? new Date(Date.UTC(Number(dateKeys[0].slice(0, 4)), Number(dateKeys[0].slice(5, 7)) - 1, Number(dateKeys[0].slice(8, 10)), 19, 0, 0, 0)).toISOString() : startOfToday;
+  const seriesFrom = dateKeys[0] ? businessDateKeyToRangeStartIso(dateKeys[0], startOfToday) : startOfToday;
   try {
     const pool = await __internalGetReadyPgPool();
     const [

@@ -143,7 +143,7 @@ export async function createNativePaymentOrder({ user, amount, createOrder, getK
   };
 }
 
-export async function getPaymentOrderStatusSnapshot({ userId, referenceId, isProviderEnabled, fetchPaymentLinkStatus }) {
+export async function getPaymentOrderStatusSnapshot({ userId, referenceId, isProviderEnabled, fetchPaymentLinkStatus, fetchOrderPayments }) {
   if (!referenceId) {
     return { ok: false, status: 400, error: "referenceId is required" };
   }
@@ -195,7 +195,40 @@ export async function getPaymentOrderStatusSnapshot({ userId, referenceId, isPro
     }
   }
 
+  if (order.status === "PENDING" && order.provider === "razorpay_checkout" && order.gatewayOrderId && isProviderEnabled && typeof fetchOrderPayments === "function") {
+    const orderPayments = await fetchOrderPayments(order.gatewayOrderId);
+    const successfulPayment = getSuccessfulRazorpayOrderPayment(orderPayments, order.amount);
+    const latestPayment = getLatestRazorpayOrderPayment(orderPayments);
+    const latestStatus = String(latestPayment?.status || "").trim().toLowerCase();
+
+    if (successfulPayment?.id) {
+      order = await completePaymentOrder({
+        paymentOrderId: order.id,
+        gatewayOrderId: String(order.gatewayOrderId).trim(),
+        gatewayPaymentId: String(successfulPayment.id).trim(),
+        gatewaySignature: "checkout_status_poll"
+      });
+    } else if (latestStatus === "failed") {
+      order = await handlePaymentWebhook({
+        paymentOrderId: order.id,
+        reference: order.reference,
+        gatewayOrderId: String(order.gatewayOrderId).trim(),
+        status: "FAILED"
+      });
+    } else {
+      order = {
+        ...order,
+        remoteStatus: latestStatus || "created"
+      };
+    }
+  }
+
   return { ok: true, data: order };
+}
+
+function getLatestRazorpayOrderPayment(orderPaymentsPayload) {
+  const items = Array.isArray(orderPaymentsPayload?.items) ? orderPaymentsPayload.items : [];
+  return items.length ? items[items.length - 1] : null;
 }
 
 function getSuccessfulRazorpayOrderPayment(orderPaymentsPayload, expectedAmount) {

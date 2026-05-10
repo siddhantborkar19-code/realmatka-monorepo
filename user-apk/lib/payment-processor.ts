@@ -81,6 +81,16 @@ export function buildUpiQuery(input: DepositSessionInput) {
   params.set("am", amount.toFixed(2));
   params.set("cu", "INR");
 
+  const referenceId = String(input.referenceId || "").trim();
+  if (referenceId) {
+    params.set("tr", referenceId);
+  }
+
+  const note = String(input.note || "").trim();
+  if (note) {
+    params.set("tn", note);
+  }
+
   return params;
 }
 
@@ -96,6 +106,12 @@ export function buildReadableUpiPreview(input: DepositSessionInput) {
 
   parts.push(`am=${amount.toFixed(2)}`);
   parts.push("cu=INR");
+  if (input.referenceId) {
+    parts.push(`tr=${input.referenceId}`);
+  }
+  if (input.note) {
+    parts.push(`tn=${input.note}`);
+  }
 
   return `upi://pay?${parts.join("&")}`;
 }

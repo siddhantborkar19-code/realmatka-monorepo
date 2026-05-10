@@ -16,6 +16,7 @@ import {
 import {
   createRazorpayOrder,
   createRazorpayPaymentLink,
+  fetchRazorpayOrderPayments,
   fetchRazorpayPaymentLinkStatus,
   getRazorpayKeyId,
   getRazorpayWebhookSecret,
@@ -285,7 +286,8 @@ export async function getPaymentOrderStatus(request) {
       userId: user.id,
       referenceId,
       isProviderEnabled: isRazorpayEnabled(),
-      fetchPaymentLinkStatus: fetchRazorpayPaymentLinkStatus
+      fetchPaymentLinkStatus: fetchRazorpayPaymentLinkStatus,
+      fetchOrderPayments: fetchRazorpayOrderPayments
     });
     if (!result.ok) {
       return fail(result.error, result.status, request);

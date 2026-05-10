@@ -1,17 +1,21 @@
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, AppState, AppStateStatus, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import RazorpayCheckout from "react-native-razorpay";
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
 import { api, formatApiError, type PaymentOrder } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import { getAddFundUnsupportedMessage, isSupportedAddFundPlatform } from "@/lib/payment-platform";
+import { buildGenericUpiUrl, isSafeUpiId } from "@/lib/payment-processor";
 import { colors } from "@/theme/colors";
 
 const MIN_DEPOSIT_AMOUNT = 100;
 const PAYMENT_STATUS_REFRESH_MS = 10_000;
 const PAYMENT_RETURN_RETRY_ATTEMPTS = 3;
 const PAYMENT_RETURN_RETRY_DELAY_MS = 3_000;
+const DIRECT_UPI_TEST_VPA = String(Constants.expoConfig?.extra?.directUpiTestVpa || "").trim();
 
 function statusTone(status: string) {
   const normalized = status.trim().toUpperCase();
@@ -25,7 +29,7 @@ function statusTone(status: string) {
 }
 
 export default function AddFundScreen() {
-  const { sessionToken, walletBalance, reloadSessionData, loadWalletHistory, loadBidHistory } = useAppState();
+  const { currentUser, sessionToken, walletBalance, reloadSessionData, loadWalletHistory, loadBidHistory } = useAppState();
   const addFundSupported = isSupportedAddFundPlatform();
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -39,6 +43,7 @@ export default function AddFundScreen() {
   const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= MIN_DEPOSIT_AMOUNT;
   const isMultipleOfHundred = Number.isFinite(numericAmount) && numericAmount % 100 === 0;
   const displayStatus = useMemo(() => pendingOrder?.remoteStatus || pendingOrder?.status || "", [pendingOrder]);
+  const directUpiTestEnabled = isSafeUpiId(DIRECT_UPI_TEST_VPA);
 
   const pollPaymentStatus = useCallback(
     async (referenceId: string, { silent = false } = {}) => {
@@ -140,7 +145,7 @@ export default function AddFundScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!pendingOrder?.reference) {
+      if (!pendingOrder?.reference || submitting) {
         return;
       }
 
@@ -157,7 +162,7 @@ export default function AddFundScreen() {
         active = false;
         clearInterval(interval);
       };
-    }, [pendingOrder?.reference, pollPaymentStatus])
+    }, [pendingOrder?.reference, pollPaymentStatus, submitting])
   );
 
   useEffect(() => {
@@ -166,6 +171,9 @@ export default function AddFundScreen() {
     }
 
     const handleAppState = (nextState: AppStateStatus) => {
+      if (submitting) {
+        return;
+      }
       if (nextState === "active") {
         if (awaitingCheckoutReturnRef.current) {
           awaitingCheckoutReturnRef.current = false;
@@ -180,7 +188,7 @@ export default function AddFundScreen() {
     return () => {
       subscription.remove();
     };
-  }, [pendingOrder?.reference, pollPaymentStatus, resolveReturnedPaymentStatus]);
+  }, [pendingOrder?.reference, pollPaymentStatus, resolveReturnedPaymentStatus, submitting]);
 
   return (
     <View style={styles.page}>
@@ -285,6 +293,19 @@ export default function AddFundScreen() {
             {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Pay Now</Text>}
           </Pressable>
 
+          {directUpiTestEnabled ? (
+            <>
+              <Pressable
+                disabled={!hasValidAmount || !isMultipleOfHundred}
+                onPress={() => void startDirectUpiTest()}
+                style={[styles.directUpiButton, (!hasValidAmount || !isMultipleOfHundred) && styles.disabledOutlineButton]}
+              >
+                <Text style={styles.directUpiButtonText}>Test Direct UPI ID</Text>
+              </Pressable>
+              <Text style={styles.directUpiHint}>Testing only. Isse wallet auto-credit nahi hoga.</Text>
+            </>
+          ) : null}
+
           <Pressable onPress={() => router.push("/wallet/history")} style={styles.historyButton}>
             <Text style={styles.historyButtonText}>View Wallet History</Text>
           </Pressable>
@@ -314,8 +335,13 @@ export default function AddFundScreen() {
       setError("");
       setSuccessMessage("");
 
-      const order = await api.createPaymentOrder(sessionToken, numericAmount, "web");
+      const order = await api.createPaymentOrder(sessionToken, numericAmount, Platform.OS === "web" ? "web" : "native");
       setPendingOrder(order);
+
+      if (Platform.OS !== "web" && order.checkoutMode === "native") {
+        await openNativeRazorpayCheckout(order);
+        return;
+      }
 
       if (!order.redirectUrl) {
         throw new Error("Checkout link unavailable.");
@@ -328,6 +354,105 @@ export default function AddFundScreen() {
       setError(formatApiError(startError, "Payment start nahi hua."));
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function openNativeRazorpayCheckout(order: PaymentOrder) {
+    const key = String(order.keyId || "").trim();
+    const orderId = String(order.gatewayOrderId || "").trim();
+    if (!key || !orderId) {
+      throw new Error("Native checkout details unavailable.");
+    }
+
+    let checkoutResult: {
+      razorpay_payment_id: string;
+      razorpay_order_id: string;
+      razorpay_signature: string;
+    };
+
+    try {
+      checkoutResult = await RazorpayCheckout.open({
+        key,
+        amount: Math.round(Number(order.amount || 0) * 100),
+        currency: "INR",
+        name: order.displayName || "Real Matka",
+        description: order.description || "Wallet Top Up",
+        order_id: orderId,
+        prefill: {
+          contact: currentUser?.phone ? `+91${currentUser.phone}` : undefined,
+          name: currentUser?.name || undefined
+        },
+        notes: {
+          reference: order.reference,
+          payment_order_id: order.id
+        },
+        theme: {
+          color: colors.primary
+        }
+      });
+    } catch {
+      setError("Payment complete nahi hua. Wrong PIN, insufficient balance, ya cancel hua ho to dobara try karo.");
+      await pollPaymentStatus(order.reference, { silent: true });
+      router.replace({
+        pathname: "/wallet/history",
+        params: {
+          payment: "failed",
+          reference: order.reference,
+          status: "not_completed",
+          amount: String(order.amount ?? "")
+        }
+      } as never);
+      return;
+    }
+
+    try {
+      const confirmed = await api.confirmPaymentOrder(sessionToken, order.reference, {
+        razorpayPaymentId: checkoutResult.razorpay_payment_id,
+        razorpayOrderId: checkoutResult.razorpay_order_id,
+        razorpaySignature: checkoutResult.razorpay_signature
+      });
+
+      setPendingOrder(confirmed);
+      await reloadSessionData({ force: true });
+      await Promise.allSettled([
+        loadWalletHistory({ force: true }),
+        loadBidHistory({ force: true })
+      ]);
+      setSuccessMessage(`Deposit successful. Reference ${confirmed.reference} wallet history me aa gaya hai.`);
+      router.replace({
+        pathname: "/wallet/history",
+        params: { payment: "success", reference: confirmed.reference }
+      } as never);
+    } catch (confirmError) {
+      setError(formatApiError(confirmError, "Payment hua ho sakta hai, lekin verify nahi hua. Status check ho raha hai."));
+      await pollPaymentStatus(order.reference);
+    }
+  }
+
+  async function startDirectUpiTest() {
+    if (!Number.isFinite(numericAmount) || numericAmount < MIN_DEPOSIT_AMOUNT) {
+      setError(`Minimum deposit is Rs ${MIN_DEPOSIT_AMOUNT}.`);
+      return;
+    }
+    if (!isMultipleOfHundred) {
+      setError("Deposit amount Rs 100 ke multiple me hona chahiye.");
+      return;
+    }
+
+    const referenceId = pendingOrder?.reference || `RMTEST${Date.now().toString().slice(-10)}`;
+    const launchUrl = buildGenericUpiUrl({
+      amount: numericAmount,
+      upiId: DIRECT_UPI_TEST_VPA,
+      referenceId,
+      payerLabel: "Real Matka",
+      note: `Real Matka test ${referenceId}`
+    });
+
+    try {
+      setError("");
+      await Linking.openURL(launchUrl);
+    } catch {
+      setError("Direct UPI app open nahi hua. UPI app install hai ya nahi check karo.");
     }
   }
 
@@ -528,5 +653,30 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: 14,
     fontWeight: "800"
+  },
+  directUpiButton: {
+    minHeight: 50,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    paddingHorizontal: 16
+  },
+  disabledOutlineButton: {
+    opacity: 0.45
+  },
+  directUpiButtonText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  directUpiHint: {
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 17,
+    textAlign: "center",
+    marginTop: -2
   }
 });

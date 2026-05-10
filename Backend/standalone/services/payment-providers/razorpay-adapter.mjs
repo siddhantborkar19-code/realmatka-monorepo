@@ -14,6 +14,24 @@ function buildCustomerEmail(user) {
   return phone ? `${phone}@sdtwedding.com` : "customer@sdtwedding.com";
 }
 
+function buildCustomerContact(user) {
+  const phone = String(user?.phone || "").replace(/\D/g, "");
+  return phone ? `+91${phone}` : "";
+}
+
+function buildOrderNotes({ paymentOrderId, receipt, user }) {
+  return {
+    paymentOrderId,
+    payment_order_id: paymentOrderId,
+    reference: receipt,
+    userId: user?.id || "",
+    user_id: user?.id || "",
+    userPhone: String(user?.phone || ""),
+    user_name: String(user?.name || ""),
+    customer_email: buildCustomerEmail(user)
+  };
+}
+
 function getRazorpayAuthHeader() {
   return `Basic ${Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString("base64")}`;
 }
@@ -44,10 +62,7 @@ export async function createRazorpayOrder({ amount, receipt, paymentOrderId, use
       currency: "INR",
       receipt,
       payment_capture: 1,
-      notes: {
-        paymentOrderId,
-        userId: user?.id || ""
-      }
+      notes: buildOrderNotes({ paymentOrderId, receipt, user })
     })
   });
 
@@ -82,13 +97,10 @@ export async function createRazorpayPaymentLink({ amount, receipt, paymentOrderI
       callback_method: "get",
       customer: {
         name: user?.name || "Customer",
-        contact: user?.phone ? `+91${user.phone}` : undefined,
+        contact: buildCustomerContact(user) || undefined,
         email: buildCustomerEmail(user)
       },
-      notes: {
-        paymentOrderId,
-        userId: user?.id || ""
-      }
+      notes: buildOrderNotes({ paymentOrderId, receipt, user })
     })
   });
 

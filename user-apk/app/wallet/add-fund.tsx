@@ -9,7 +9,7 @@ import { useAppState } from "@/lib/app-state";
 import { getAddFundUnsupportedMessage, isSupportedAddFundPlatform } from "@/lib/payment-platform";
 import { colors } from "@/theme/colors";
 
-const MIN_DEPOSIT_AMOUNT = 100;
+const MIN_DEPOSIT_AMOUNT = 1;
 const PAYMENT_STATUS_REFRESH_MS = 10_000;
 const PAYMENT_RETURN_RETRY_ATTEMPTS = 3;
 const PAYMENT_RETURN_RETRY_DELAY_MS = 3_000;
@@ -38,7 +38,6 @@ export default function AddFundScreen() {
 
   const numericAmount = Number(amount || 0);
   const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= MIN_DEPOSIT_AMOUNT;
-  const isMultipleOfHundred = Number.isFinite(numericAmount) && numericAmount % 100 === 0;
   const displayStatus = useMemo(() => pendingOrder?.remoteStatus || pendingOrder?.status || "", [pendingOrder]);
 
   const pollPaymentStatus = useCallback(
@@ -222,7 +221,7 @@ export default function AddFundScreen() {
                 setError("");
                 setSuccessMessage("");
               }}
-              placeholder="Enter amount min 100"
+              placeholder="Enter amount"
               placeholderTextColor={colors.textMuted}
               style={styles.amountInput}
               value={amount}
@@ -282,9 +281,9 @@ export default function AddFundScreen() {
 
         <View style={styles.footerActions}>
           <Pressable
-            disabled={!hasValidAmount || !isMultipleOfHundred || submitting || !sessionToken}
+            disabled={!hasValidAmount || submitting || !sessionToken}
             onPress={() => void startDeposit()}
-            style={[styles.primaryButton, (!hasValidAmount || !isMultipleOfHundred || submitting || !sessionToken) && styles.disabledButton]}
+            style={[styles.primaryButton, (!hasValidAmount || submitting || !sessionToken) && styles.disabledButton]}
           >
             {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Pay Now</Text>}
           </Pressable>
@@ -307,10 +306,6 @@ export default function AddFundScreen() {
 
     if (!Number.isFinite(numericAmount) || numericAmount < MIN_DEPOSIT_AMOUNT) {
       setError(`Minimum deposit is Rs ${MIN_DEPOSIT_AMOUNT}.`);
-      return;
-    }
-    if (!isMultipleOfHundred) {
-      setError("Deposit amount Rs 100 ke multiple me hona chahiye.");
       return;
     }
       try {
@@ -358,16 +353,19 @@ export default function AddFundScreen() {
         key,
         amount: Math.round(Number(order.amount || 0) * 100),
         currency: "INR",
-        name: order.displayName || "Real Matka",
+        name: order.displayName || "SDT Wedding",
         description: order.description || "Wallet Top Up",
         order_id: orderId,
         prefill: {
-          contact: currentUser?.phone ? `+91${currentUser.phone}` : undefined,
-          name: currentUser?.name || undefined
+          contact: order.customerContact || (currentUser?.phone ? `+91${currentUser.phone}` : undefined),
+          email: order.customerEmail || (currentUser?.phone ? `${currentUser.phone}@sdtwedding.com` : "customer@sdtwedding.com"),
+          name: order.customerName || currentUser?.name || undefined
         },
         notes: {
           reference: order.reference,
-          payment_order_id: order.id
+          payment_order_id: order.id,
+          user_id: currentUser?.id || "",
+          user_phone: currentUser?.phone || ""
         },
         theme: {
           color: colors.primary

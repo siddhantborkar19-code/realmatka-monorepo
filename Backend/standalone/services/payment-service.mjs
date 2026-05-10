@@ -19,13 +19,19 @@ function roundToPaise(amount) {
 }
 
 function validateDepositAmount(amountPaise) {
-  if (amountPaise < 10000) {
-    return "Minimum deposit is Rs. 100";
-  }
-  if (amountPaise % 10000 !== 0) {
-    return "Deposit amount must be a multiple of Rs. 100";
+  if (amountPaise < 100) {
+    return "Minimum deposit is Rs. 1";
   }
   return "";
+}
+
+function buildCheckoutCustomer(user) {
+  const phone = String(user?.phone || "").replace(/\D/g, "");
+  return {
+    name: String(user?.name || "Customer"),
+    contact: phone ? `+91${phone}` : "",
+    email: phone ? `${phone}@sdtwedding.com` : "customer@sdtwedding.com"
+  };
 }
 
 function normalizeUpiClientStatus(value) {
@@ -137,8 +143,11 @@ export async function createNativePaymentOrder({ user, amount, createOrder, getK
       checkoutMode: "native",
       gatewayOrderId: gatewayOrder.id,
       keyId: getKeyId(),
-      displayName: standaloneConfig.paymentDisplayName || "Wallet Services",
-      description: standaloneConfig.paymentDescription || "Wallet Top Up"
+      displayName: standaloneConfig.paymentDisplayName || "SDT Wedding",
+      description: standaloneConfig.paymentDescription || "Wallet Top Up",
+      customerName: buildCheckoutCustomer(user).name,
+      customerContact: buildCheckoutCustomer(user).contact,
+      customerEmail: buildCheckoutCustomer(user).email
     }
   };
 }

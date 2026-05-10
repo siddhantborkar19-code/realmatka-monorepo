@@ -104,6 +104,9 @@ export type PaymentOrder = {
   keyId?: string | null;
   displayName?: string | null;
   description?: string | null;
+  customerName?: string | null;
+  customerContact?: string | null;
+  customerEmail?: string | null;
 };
 
 export type HealthSnapshot = {

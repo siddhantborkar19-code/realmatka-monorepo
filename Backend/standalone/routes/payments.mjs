@@ -60,7 +60,7 @@ function buildHostedCheckoutHtml({ serverOrigin, paymentOrder, user, callbackUrl
   const amountPaise = roundToPaise(paymentOrder.amount);
   const prefllPhone = user?.phone ? `+91${user.phone}` : "";
   const customerName = user?.name || "Customer";
-  const displayName = standaloneConfig.paymentDisplayName || "Wallet Services";
+  const displayName = standaloneConfig.paymentDisplayName || "SDT Wedding";
   const paymentDescription = standaloneConfig.paymentDescription || "Wallet Top Up";
   const pageTitle = `${displayName} ${paymentOrder.reference}`;
 

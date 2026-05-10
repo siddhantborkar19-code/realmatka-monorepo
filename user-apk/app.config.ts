@@ -13,7 +13,6 @@ const adaptiveIconPath = process.env.EXPO_PUBLIC_ADAPTIVE_ICON || "./assets/imag
 const webFaviconPath = process.env.EXPO_PUBLIC_WEB_FAVICON || "./assets/images/app-icon.jpg";
 const appBuildProfile = process.env.APP_BUILD_PROFILE || "development";
 const webOutput = process.env.EXPO_PUBLIC_WEB_OUTPUT || "single";
-const directUpiTestVpa = process.env.EXPO_PUBLIC_DIRECT_UPI_TEST_VPA || "";
 const productionApiBaseUrl =
   process.env.EXPO_PUBLIC_API_BASE_URL_PRODUCTION || "https://api.realmatka.in";
 const localApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_APP_URL || "";
@@ -59,7 +58,6 @@ const config: ExpoConfig = {
   plugins: ["expo-notifications"],
   extra: {
     apiBaseUrl,
-    directUpiTestVpa,
     firebaseProjectId,
     appBuildProfile,
     ...(easProjectId

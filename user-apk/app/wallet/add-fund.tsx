@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, AppState, AppStateStatus, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -8,14 +7,12 @@ import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
 import { api, formatApiError, type PaymentOrder } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import { getAddFundUnsupportedMessage, isSupportedAddFundPlatform } from "@/lib/payment-platform";
-import { buildGenericUpiUrl, isSafeUpiId } from "@/lib/payment-processor";
 import { colors } from "@/theme/colors";
 
 const MIN_DEPOSIT_AMOUNT = 100;
 const PAYMENT_STATUS_REFRESH_MS = 10_000;
 const PAYMENT_RETURN_RETRY_ATTEMPTS = 3;
 const PAYMENT_RETURN_RETRY_DELAY_MS = 3_000;
-const DIRECT_UPI_TEST_VPA = String(Constants.expoConfig?.extra?.directUpiTestVpa || "").trim();
 
 function statusTone(status: string) {
   const normalized = status.trim().toUpperCase();
@@ -43,7 +40,6 @@ export default function AddFundScreen() {
   const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= MIN_DEPOSIT_AMOUNT;
   const isMultipleOfHundred = Number.isFinite(numericAmount) && numericAmount % 100 === 0;
   const displayStatus = useMemo(() => pendingOrder?.remoteStatus || pendingOrder?.status || "", [pendingOrder]);
-  const directUpiTestEnabled = isSafeUpiId(DIRECT_UPI_TEST_VPA);
 
   const pollPaymentStatus = useCallback(
     async (referenceId: string, { silent = false } = {}) => {
@@ -293,19 +289,6 @@ export default function AddFundScreen() {
             {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Pay Now</Text>}
           </Pressable>
 
-          {directUpiTestEnabled ? (
-            <>
-              <Pressable
-                disabled={!hasValidAmount || !isMultipleOfHundred}
-                onPress={() => void startDirectUpiTest()}
-                style={[styles.directUpiButton, (!hasValidAmount || !isMultipleOfHundred) && styles.disabledOutlineButton]}
-              >
-                <Text style={styles.directUpiButtonText}>Test Direct UPI ID</Text>
-              </Pressable>
-              <Text style={styles.directUpiHint}>Testing only. Isse wallet auto-credit nahi hoga.</Text>
-            </>
-          ) : null}
-
           <Pressable onPress={() => router.push("/wallet/history")} style={styles.historyButton}>
             <Text style={styles.historyButtonText}>View Wallet History</Text>
           </Pressable>
@@ -426,33 +409,6 @@ export default function AddFundScreen() {
     } catch (confirmError) {
       setError(formatApiError(confirmError, "Payment hua ho sakta hai, lekin verify nahi hua. Status check ho raha hai."));
       await pollPaymentStatus(order.reference);
-    }
-  }
-
-  async function startDirectUpiTest() {
-    if (!Number.isFinite(numericAmount) || numericAmount < MIN_DEPOSIT_AMOUNT) {
-      setError(`Minimum deposit is Rs ${MIN_DEPOSIT_AMOUNT}.`);
-      return;
-    }
-    if (!isMultipleOfHundred) {
-      setError("Deposit amount Rs 100 ke multiple me hona chahiye.");
-      return;
-    }
-
-    const referenceId = pendingOrder?.reference || `RMTEST${Date.now().toString().slice(-10)}`;
-    const launchUrl = buildGenericUpiUrl({
-      amount: numericAmount,
-      upiId: DIRECT_UPI_TEST_VPA,
-      referenceId,
-      payerLabel: "Real Matka",
-      note: `Real Matka test ${referenceId}`
-    });
-
-    try {
-      setError("");
-      await Linking.openURL(launchUrl);
-    } catch {
-      setError("Direct UPI app open nahi hua. UPI app install hai ya nahi check karo.");
     }
   }
 
@@ -653,30 +609,5 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: 14,
     fontWeight: "800"
-  },
-  directUpiButton: {
-    minHeight: 50,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingHorizontal: 16
-  },
-  disabledOutlineButton: {
-    opacity: 0.45
-  },
-  directUpiButtonText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  directUpiHint: {
-    color: colors.textMuted,
-    fontSize: 12,
-    lineHeight: 17,
-    textAlign: "center",
-    marginTop: -2
   }
 });

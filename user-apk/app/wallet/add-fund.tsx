@@ -9,7 +9,7 @@ import { useAppState } from "@/lib/app-state";
 import { getAddFundUnsupportedMessage, isSupportedAddFundPlatform } from "@/lib/payment-platform";
 import { colors } from "@/theme/colors";
 
-const MIN_DEPOSIT_AMOUNT = 1;
+const MIN_DEPOSIT_AMOUNT = 100;
 const PAYMENT_STATUS_REFRESH_MS = 10_000;
 const PAYMENT_RETURN_RETRY_ATTEMPTS = 3;
 const PAYMENT_RETURN_RETRY_DELAY_MS = 3_000;
@@ -221,7 +221,7 @@ export default function AddFundScreen() {
                 setError("");
                 setSuccessMessage("");
               }}
-              placeholder="Enter amount"
+              placeholder="Enter amount min 100"
               placeholderTextColor={colors.textMuted}
               style={styles.amountInput}
               value={amount}

@@ -361,8 +361,10 @@ export async function saveMarketChart({
     body: { slug: selectedSlug, chartType, rows: nextRowsForSave }
   });
 
-  const chart = await fetchApi(apiBase, `/api/charts/${selectedSlug}?type=${chartType}`, token);
-  const auditLogs = await fetchApi(apiBase, "/api/admin/audit-logs", token);
+  const [chart, auditLogs] = await Promise.all([
+    fetchApi(apiBase, `/api/charts/${selectedSlug}?type=${chartType}`, token),
+    fetchApi(apiBase, "/api/admin/audit-logs", token).catch(() => [])
+  ]);
   const rows = chart.rows || [];
   const normalizedRows = normalizeChartEditorRows(chartType, rows);
   const savedRow = normalizedRows.find((row) => String(row[0] || "").trim() === String(editorWeekLabel || "").trim());

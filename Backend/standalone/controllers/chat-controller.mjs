@@ -1,5 +1,5 @@
 import { fail, getJsonBody, ok } from "../http.mjs";
-import { requireAdminUser, requireAuthenticatedUser } from "../middleware/auth-middleware.mjs";
+import { requireAdminOrSupportOperator, requireAuthenticatedUser } from "../middleware/auth-middleware.mjs";
 import {
   getAdminConversationMessages,
   getAdminConversations,
@@ -27,7 +27,7 @@ export async function userSendController(request) {
 }
 
 export async function adminConversationsController(request) {
-  const auth = await requireAdminUser(request);
+  const auth = await requireAdminOrSupportOperator(request);
   if (auth.response) return auth.response;
   const url = new URL(request.url);
   const limit = Number(url.searchParams.get("limit") || 50);
@@ -38,7 +38,7 @@ export async function adminConversationsController(request) {
 }
 
 export async function adminMessagesController(request) {
-  const auth = await requireAdminUser(request);
+  const auth = await requireAdminOrSupportOperator(request);
   if (auth.response) return auth.response;
   const url = new URL(request.url);
   const limit = Number(url.searchParams.get("limit") || 100);
@@ -48,7 +48,7 @@ export async function adminMessagesController(request) {
 }
 
 export async function adminSendController(request) {
-  const auth = await requireAdminUser(request);
+  const auth = await requireAdminOrSupportOperator(request);
   if (auth.response) return auth.response;
   const body = await getJsonBody(request);
   const result = await sendAdminSupportMessage(auth.user.id, body.conversationId, body.text);
@@ -57,7 +57,7 @@ export async function adminSendController(request) {
 }
 
 export async function adminUpdateStatusController(request) {
-  const auth = await requireAdminUser(request);
+  const auth = await requireAdminOrSupportOperator(request);
   if (auth.response) return auth.response;
   const body = await getJsonBody(request);
   const result = await updateAdminConversationStatus(body.conversationId, body.status);

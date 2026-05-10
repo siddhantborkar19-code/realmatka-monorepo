@@ -15,9 +15,22 @@ const NAV_BADGES_REFRESH_MS = 10_000;
 const NAV_BADGES_SEEN_KEY = "realmatka-admin-nav-seen-at";
 const NAV_BADGE_ROUTE_KEYS = ["dashboard", "bids", "users", "requests", "deposits", "support"];
 const ADMIN_BUSINESS_DAY_OFFSET_MS = 5 * 60 * 60 * 1000;
+const FULL_ADMIN_ROLES = new Set(["admin", "super_admin"]);
+const RESULT_OPERATOR_ROLES = new Set(["operator", "result_operator"]);
+const RESULT_ONLY_OPERATOR_ROLES = new Set(["result_only_operator"]);
+const SUPPORT_OPERATOR_ROLES = new Set(["support_operator"]);
 
 function isAllowedAdminRole(role) {
-  return ["admin", "super_admin"].includes(String(role || "").toLowerCase());
+  const normalized = normalizeAdminRole(role);
+  return FULL_ADMIN_ROLES.has(normalized) || RESULT_OPERATOR_ROLES.has(normalized) || RESULT_ONLY_OPERATOR_ROLES.has(normalized) || SUPPORT_OPERATOR_ROLES.has(normalized);
+}
+
+function normalizeAdminRole(role) {
+  return String(role || "").trim().toLowerCase();
+}
+
+function hasFullAdminRole(role) {
+  return FULL_ADMIN_ROLES.has(normalizeAdminRole(role));
 }
 
 function getDefaultAdminApiBase() {
@@ -43,6 +56,27 @@ const navItems = [
   { key: "settings", label: "Settings" },
   { key: "audit", label: "Audit Logs" }
 ];
+
+function getNavItemsForRole(role) {
+  const normalized = normalizeAdminRole(role);
+  if (hasFullAdminRole(normalized)) {
+    return navItems;
+  }
+  if (RESULT_OPERATOR_ROLES.has(normalized)) {
+    return navItems.filter((item) => item.key === "results" || item.key === "support");
+  }
+  if (RESULT_ONLY_OPERATOR_ROLES.has(normalized)) {
+    return navItems.filter((item) => item.key === "results");
+  }
+  if (SUPPORT_OPERATOR_ROLES.has(normalized)) {
+    return navItems.filter((item) => item.key === "support");
+  }
+  return [];
+}
+
+function getDefaultRouteForRole(role) {
+  return getNavItemsForRole(role)[0]?.key || "dashboard";
+}
 
 const routeMeta = {
   dashboard: { eyebrow: "Control Room", title: "Operational Dashboard", subtitle: "Live business totals, payout watch, alerts, and active platform health in one place." },
@@ -76,7 +110,12 @@ export function App() {
   const [authBooting, setAuthBooting] = useState(Boolean(getAdminToken()));
   const [navSeenAt, setNavSeenAt] = useState(() => loadNavSeenAt());
   const [navEvents, setNavEvents] = useState([]);
+  const allowedNavItems = useMemo(() => (me ? getNavItemsForRole(me.role) : navItems), [me?.role]);
+  const allowedRouteKeys = useMemo(() => new Set(allowedNavItems.map((item) => item.key)), [allowedNavItems]);
   const navBadges = useMemo(() => buildNavBadges(navEvents, navSeenAt, route), [navEvents, navSeenAt, route]);
+  const visibleNavBadges = useMemo(() => {
+    return Object.fromEntries(Object.entries(navBadges).filter(([key]) => allowedRouteKeys.has(key)));
+  }, [allowedRouteKeys, navBadges]);
 
   useEffect(() => {
     const onHashChange = () => setRoute(getHashRoute());
@@ -116,11 +155,20 @@ export function App() {
   }, [apiBase, token]);
 
   useEffect(() => {
-    if (!token || !me || !NAV_BADGE_ROUTE_KEYS.includes(route)) {
+    if (!token || !me || !allowedRouteKeys.has(route) || !NAV_BADGE_ROUTE_KEYS.includes(route)) {
       return;
     }
     markNavRouteSeen(route, new Date().toISOString(), setNavSeenAt);
-  }, [me, route, token]);
+  }, [allowedRouteKeys, me, route, token]);
+
+  useEffect(() => {
+    if (!token || !me || authBooting || allowedRouteKeys.has(route)) {
+      return;
+    }
+    const nextRoute = getDefaultRouteForRole(me.role);
+    window.location.hash = `#/${nextRoute}`;
+    setRoute(nextRoute);
+  }, [allowedRouteKeys, authBooting, me, route, token]);
 
   useEffect(() => {
     if (!token || !me) {
@@ -153,14 +201,14 @@ export function App() {
   }, [apiBase, me, token]);
 
   useEffect(() => {
-    if (!token || !me || !NAV_BADGE_ROUTE_KEYS.includes(route)) {
+    if (!token || !me || !allowedRouteKeys.has(route) || !NAV_BADGE_ROUTE_KEYS.includes(route)) {
       return;
     }
     const newestActiveEventAt = getNewestEventTimeForRoute(navEvents, route);
     if (newestActiveEventAt) {
       markNavRouteSeen(route, newestActiveEventAt, setNavSeenAt);
     }
-  }, [me, navEvents, route, token]);
+  }, [allowedRouteKeys, me, navEvents, route, token]);
 
   if (token && authBooting) {
     return (
@@ -182,8 +230,8 @@ export function App() {
     <AdminShell
       apiBase={apiBase}
       me={me}
-      navItems={navItems}
-      navBadges={navBadges}
+      navItems={allowedNavItems}
+      navBadges={visibleNavBadges}
       onLogout={() => {
         clearSession();
         setToken("");
@@ -191,6 +239,9 @@ export function App() {
       fetchApi={fetchApi}
       pageFactory={(refreshKey, refresh) => {
         const shared = { apiBase, token, me, refresh };
+        if (!allowedRouteKeys.has(route)) {
+          return <PageState title="Access restricted" subtitle="Is operator role ko ye section access nahi hai." tone="error" />;
+        }
         if (route === "users") return <UsersPage {...shared} key={`users-${refreshKey}`} />;
         if (route === "requests") {
           return (

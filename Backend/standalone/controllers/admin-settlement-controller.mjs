@@ -1,5 +1,5 @@
 import { fail, getJsonBody, ok } from "../http.mjs";
-import { requireAdminUser } from "../middleware/auth-middleware.mjs";
+import { requireAdminOrResultOperator, requireAdminUser } from "../middleware/auth-middleware.mjs";
 import { addAuditLog } from "../stores/admin-store.mjs";
 import {
   buildBackupSnapshot,
@@ -13,7 +13,7 @@ import {
 import { refreshMarketListSnapshot } from "../services/market-snapshot-service.mjs";
 
 export async function adminChartUpdateController(request, deps) {
-  const admin = await requireAdminUser(request);
+  const admin = await requireAdminOrResultOperator(request);
   if (admin.response) return admin.response;
   const body = await getJsonBody(request);
   const slug = String(body.slug ?? "");
@@ -38,7 +38,7 @@ export async function adminChartUpdateController(request, deps) {
 }
 
 export async function adminMarketUpdateController(request, deps) {
-  const admin = await requireAdminUser(request);
+  const admin = await requireAdminOrResultOperator(request);
   if (admin.response) return admin.response;
   const body = await getJsonBody(request);
   const slug = String(body.slug ?? "");
@@ -69,7 +69,7 @@ export async function adminMarketUpdateController(request, deps) {
 }
 
 export async function adminSettleMarketController(request, deps) {
-  const admin = await requireAdminUser(request);
+  const admin = await requireAdminOrResultOperator(request);
   if (admin.response) return admin.response;
   const body = await getJsonBody(request);
   const slug = String(body.slug ?? "");
@@ -94,7 +94,7 @@ export async function adminSettleMarketController(request, deps) {
 }
 
 export async function adminSettlementPreviewController(request, deps) {
-  const admin = await requireAdminUser(request);
+  const admin = await requireAdminOrResultOperator(request);
   if (admin.response) return admin.response;
   const slug = String(new URL(request.url).searchParams.get("slug") ?? "");
   if (!slug) return fail("slug is required", 400, request);
@@ -104,7 +104,7 @@ export async function adminSettlementPreviewController(request, deps) {
 }
 
 export async function adminMarketExposureController(request, deps) {
-  const admin = await requireAdminUser(request);
+  const admin = await requireAdminOrResultOperator(request);
   if (admin.response) return admin.response;
   const slug = String(new URL(request.url).searchParams.get("slug") ?? "");
   if (!slug) return fail("slug is required", 400, request);

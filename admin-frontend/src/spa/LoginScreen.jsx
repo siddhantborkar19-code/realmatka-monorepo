@@ -2,8 +2,29 @@ import React, { useEffect, useState } from "react";
 import { fetchApi, formatApiError, normalizeAdminApiBase } from "../lib/api.js";
 import { storeAdminSession } from "../lib/session.js";
 
+const FULL_ADMIN_ROLES = new Set(["admin", "super_admin"]);
+const RESULT_OPERATOR_ROLES = new Set(["operator", "result_operator"]);
+const RESULT_ONLY_OPERATOR_ROLES = new Set(["result_only_operator"]);
+const SUPPORT_OPERATOR_ROLES = new Set(["support_operator"]);
+
 function isAllowedAdminRole(role) {
-  return ["admin", "super_admin"].includes(String(role || "").toLowerCase());
+  const normalized = normalizeAdminRole(role);
+  return FULL_ADMIN_ROLES.has(normalized) || RESULT_OPERATOR_ROLES.has(normalized) || RESULT_ONLY_OPERATOR_ROLES.has(normalized) || SUPPORT_OPERATOR_ROLES.has(normalized);
+}
+
+function normalizeAdminRole(role) {
+  return String(role || "").trim().toLowerCase();
+}
+
+function getDefaultRouteForRole(role) {
+  const normalized = normalizeAdminRole(role);
+  if (RESULT_OPERATOR_ROLES.has(normalized) || RESULT_ONLY_OPERATOR_ROLES.has(normalized)) {
+    return "results";
+  }
+  if (SUPPORT_OPERATOR_ROLES.has(normalized)) {
+    return "support";
+  }
+  return "dashboard";
 }
 
 export function LoginScreen({ apiBase, setApiBase, setToken, bootError }) {
@@ -61,7 +82,7 @@ export function LoginScreen({ apiBase, setApiBase, setToken, bootError }) {
       }
       storeAdminSession(data.token);
       setToken(data.token);
-      window.location.hash = "#/dashboard";
+      window.location.hash = `#/${getDefaultRouteForRole(data.user?.role)}`;
     } catch (error) {
       setMessage(formatApiError(error, "Login failed"));
     } finally {
@@ -92,7 +113,7 @@ export function LoginScreen({ apiBase, setApiBase, setToken, bootError }) {
       setChallenge(null);
       setOtp("");
       setToken(data.token);
-      window.location.hash = "#/dashboard";
+      window.location.hash = `#/${getDefaultRouteForRole(data.user?.role)}`;
     } catch (error) {
       setMessage(formatApiError(error, "2FA verify failed"));
     } finally {
@@ -104,11 +125,11 @@ export function LoginScreen({ apiBase, setApiBase, setToken, bootError }) {
     <div className="login-shell">
       <section className={`panel login-card${busy ? " busy" : ""}`}>
         <div className="brand login-brand">
-          <span className="brand-badge">Super Admin</span>
+          <span className="brand-badge">Admin Panel</span>
           <h1>Real Matka Control Room</h1>
         </div>
         <div className="panel-head">
-          <h2>Super Admin Login</h2>
+          <h2>Admin / Operator Login</h2>
           <p>{challenge ? "Password verify ho gaya. Ab 2FA code dalo." : ""}</p>
         </div>
         <form className="form-grid" onSubmit={handleSubmit}>

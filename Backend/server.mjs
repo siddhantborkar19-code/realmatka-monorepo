@@ -198,6 +198,7 @@ const standaloneRoutes = new Map([
   ["/api/admin/notifications", { loader: "admin", methods: { OPTIONS: "options", GET: "notificationsList", POST: "notificationsSend" } }],
   ["/api/admin/notifications-summary", { loader: "admin", methods: { OPTIONS: "options", GET: "notificationsSummary" } }],
   ["/api/admin/settings", { loader: "admin", methods: { OPTIONS: "options", GET: "settingsGet", POST: "settingsUpdate" } }],
+  ["/api/admin/operators", { loader: "admin", methods: { OPTIONS: "options", GET: "operators", POST: "operatorSave" } }],
   ["/api/admin/chart-update", { loader: "admin", methods: { OPTIONS: "options", POST: "chartUpdate" } }],
   ["/api/admin/market-update", { loader: "admin", methods: { OPTIONS: "options", POST: "marketUpdate" } }],
   ["/api/admin/settle-market", { loader: "admin", methods: { OPTIONS: "options", POST: "settleMarket" } }],

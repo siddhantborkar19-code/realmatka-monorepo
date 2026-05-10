@@ -19,6 +19,10 @@ import {
   adminNotificationsSendController
 } from "../controllers/admin-notifications-controller.mjs";
 import {
+  adminOperatorSaveController,
+  adminOperatorsListController
+} from "../controllers/admin-operator-controller.mjs";
+import {
   adminAuditLogsController,
   adminBidsListController,
   adminCleanupWalletTestDataController,
@@ -123,6 +127,14 @@ export async function settingsPublic(request) {
 
 export async function settingsUpdate(request) {
   return adminSettingsUpdateController(request);
+}
+
+export async function operators(request) {
+  return adminOperatorsListController(request);
+}
+
+export async function operatorSave(request) {
+  return adminOperatorSaveController(request);
 }
 
 export async function bidsList(request) {

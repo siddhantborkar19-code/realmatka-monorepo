@@ -9,10 +9,14 @@ import {
   __internalIsUserAccountActive,
   __internalMapUserRow,
   __internalNowIso,
-  __internalSessionTtlMs
+  __internalSessionTtlMs,
+  hashCredential
 } from "../db.mjs";
 
 export { verifyCredential } from "../db.mjs";
+
+const OPERATOR_ADMIN_ROLES = new Set(["operator", "result_operator", "result_only_operator", "support_operator"]);
+const OPERATOR_ROLE_SQL = "'operator','result_operator','result_only_operator','support_operator'";
 
 export async function findUserByPhone(phone) {
   if (__internalGetReadyPgPool) {
@@ -68,6 +72,162 @@ function mapAdminAccountRow(row) {
     signupBonusGranted: true,
     referredByUserId: null
   };
+}
+
+function mapOperatorAdminRow(row) {
+  if (!row) {
+    return null;
+  }
+  return {
+    id: row.id,
+    phone: row.phone,
+    name: row.display_name,
+    role: row.role,
+    twoFactorEnabled: row.two_factor_enabled == null ? true : Boolean(row.two_factor_enabled),
+    blockedAt: row.blocked_at ?? null,
+    deactivatedAt: row.deactivated_at ?? null,
+    createdAt: row.created_at ?? null,
+    updatedAt: row.updated_at ?? null
+  };
+}
+
+function normalizeOperatorRole(role) {
+  const normalized = String(role || "result_operator").trim().toLowerCase();
+  return OPERATOR_ADMIN_ROLES.has(normalized) ? normalized : "";
+}
+
+async function getReadyPgPoolOrNull() {
+  try {
+    return await __internalGetReadyPgPool();
+  } catch {
+    return null;
+  }
+}
+
+async function findRawAdminByIdOrPhone({ id, phone }) {
+  const pool = await getReadyPgPoolOrNull();
+  if (pool) {
+    const result = id
+      ? await pool.query(`SELECT id, phone, display_name, role FROM admins WHERE id = $1 LIMIT 1`, [id])
+      : await pool.query(`SELECT id, phone, display_name, role FROM admins WHERE phone = $1 LIMIT 1`, [phone]);
+    return result.rows[0] || null;
+  }
+
+  return id
+    ? __internalGetSqlite().prepare(`SELECT id, phone, display_name, role FROM admins WHERE id = ? LIMIT 1`).get(id)
+    : __internalGetSqlite().prepare(`SELECT id, phone, display_name, role FROM admins WHERE phone = ? LIMIT 1`).get(phone);
+}
+
+export async function listOperatorAdminAccounts() {
+  const pool = await getReadyPgPoolOrNull();
+  if (pool) {
+    const result = await pool.query(
+      `SELECT id, phone, display_name, role, two_factor_enabled, blocked_at, deactivated_at, created_at, updated_at
+       FROM admins
+       WHERE role IN (${OPERATOR_ROLE_SQL})
+       ORDER BY created_at DESC, id DESC`
+    );
+    return result.rows.map(mapOperatorAdminRow);
+  }
+
+  return __internalGetSqlite()
+    .prepare(
+      `SELECT id, phone, display_name, role, two_factor_enabled, blocked_at, deactivated_at, created_at, updated_at
+       FROM admins
+       WHERE role IN (${OPERATOR_ROLE_SQL})
+       ORDER BY created_at DESC, id DESC`
+    )
+    .all()
+    .map(mapOperatorAdminRow);
+}
+
+export async function upsertOperatorAdminAccount({ id = "", phone, displayName, role, password = "", active = true, twoFactorEnabled = true }) {
+  const normalizedRole = normalizeOperatorRole(role);
+  if (!normalizedRole) {
+    throw new Error("Invalid operator role");
+  }
+
+  const existing = await findRawAdminByIdOrPhone({ id, phone });
+  if (existing && !OPERATOR_ADMIN_ROLES.has(String(existing.role || "").toLowerCase())) {
+    throw new Error("This admin account cannot be managed as an operator");
+  }
+  if (!existing && !String(password || "").trim()) {
+    throw new Error("Password is required for a new operator");
+  }
+
+  const now = __internalNowIso();
+  const adminId = existing?.id || id || `op_${randomBytes(12).toString("hex")}`;
+  const deactivatedAt = active ? null : now;
+  const passwordHash = String(password || "").trim() ? hashCredential(String(password || "").trim()) : "";
+
+  const pool = await getReadyPgPoolOrNull();
+  if (pool) {
+    if (existing) {
+      const values = [adminId, phone, displayName, normalizedRole, Boolean(twoFactorEnabled), deactivatedAt, now];
+      let sql = `UPDATE admins
+                 SET phone = $2,
+                     display_name = $3,
+                     role = $4,
+                     two_factor_enabled = $5,
+                     blocked_at = NULL,
+                     deactivated_at = $6,
+                     updated_at = $7`;
+      if (passwordHash) {
+        values.push(passwordHash);
+        sql += `, password_hash = $8, two_factor_secret = NULL`;
+      }
+      sql += ` WHERE id = $1
+               RETURNING id, phone, display_name, role, two_factor_enabled, blocked_at, deactivated_at, created_at, updated_at`;
+      const result = await pool.query(sql, values);
+      return mapOperatorAdminRow(result.rows[0]);
+    }
+
+    const result = await pool.query(
+      `INSERT INTO admins (id, phone, password_hash, display_name, role, two_factor_enabled, two_factor_secret, blocked_at, deactivated_at, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NULL, NULL, $7, $8, $8)
+       RETURNING id, phone, display_name, role, two_factor_enabled, blocked_at, deactivated_at, created_at, updated_at`,
+      [adminId, phone, passwordHash, displayName, normalizedRole, Boolean(twoFactorEnabled), deactivatedAt, now]
+    );
+    return mapOperatorAdminRow(result.rows[0]);
+  }
+
+  const sqlite = __internalGetSqlite();
+  if (existing) {
+    if (passwordHash) {
+      sqlite
+        .prepare(
+          `UPDATE admins
+           SET phone = ?, display_name = ?, role = ?, two_factor_enabled = ?, two_factor_secret = NULL, blocked_at = NULL, deactivated_at = ?, updated_at = ?, password_hash = ?
+           WHERE id = ?`
+        )
+        .run(phone, displayName, normalizedRole, twoFactorEnabled ? 1 : 0, deactivatedAt, now, passwordHash, adminId);
+    } else {
+      sqlite
+        .prepare(
+          `UPDATE admins
+           SET phone = ?, display_name = ?, role = ?, two_factor_enabled = ?, blocked_at = NULL, deactivated_at = ?, updated_at = ?
+           WHERE id = ?`
+        )
+        .run(phone, displayName, normalizedRole, twoFactorEnabled ? 1 : 0, deactivatedAt, now, adminId);
+    }
+  } else {
+    sqlite
+      .prepare(
+        `INSERT INTO admins (id, phone, password_hash, display_name, role, two_factor_enabled, two_factor_secret, blocked_at, deactivated_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?)`
+      )
+      .run(adminId, phone, passwordHash, displayName, normalizedRole, twoFactorEnabled ? 1 : 0, deactivatedAt, now, now);
+  }
+
+  const row = sqlite
+    .prepare(
+      `SELECT id, phone, display_name, role, two_factor_enabled, blocked_at, deactivated_at, created_at, updated_at
+       FROM admins
+       WHERE id = ?
+       LIMIT 1`
+    )
+    .get(adminId);
+  return mapOperatorAdminRow(row);
 }
 
 export async function findAdminByPhone(phone) {

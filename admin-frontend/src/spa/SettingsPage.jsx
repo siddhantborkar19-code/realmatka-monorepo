@@ -1,7 +1,23 @@
 import React, { useEffect, useState } from "react";
 
+const operatorRoleOptions = [
+  { value: "result_operator", label: "Result + Support" },
+  { value: "result_only_operator", label: "Only Result Engine" },
+  { value: "support_operator", label: "Only Support Chat" }
+];
+
+const emptyOperatorForm = {
+  id: "",
+  name: "",
+  phone: "",
+  password: "",
+  role: "result_operator",
+  status: "active",
+  twoFactorEnabled: "true"
+};
+
 export function SettingsPage({ apiBase, token, fetchApi, PageHeader, PageState }) {
-  const [state, setState] = useState({ loading: true, error: "", settings: [] });
+  const [state, setState] = useState({ loading: true, error: "", settings: [], operators: [] });
   const [form, setForm] = useState({
     notice_text: "",
     support_phone: "",
@@ -16,11 +32,16 @@ export function SettingsPage({ apiBase, token, fetchApi, PageHeader, PageState }
     latest_app_update_message: ""
   });
   const [message, setMessage] = useState("");
+  const [operatorForm, setOperatorForm] = useState(emptyOperatorForm);
+  const [operatorMessage, setOperatorMessage] = useState("");
 
   useEffect(() => {
-    fetchApi(apiBase, "/api/admin/settings", token)
-      .then((settings) => {
-        setState({ loading: false, error: "", settings });
+    Promise.all([
+      fetchApi(apiBase, "/api/admin/settings", token),
+      fetchApi(apiBase, "/api/admin/operators", token)
+    ])
+      .then(([settings, operators]) => {
+        setState({ loading: false, error: "", settings, operators });
         const map = Object.fromEntries(settings.map((item) => [item.key, item.value]));
         setForm({
           notice_text: map.notice_text || "",
@@ -36,13 +57,44 @@ export function SettingsPage({ apiBase, token, fetchApi, PageHeader, PageState }
           latest_app_update_message: map.latest_app_update_message || "Please download the latest APK to continue."
         });
       })
-      .catch((error) => setState({ loading: false, error: error.message, settings: [] }));
+      .catch((error) => setState({ loading: false, error: error.message, settings: [], operators: [] }));
   }, [apiBase, fetchApi, token]);
 
   async function save() {
     const settings = await fetchApi(apiBase, "/api/admin/settings", token, { method: "POST", body: form });
     setState((current) => ({ ...current, settings }));
     setMessage("Settings updated successfully.");
+  }
+
+  async function saveOperator() {
+    setOperatorMessage("");
+    try {
+      const operator = await fetchApi(apiBase, "/api/admin/operators", token, { method: "POST", body: operatorForm });
+      setState((current) => {
+        const exists = current.operators.some((item) => item.id === operator.id);
+        const operators = exists
+          ? current.operators.map((item) => (item.id === operator.id ? operator : item))
+          : [operator, ...current.operators];
+        return { ...current, operators };
+      });
+      setOperatorForm(emptyOperatorForm);
+      setOperatorMessage("Operator access saved successfully.");
+    } catch (error) {
+      setOperatorMessage(error?.message || "Operator save failed.");
+    }
+  }
+
+  function editOperator(operator) {
+    setOperatorForm({
+      id: operator.id,
+      name: operator.name || "",
+      phone: operator.phone || "",
+      password: "",
+      role: operator.role || "result_operator",
+      status: operator.deactivatedAt ? "disabled" : "active",
+      twoFactorEnabled: operator.twoFactorEnabled === false ? "false" : "true"
+    });
+    setOperatorMessage("Password blank rakho to existing password same rahega.");
   }
 
   if (state.loading) return <PageState title="Settings" subtitle="Loading settings..." />;
@@ -81,6 +133,50 @@ export function SettingsPage({ apiBase, token, fetchApi, PageHeader, PageState }
         <div className="actions"><button className="primary" onClick={save}>Save Settings</button></div>
         <p className="message success">{message}</p>
       </section>
+      <section className="panel">
+        <div className="panel-head">
+          <h2>Operator Access</h2>
+          <p>Result Engine ya Support Chat ke liye limited operator account create/update karo.</p>
+        </div>
+        <div className="form-grid">
+          <label><span>Operator Name</span><input value={operatorForm.name} onChange={(e) => setOperatorForm({ ...operatorForm, name: e.target.value })} /></label>
+          <label><span>Phone</span><input inputMode="numeric" maxLength={10} value={operatorForm.phone} onChange={(e) => setOperatorForm({ ...operatorForm, phone: e.target.value })} /></label>
+          <label><span>{operatorForm.id ? "New Password (optional)" : "Password"}</span><input type="password" value={operatorForm.password} onChange={(e) => setOperatorForm({ ...operatorForm, password: e.target.value })} /></label>
+          <label><span>Access Role</span><select value={operatorForm.role} onChange={(e) => setOperatorForm({ ...operatorForm, role: e.target.value })}>{operatorRoleOptions.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}</select></label>
+          <label><span>Status</span><select value={operatorForm.status} onChange={(e) => setOperatorForm({ ...operatorForm, status: e.target.value })}><option value="active">Active</option><option value="disabled">Disabled</option></select></label>
+          <label><span>2FA</span><select value={operatorForm.twoFactorEnabled} onChange={(e) => setOperatorForm({ ...operatorForm, twoFactorEnabled: e.target.value })}><option value="true">Required</option><option value="false">Disabled</option></select></label>
+        </div>
+        <div className="actions">
+          <button className="primary" onClick={saveOperator}>{operatorForm.id ? "Update Operator" : "Create Operator"}</button>
+          {operatorForm.id ? <button className="secondary" onClick={() => { setOperatorForm(emptyOperatorForm); setOperatorMessage(""); }}>Cancel Edit</button> : null}
+        </div>
+        {operatorMessage ? <p className={`message ${operatorMessage.includes("failed") || operatorMessage.includes("required") ? "error" : "success"}`}>{operatorMessage}</p> : null}
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Phone</th><th>Role</th><th>Status</th><th>2FA</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              {state.operators.length ? state.operators.map((operator) => (
+                <tr key={operator.id}>
+                  <td>{operator.name}</td>
+                  <td>{operator.phone}</td>
+                  <td>{formatOperatorRole(operator.role)}</td>
+                  <td>{operator.deactivatedAt ? "Disabled" : "Active"}</td>
+                  <td>{operator.twoFactorEnabled === false ? "Off" : "Required"}</td>
+                  <td><button className="secondary" onClick={() => editOperator(operator)}>Edit</button></td>
+                </tr>
+              )) : (
+                <tr><td colSpan={6}>No operator accounts yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </>
   );
+}
+
+function formatOperatorRole(role) {
+  return operatorRoleOptions.find((item) => item.value === role)?.label || role || "-";
 }

@@ -1,5 +1,5 @@
 import { fail, getResponseCorsHeaders, ok } from "../http.mjs";
-import { requireAdminUser } from "../middleware/auth-middleware.mjs";
+import { hasFullAdminRole, hasSupportDeskRole, requireAdminPanelUser, requireAdminUser } from "../middleware/auth-middleware.mjs";
 import {
   buildExportPayload,
   getDashboardSummary,
@@ -39,11 +39,18 @@ export async function adminMonitoringSummaryController(request) {
 }
 
 export async function adminLiveEventsController(request) {
-  const admin = await requireAdminUser(request);
+  const admin = await requireAdminPanelUser(request);
   if (admin.response) return admin.response;
   const url = new URL(request.url);
   const limit = Number(url.searchParams.get("limit") || 30);
-  return ok({ events: await getAdminLiveEvents({ limit }) }, request);
+  const events = await getAdminLiveEvents({ limit });
+  if (hasFullAdminRole(admin.user.role)) {
+    return ok({ events }, request);
+  }
+  if (hasSupportDeskRole(admin.user.role)) {
+    return ok({ events: events.filter((event) => event.type === "support") }, request);
+  }
+  return ok({ events: [] }, request);
 }
 
 export async function adminReconciliationSummaryController(request) {

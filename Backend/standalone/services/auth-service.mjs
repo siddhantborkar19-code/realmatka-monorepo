@@ -5,6 +5,7 @@ import { buildTotpSetupPayload, generateTotpSecret, verifyTotpCode } from "./tot
 const adminTwoFactorChallenges = new Map();
 const ADMIN_TOTP_ISSUER = "Real Matka Admin";
 const ADMIN_TWO_FACTOR_CHALLENGE_TTL_MS = 10 * 60 * 1000;
+const ADMIN_PANEL_ROLES = new Set(["admin", "super_admin", "operator", "result_operator", "result_only_operator", "support_operator"]);
 
 function sanitizeSessionUser(user) {
   return {
@@ -163,7 +164,7 @@ export async function verifyAdminTwoFactorLogin(challengeId, otp) {
 
   adminTwoFactorChallenges.delete(challengeId);
 
-  if (!user || user.adminId !== challenge.adminId || !["admin", "super_admin"].includes(String(user.role || "").toLowerCase())) {
+  if (!user || user.adminId !== challenge.adminId || !ADMIN_PANEL_ROLES.has(String(user.role || "").trim().toLowerCase())) {
     return { ok: false, status: 403, error: "Admin account not available for 2FA completion" };
   }
   if (user.deactivatedAt) {

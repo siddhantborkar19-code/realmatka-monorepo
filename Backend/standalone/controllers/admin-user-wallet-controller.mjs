@@ -1,5 +1,5 @@
 import { fail, getJsonBody, ok } from "../http.mjs";
-import { requireAdminUser } from "../middleware/auth-middleware.mjs";
+import { hasFullAdminRole, hasResultEngineRole, requireAdminPanelUser, requireAdminUser } from "../middleware/auth-middleware.mjs";
 import { addAuditLog, getAuditLogs } from "../stores/admin-store.mjs";
 import {
   cleanupWalletData,
@@ -210,7 +210,15 @@ export async function adminBidsListController(request) {
 }
 
 export async function adminAuditLogsController(request) {
-  const admin = await requireAdminUser(request);
+  const admin = await requireAdminPanelUser(request);
   if (admin.response) return admin.response;
-  return ok(await getAuditLogs(100), request);
+  const logs = await getAuditLogs(200);
+  if (hasFullAdminRole(admin.user.role)) {
+    return ok(logs.slice(0, 100), request);
+  }
+  if (hasResultEngineRole(admin.user.role)) {
+    const allowedActions = new Set(["CHART_UPDATE", "MARKET_UPDATE", "MARKET_SETTLE", "MARKET_RESET", "MARKET_RESETTLE"]);
+    return ok(logs.filter((item) => allowedActions.has(item.action) && ["chart", "market"].includes(item.entityType)).slice(0, 100), request);
+  }
+  return ok([], request);
 }

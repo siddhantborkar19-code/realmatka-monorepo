@@ -5,6 +5,7 @@ import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Linking, Platform, P
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
+import { isMsg91NativeOtpAvailable, sendMsg91NativeOtp, verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { colors } from "@/theme/colors";
 
 const MIN_WITHDRAW_AMOUNT = 500;
@@ -21,7 +22,7 @@ function getIndiaWeekday(date = new Date()) {
 export default function WithdrawScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ msg91Token?: string; phone?: string; purpose?: string }>();
-  const { walletBalance, requestWithdrawOtp, confirmWithdraw, bankAccounts, walletEntries, loadBankAccounts, loadWalletHistory } = useAppState();
+  const { currentUser, walletBalance, requestWithdrawOtp, confirmWithdraw, bankAccounts, walletEntries, loadBankAccounts, loadWalletHistory } = useAppState();
   const latestBank = useMemo(() => bankAccounts[0] ?? null, [bankAccounts]);
   const pendingWithdraw = useMemo(
     () => walletEntries.find((entry) => entry.type === "WITHDRAW" && (entry.status === "INITIATED" || entry.status === "BACKOFFICE")) ?? null,
@@ -32,6 +33,7 @@ export default function WithdrawScreen() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpMessage, setOtpMessage] = useState("");
   const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
+  const [sdkReqId, setSdkReqId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -281,7 +283,21 @@ export default function WithdrawScreen() {
       setOtpSent(true);
       setOtp("");
       setVerifiedAccessToken("");
+      setSdkReqId("");
       if (response.mode === "widget" && response.widgetUrl) {
+        if (isMsg91NativeOtpAvailable()) {
+          const userPhone = String(currentUser?.phone || "").replace(/[^0-9]/g, "").slice(-10);
+          const sdkResponse = await sendMsg91NativeOtp(userPhone);
+          if (sdkResponse.accessToken) {
+            setVerifiedAccessToken(sdkResponse.accessToken);
+            setOtpMessage("Mobile verification complete. Ab withdraw confirm karo.");
+          } else {
+            setSdkReqId(sdkResponse.reqId);
+            setOtpMessage("Withdraw OTP SMS successfully sent.");
+          }
+          showTransientMessage("success", "Withdraw OTP sent successfully.");
+          return;
+        }
         setOtpMessage("Verification window open ho rahi hai...");
         showTransientMessage("success", "Mobile verification complete karke app me wapas aao.");
         await Linking.openURL(response.widgetUrl);
@@ -334,7 +350,14 @@ export default function WithdrawScreen() {
     try {
       setSubmitting(true);
       setError("");
-      await confirmWithdraw(withdrawAmount, otp.trim(), verifiedAccessToken);
+      let accessToken = verifiedAccessToken;
+      if (!accessToken && sdkReqId) {
+        setOtpMessage("OTP verify ho raha hai...");
+        const verified = await verifyMsg91NativeOtp(sdkReqId, otp.trim());
+        accessToken = verified.accessToken;
+        setVerifiedAccessToken(accessToken);
+      }
+      await confirmWithdraw(withdrawAmount, accessToken ? "" : otp.trim(), accessToken);
       setSuccessMessage("Withdraw request OTP verify hone ke baad submit ho gayi.");
       setVerifiedAccessToken("");
       setTimeout(() => {

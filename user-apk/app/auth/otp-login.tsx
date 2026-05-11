@@ -6,6 +6,7 @@ import * as Linking from "expo-linking";
 import { AppScreen, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { api, formatApiError } from "@/lib/api";
+import { isMsg91NativeOtpAvailable, sendMsg91NativeOtp, verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { colors } from "@/theme/colors";
 
 export default function OtpLoginScreen() {
@@ -19,11 +20,14 @@ export default function OtpLoginScreen() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const [sdkReqId, setSdkReqId] = useState("");
+  const [sdkAccessToken, setSdkAccessToken] = useState("");
   const handledTokenRef = useRef("");
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const normalizedOtp = otp.replace(/[^0-9]/g, "");
   const hasValidPhone = normalizedPhone.length === 10;
   const hasValidOtp = normalizedOtp.length === 6;
+  const verifiedAccessToken = sdkAccessToken || String(params.msg91Token || "").trim();
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -111,7 +115,21 @@ export default function OtpLoginScreen() {
                   setSendingOtp(true);
                   setError("");
                   setMessage("");
-                  const response = await api.requestOtp(phone, "login");
+                  setSdkAccessToken("");
+                  setSdkReqId("");
+                  const response = await api.requestOtp(normalizedPhone, "login");
+                  if (response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
+                    const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
+                    if (sdkResponse.accessToken) {
+                      setSdkAccessToken(sdkResponse.accessToken);
+                      setMessage("Mobile verified. Login continue karo.");
+                    } else {
+                      setSdkReqId(sdkResponse.reqId);
+                      setMessage("OTP SMS successfully sent.");
+                    }
+                    setCooldownSeconds(OTP_RESEND_SECONDS);
+                    return;
+                  }
                   if (response.mode === "widget" && response.widgetUrl) {
                     setMessage("Verification window open ho rahi hai...");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
@@ -136,7 +154,7 @@ export default function OtpLoginScreen() {
               )}
             </Pressable>
 
-            {!String(params.msg91Token || "").trim() ? (
+            {!verifiedAccessToken ? (
               <>
                 <Text style={styles.label}>OTP</Text>
                 <TextInput
@@ -163,14 +181,21 @@ export default function OtpLoginScreen() {
                 setError("Valid 10 digit phone number dalo.");
                 return;
               }
-              if (!String(params.msg91Token || "").trim() && !hasValidOtp) {
+              if (!verifiedAccessToken && !hasValidOtp) {
                 setError("Valid 6 digit OTP dalo.");
                 return;
               }
               try {
                 setLoggingIn(true);
                 setError("");
-                await otpLogin(normalizedPhone, normalizedOtp, String(params.msg91Token || "").trim());
+                let accessToken = verifiedAccessToken;
+                if (!accessToken && sdkReqId) {
+                  setMessage("OTP verify ho raha hai...");
+                  const verified = await verifyMsg91NativeOtp(sdkReqId, normalizedOtp);
+                  accessToken = verified.accessToken;
+                  setSdkAccessToken(accessToken);
+                }
+                await otpLogin(normalizedPhone, accessToken ? "" : normalizedOtp, accessToken);
                 router.replace("/(tabs)");
               } catch (loginError) {
                 setError(formatApiError(loginError, "OTP login failed"));
@@ -178,8 +203,8 @@ export default function OtpLoginScreen() {
                 setLoggingIn(false);
                 }
               }}
-              disabled={loggingIn || sendingOtp || !hasValidPhone || (!String(params.msg91Token || "").trim() && !hasValidOtp)}
-              style={[styles.primaryButton, (loggingIn || sendingOtp || !hasValidPhone || (!String(params.msg91Token || "").trim() && !hasValidOtp)) && styles.disabled]}
+              disabled={loggingIn || sendingOtp || !hasValidPhone || (!verifiedAccessToken && !hasValidOtp)}
+              style={[styles.primaryButton, (loggingIn || sendingOtp || !hasValidPhone || (!verifiedAccessToken && !hasValidOtp)) && styles.disabled]}
             >
               {loggingIn ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Login with OTP</Text>}
             </Pressable>

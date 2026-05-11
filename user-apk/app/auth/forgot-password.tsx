@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
 import { AppScreen, SurfaceCard } from "@/components/ui";
 import { api, formatApiError } from "@/lib/api";
+import { isMsg91NativeOtpAvailable, sendMsg91NativeOtp, verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { colors } from "@/theme/colors";
 
 export default function ForgotPasswordScreen() {
@@ -19,6 +20,7 @@ export default function ForgotPasswordScreen() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
+  const [sdkReqId, setSdkReqId] = useState("");
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const normalizedOtp = otp.replace(/[^0-9]/g, "");
@@ -88,7 +90,21 @@ export default function ForgotPasswordScreen() {
                   setSendingOtp(true);
                   setError("");
                   setMessage("");
+                  setVerifiedAccessToken("");
+                  setSdkReqId("");
                   const response = await api.requestOtp(normalizedPhone, "password_reset");
+                  if (response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
+                    const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
+                    if (sdkResponse.accessToken) {
+                      setVerifiedAccessToken(sdkResponse.accessToken);
+                      setMessage("Mobile number verified successfully. Ab naya password set karo.");
+                    } else {
+                      setSdkReqId(sdkResponse.reqId);
+                      setMessage("Password reset OTP SMS successfully sent.");
+                    }
+                    setCooldownSeconds(OTP_RESEND_SECONDS);
+                    return;
+                  }
                   if (response.mode === "widget" && response.widgetUrl) {
                     setMessage("Verification window open ho rahi hai...");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
@@ -165,7 +181,14 @@ export default function ForgotPasswordScreen() {
                   setResettingPassword(true);
                   setError("");
                   setMessage("");
-                  await api.forgotPassword(normalizedPhone, normalizedOtp, password.trim(), confirmPassword.trim(), verifiedAccessToken);
+                  let accessToken = verifiedAccessToken;
+                  if (!accessToken && sdkReqId) {
+                    setMessage("OTP verify ho raha hai...");
+                    const verified = await verifyMsg91NativeOtp(sdkReqId, normalizedOtp);
+                    accessToken = verified.accessToken;
+                    setVerifiedAccessToken(accessToken);
+                  }
+                  await api.forgotPassword(normalizedPhone, accessToken ? "" : normalizedOtp, password.trim(), confirmPassword.trim(), accessToken);
                   setMessage("Password reset successful. Ab login karo.");
                   setOtp("");
                   setPassword("");

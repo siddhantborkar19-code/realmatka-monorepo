@@ -534,22 +534,85 @@ export async function msg91Widget(request) {
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Real Matka OTP Verification</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #0f172a; color: #fff; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
-    .wrap { width: min(92vw, 420px); background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); }
-    h1 { margin: 0 0 8px; font-size: 24px; }
-    p { margin: 0 0 16px; color: #cbd5e1; line-height: 1.5; }
-    .meta { font-size: 13px; color: #94a3b8; margin-bottom: 18px; }
-    .error { color: #fca5a5; font-size: 14px; margin-top: 14px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #fff7ed, #ffe4d6 45%, #fef3c7); color: #111827; display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 18px; }
+    .wrap { width: min(92vw, 420px); background: #fffaf5; border: 1px solid rgba(194, 65, 12, 0.16); border-radius: 24px; padding: 24px; box-shadow: 0 22px 55px rgba(124, 45, 18, 0.18); }
+    .brand { display: inline-flex; align-items: center; gap: 8px; color: #c2410c; font-size: 12px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; }
+    .dot { width: 9px; height: 9px; border-radius: 999px; background: #f97316; box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.12); }
+    h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.1; }
+    p { margin: 0 0 16px; color: #64748b; line-height: 1.5; }
+    .meta { font-size: 13px; color: #7c2d12; margin-bottom: 18px; background: #ffedd5; border-radius: 14px; padding: 11px 12px; font-weight: 700; }
+    label { display: block; font-weight: 800; margin-bottom: 8px; }
+    input { width: 100%; min-height: 54px; border-radius: 16px; border: 1px solid #fed7aa; background: #ffffff; color: #111827; font-size: 22px; font-weight: 900; letter-spacing: 0.22em; text-align: center; padding: 0 14px; outline: none; }
+    input:focus { border-color: #fb923c; box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.16); }
+    button { width: 100%; border: 0; border-radius: 999px; min-height: 52px; font-weight: 900; font-size: 15px; cursor: pointer; margin-top: 14px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .primary { background: linear-gradient(135deg, #fb923c, #ef4444); color: #fff; box-shadow: 0 14px 24px rgba(239, 68, 68, 0.18); }
+    .secondary { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .status { color: #15803d; font-size: 14px; margin-top: 14px; font-weight: 700; min-height: 20px; }
+    .error { color: #dc2626; font-size: 14px; margin-top: 10px; font-weight: 700; min-height: 20px; }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="brand"><span class="dot"></span>Real Matka</div>
     <h1>Verify Mobile</h1>
-    <p>OTP verification complete hote hi aap app me wapas redirect ho jaoge.</p>
-    <div class="meta">Purpose: ${purpose} | Mobile: ${phone}</div>
+    <p>OTP SMS bheja ja raha hai. Code enter karte hi login continue ho jayega.</p>
+    <div class="meta">Mobile: +91 ${phone}</div>
+    <label for="otp">Enter OTP</label>
+    <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" />
+    <button id="verifyBtn" class="primary" disabled>Verify OTP</button>
+    <button id="resendBtn" class="secondary" disabled>Resend in 30s</button>
+    <div id="status" class="status"></div>
     <div id="error" class="error"></div>
   </div>
   <script>
+    var currentReqId = '';
+    var resendSeconds = 30;
+    var resendTimer = null;
+    var identifier = ${JSON.stringify(`91${phone}`)};
+    var statusEl = document.getElementById('status');
+    var errorEl = document.getElementById('error');
+    var otpEl = document.getElementById('otp');
+    var verifyBtn = document.getElementById('verifyBtn');
+    var resendBtn = document.getElementById('resendBtn');
+
+    function setStatus(message) {
+      statusEl.textContent = message || '';
+    }
+    function setError(message) {
+      errorEl.textContent = message || '';
+    }
+    function getErrorMessage(error, fallback) {
+      if (typeof error === 'string' && error.trim()) return error.trim();
+      if (error && typeof error === 'object') {
+        return error.message || error.error || error.description || (error.data && error.data.message) || fallback;
+      }
+      return fallback;
+    }
+    function setReqId(data) {
+      currentReqId =
+        (data && (data.reqId || data.req_id || data.requestId || data.request_id || data.data && (data.data.reqId || data.data.req_id || data.data.requestId || data.data.request_id))) ||
+        currentReqId ||
+        '';
+    }
+    function startResendTimer() {
+      resendSeconds = 30;
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'Resend in 30s';
+      if (resendTimer) window.clearInterval(resendTimer);
+      resendTimer = window.setInterval(function() {
+        resendSeconds -= 1;
+        if (resendSeconds <= 0) {
+          window.clearInterval(resendTimer);
+          resendTimer = null;
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend OTP';
+        } else {
+          resendBtn.textContent = 'Resend in ' + resendSeconds + 's';
+        }
+      }, 1000);
+    }
     function looksLikeToken(value) {
       var text = typeof value === 'string' ? value.trim() : '';
       if (!text) return false;
@@ -607,29 +670,111 @@ export async function msg91Widget(request) {
     var configuration = {
       widgetId: ${JSON.stringify(msg91WidgetId)},
       tokenAuth: ${JSON.stringify(msg91WidgetTokenAuth)},
-      identifier: ${JSON.stringify(`+91${phone}`)},
-      exposeMethods: false,
+      identifier: identifier,
+      exposeMethods: true,
       success: function (data) {
+        setReqId(data);
         var token = extractVerifiedToken(data);
         if (!token) {
           console.log('MSG91 success response without token', data);
-          document.getElementById('error').textContent = 'Verified token receive nahi hua. Dobara try karo.';
           return;
         }
-        var redirect = new URL(${JSON.stringify(returnUrl)});
-        redirect.searchParams.set('msg91Token', token);
-        redirect.searchParams.set('phone', ${JSON.stringify(phone)});
-        redirect.searchParams.set('purpose', ${JSON.stringify(purpose)});
-        window.location.replace(redirect.toString());
+        redirectWithToken(token);
       },
       failure: function (error) {
-        var message = 'OTP verify nahi ho paya. Dobara try karo.';
-        if (error && typeof error === 'object' && error.message) {
-          message = error.message;
-        }
-        document.getElementById('error').textContent = message;
+        setError(getErrorMessage(error, 'OTP verify nahi ho paya. Dobara try karo.'));
       }
     };
+    function redirectWithToken(token) {
+      var redirect = new URL(${JSON.stringify(returnUrl)});
+      redirect.searchParams.set('msg91Token', token);
+      redirect.searchParams.set('phone', ${JSON.stringify(phone)});
+      redirect.searchParams.set('purpose', ${JSON.stringify(purpose)});
+      window.location.replace(redirect.toString());
+    }
+    function sendOtpNow() {
+      setError('');
+      setStatus('OTP SMS bheja ja raha hai...');
+      if (typeof window.sendOtp !== 'function') {
+        setError('OTP service load nahi hua. Dobara try karo.');
+        return;
+      }
+      window.sendOtp(
+        identifier,
+        function(data) {
+          setReqId(data);
+          setStatus('OTP SMS sent. Code enter karo.');
+          otpEl.focus();
+          startResendTimer();
+        },
+        function(error) {
+          setStatus('');
+          setError(getErrorMessage(error, 'OTP send nahi hua. Dobara try karo.'));
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend OTP';
+        }
+      );
+    }
+    function verifyOtpNow() {
+      var otp = otpEl.value.replace(/[^0-9]/g, '');
+      if (otp.length !== 6) {
+        setError('Valid 6 digit OTP dalo.');
+        return;
+      }
+      setError('');
+      setStatus('OTP verify ho raha hai...');
+      verifyBtn.disabled = true;
+      window.verifyOtp(
+        otp,
+        function(data) {
+          setReqId(data);
+          var token = extractVerifiedToken(data);
+          if (!token) {
+            setStatus('');
+            setError('Verified token receive nahi hua. Dobara try karo.');
+            verifyBtn.disabled = false;
+            return;
+          }
+          setStatus('Verified. Redirect ho raha hai...');
+          redirectWithToken(token);
+        },
+        function(error) {
+          setStatus('');
+          setError(getErrorMessage(error, 'Invalid OTP. Dobara try karo.'));
+          verifyBtn.disabled = false;
+        },
+        currentReqId || undefined
+      );
+    }
+    otpEl.addEventListener('input', function(event) {
+      otpEl.value = event.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+      verifyBtn.disabled = otpEl.value.length !== 6;
+    });
+    otpEl.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' && otpEl.value.length === 6) {
+        verifyOtpNow();
+      }
+    });
+    verifyBtn.addEventListener('click', verifyOtpNow);
+    resendBtn.addEventListener('click', function() {
+      if (typeof window.retryOtp === 'function') {
+        setError('');
+        setStatus('OTP resend ho raha hai...');
+        resendBtn.disabled = true;
+        window.retryOtp(null, function(data) {
+          setReqId(data);
+          setStatus('OTP SMS resent. Code enter karo.');
+          startResendTimer();
+        }, function(error) {
+          setStatus('');
+          setError(getErrorMessage(error, 'OTP resend nahi hua. Dobara try karo.'));
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend OTP';
+        }, currentReqId || undefined);
+        return;
+      }
+      sendOtpNow();
+    });
     (function loadOtpScript(urls) {
       var index = 0;
       function attempt() {
@@ -639,6 +784,7 @@ export async function msg91Widget(request) {
         s.onload = function() {
           if (typeof window.initSendOTP === 'function') {
             window.initSendOTP(configuration);
+            window.setTimeout(sendOtpNow, 300);
           }
         };
         s.onerror = function() {

@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppScreen, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { api, formatApiError } from "@/lib/api";
+import { isMsg91NativeOtpAvailable, sendMsg91NativeOtp, verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { clearStoredReferralCode, normalizeReferralCode, readStoredReferralCode, writeStoredReferralCode } from "@/lib/referral-storage";
 import { colors } from "@/theme/colors";
 
@@ -25,6 +26,7 @@ export default function RegisterScreen() {
   const [success, setSuccess] = useState("");
   const [registered, setRegistered] = useState(false);
   const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
+  const [sdkReqId, setSdkReqId] = useState("");
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const incomingReferralCode = normalizeReferralCode(params.ref ?? params.referenceCode ?? params.referralCode);
   const downloadUrl = String(process.env.EXPO_PUBLIC_DOWNLOAD_URL || process.env.EXPO_PUBLIC_APP_DOWNLOAD_URL || "").trim();
@@ -157,7 +159,21 @@ export default function RegisterScreen() {
                   setSendingOtp(true);
                   setError("");
                   setSuccess("");
+                  setVerifiedAccessToken("");
+                  setSdkReqId("");
                   const response = await api.requestOtp(normalizedPhone, "register");
+                  if (response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
+                    const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
+                    if (sdkResponse.accessToken) {
+                      setVerifiedAccessToken(sdkResponse.accessToken);
+                      setSuccess("Mobile number verified successfully.");
+                    } else {
+                      setSdkReqId(sdkResponse.reqId);
+                      setSuccess("Registration OTP SMS successfully sent.");
+                    }
+                    setCooldownSeconds(OTP_RESEND_SECONDS);
+                    return;
+                  }
                   if (response.mode === "widget" && response.widgetUrl) {
                     setSuccess("Verification window open ho rahi hai...");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
@@ -295,7 +311,14 @@ export default function RegisterScreen() {
                   setSubmitting(true);
                   setError("");
                   setSuccess("");
-                  await register(normalizedFirstName, normalizedLastName, normalizedPhone, normalizedOtp, password.trim(), confirmPassword.trim(), referenceCode, verifiedAccessToken);
+                  let accessToken = verifiedAccessToken;
+                  if (!accessToken && sdkReqId) {
+                    setSuccess("OTP verify ho raha hai...");
+                    const verified = await verifyMsg91NativeOtp(sdkReqId, normalizedOtp);
+                    accessToken = verified.accessToken;
+                    setVerifiedAccessToken(accessToken);
+                  }
+                  await register(normalizedFirstName, normalizedLastName, normalizedPhone, accessToken ? "" : normalizedOtp, password.trim(), confirmPassword.trim(), referenceCode, accessToken);
                   setError("");
                   await clearStoredReferralCode();
                   setRegistered(true);

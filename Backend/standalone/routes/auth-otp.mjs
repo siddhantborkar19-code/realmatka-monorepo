@@ -17,7 +17,7 @@ const defaultAppScheme = cleanEnvValue(process.env.EXPO_PUBLIC_APP_SCHEME || "re
 const defaultAppWebUrl = cleanEnvValue(process.env.EXPO_PUBLIC_APP_URL || "https://play.realmatka.in") || "https://play.realmatka.in";
 
 function cleanEnvValue(value) {
-  return String(value || "").trim().replace(/['"]/g, "").trim();
+  return String(value || "").replace(/\u00a0/g, " ").trim().replace(/['"]/g, "").trim();
 }
 
 function isMsg91Enabled() {

@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, AppStateStatus, Platform } from "react-native";
-import { ApiError, api, setAuthFailureListener, type BankAccount, type BidEntry, type OtpRequestResponse, type SessionUser, type WalletEntry } from "@/lib/api";
+import { ApiError, api, setAuthFailureListener, type BankAccount, type BidEntry, type GoogleAuthResponse, type OtpRequestResponse, type SessionUser, type WalletEntry } from "@/lib/api";
 import { readStoredMpinConfigured, writeStoredMpinValue, writeStoredMpinConfigured } from "@/lib/security-storage";
 import {
   getCachedBidHistory,
@@ -37,6 +37,16 @@ type AppStateValue = {
   bankAccounts: BankAccount[];
   draftBid: DraftBid | null;
   login: (phone: string, password: string) => Promise<void>;
+  googleLogin: (accessToken: string) => Promise<GoogleAuthResponse>;
+  googleRegister: (payload: {
+    registrationToken: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+    referenceCode?: string;
+  }) => Promise<void>;
   otpLogin: (phone: string, otp: string, accessToken?: string) => Promise<void>;
   register: (firstName: string, lastName: string, phone: string, otp: string, password: string, confirmPassword: string, referenceCode?: string, accessToken?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -124,6 +134,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       user: {
         id: user.id,
         phone: user.phone,
+        email: user.email,
         name: user.name,
         role: user.role,
         hasMpin: Boolean(user.hasMpin),
@@ -296,6 +307,41 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (phone: string, password: string) => {
     const response = await api.login(phone, password);
+    await writeStoredSessionToken(response.token);
+    applySessionUser(response.token, response.user);
+    await persistSessionSnapshot(response.user, getResolvedWalletBalance(response.user));
+    void hydrateSession(response.token).catch(async (error) => {
+      if (isAuthFailure(error)) {
+        await clearSession();
+      }
+    });
+  }, [applySessionUser, clearSession, hydrateSession, persistSessionSnapshot]);
+
+  const googleLogin = useCallback(async (accessToken: string) => {
+    const response = await api.googleLogin({ accessToken });
+    if (!response.needsRegistration && response.token && response.user) {
+      await writeStoredSessionToken(response.token);
+      applySessionUser(response.token, response.user);
+      await persistSessionSnapshot(response.user, getResolvedWalletBalance(response.user));
+      void hydrateSession(response.token).catch(async (error) => {
+        if (isAuthFailure(error)) {
+          await clearSession();
+        }
+      });
+    }
+    return response;
+  }, [applySessionUser, clearSession, hydrateSession, persistSessionSnapshot]);
+
+  const googleRegister = useCallback(async (payload: {
+    registrationToken: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+    referenceCode?: string;
+  }) => {
+    const response = await api.googleRegister(payload);
     await writeStoredSessionToken(response.token);
     applySessionUser(response.token, response.user);
     await persistSessionSnapshot(response.user, getResolvedWalletBalance(response.user));
@@ -697,6 +743,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     bankAccounts,
     draftBid,
     login,
+    googleLogin,
+    googleRegister,
     otpLogin,
     register,
     logout,
@@ -724,6 +772,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     loadWalletHistory,
     loading,
     login,
+    googleLogin,
+    googleRegister,
     logout,
     otpLogin,
     register,

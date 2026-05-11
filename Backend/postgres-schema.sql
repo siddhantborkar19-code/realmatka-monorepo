@@ -1,6 +1,10 @@
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
   phone TEXT UNIQUE NOT NULL,
+  email TEXT,
+  google_sub TEXT,
+  google_linked_at TIMESTAMPTZ,
+  auth_provider TEXT NOT NULL DEFAULT 'password',
   password_hash TEXT NOT NULL,
   mpin_hash TEXT NOT NULL,
   mpin_configured BOOLEAN NOT NULL DEFAULT FALSE,

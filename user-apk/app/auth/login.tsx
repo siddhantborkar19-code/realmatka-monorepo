@@ -5,13 +5,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
+import { requestGoogleAccessToken } from "@/lib/google-auth";
 import { colors } from "@/theme/colors";
 
 export default function LoginScreen() {
-  const { login, isAuthenticated, loading } = useAppState();
+  const { login, googleLogin, isAuthenticated, loading } = useAppState();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [error, setError] = useState("");
   const passwordInputRef = useRef<TextInput | null>(null);
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
@@ -42,6 +44,36 @@ export default function LoginScreen() {
     }
   }
 
+  async function submitGoogleLogin() {
+    if (googleSubmitting) {
+      return;
+    }
+    try {
+      setGoogleSubmitting(true);
+      setError("");
+      const accessToken = await requestGoogleAccessToken();
+      const response = await googleLogin(accessToken);
+      if (response.needsRegistration && response.registrationToken) {
+        router.push({
+          pathname: "/auth/register",
+          params: {
+            googleRegistrationToken: response.registrationToken,
+            googleEmail: response.profile?.email || "",
+            googleName: response.profile?.name || "",
+            googleGivenName: response.profile?.givenName || "",
+            googleFamilyName: response.profile?.familyName || ""
+          }
+        });
+        return;
+      }
+      router.replace("/(tabs)");
+    } catch (googleError) {
+      setError(formatApiError(googleError, "Google login failed"));
+    } finally {
+      setGoogleSubmitting(false);
+    }
+  }
+
   useEffect(() => {
     if (!loading && isAuthenticated) {
       router.replace("/(tabs)");
@@ -59,6 +91,27 @@ export default function LoginScreen() {
         <SurfaceCard style={styles.formCard}>
           <Text style={styles.title}>Login</Text>
           <Text style={styles.subtitle}>Use your registered phone number and password to continue.</Text>
+          <Pressable
+            onPress={() => {
+              void submitGoogleLogin();
+            }}
+            disabled={googleSubmitting}
+            style={[styles.googleButton, googleSubmitting && styles.disabled]}
+          >
+            {googleSubmitting ? (
+              <ActivityIndicator color="#111827" />
+            ) : (
+              <>
+                <Text style={styles.googleMark}>G</Text>
+                <Text style={styles.googleText}>Continue with Google</Text>
+              </>
+            )}
+          </Pressable>
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or phone login</Text>
+            <View style={styles.dividerLine} />
+          </View>
           <View style={styles.fieldWrap}>
             <Text style={styles.label}>Phone Number</Text>
             <TextInput
@@ -191,6 +244,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     color: "#111827",
     backgroundColor: "#f8fafc"
+  },
+  googleButton: {
+    minHeight: 50,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#dbe1ea",
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10
+  },
+  googleMark: {
+    color: "#ea4335",
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  googleText: {
+    color: "#111827",
+    fontWeight: "900",
+    fontSize: 15
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#e2e8f0"
+  },
+  dividerText: {
+    color: "#64748b",
+    fontSize: 12,
+    fontWeight: "800"
   },
   primaryButton: {
     minHeight: 48,

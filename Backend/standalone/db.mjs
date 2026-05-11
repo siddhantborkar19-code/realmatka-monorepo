@@ -383,6 +383,10 @@ function mapUserRow(row) {
     ? {
         id: row.id,
         phone: row.phone,
+        email: row.email ?? "",
+        googleSub: row.google_sub ?? "",
+        googleLinkedAt: toIso(row.google_linked_at),
+        authProvider: row.auth_provider ?? "password",
         passwordHash: row.password_hash,
         mpinHash: row.mpin_hash,
         hasMpin: toBool(row.mpin_configured),
@@ -761,6 +765,10 @@ async function ensurePostgresBootstrap(pool) {
         await client.query(postgresSchemaSql);
       }
       await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ`);
+      await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT`);
+      await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub TEXT`);
+      await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_linked_at TIMESTAMPTZ`);
+      await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT NOT NULL DEFAULT 'password'`);
       await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ`);
       await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS blocked_at TIMESTAMPTZ`);
       await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deactivated_at TIMESTAMPTZ`);
@@ -874,6 +882,8 @@ async function ensurePostgresBootstrap(pool) {
         END $$;
       `);
       await ensurePostgresIndexes(client);
+      await client.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique ON users (LOWER(email)) WHERE email IS NOT NULL AND email <> ''`);
+      await client.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub_unique ON users (google_sub) WHERE google_sub IS NOT NULL AND google_sub <> ''`);
 
       await ensureSeedAdminInPostgres(client, defaultUser);
 
@@ -959,6 +969,10 @@ function getSqlite() {
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       phone TEXT NOT NULL UNIQUE,
+      email TEXT,
+      google_sub TEXT,
+      google_linked_at TEXT,
+      auth_provider TEXT NOT NULL DEFAULT 'password',
       password_hash TEXT NOT NULL,
       mpin_hash TEXT NOT NULL,
       mpin_configured INTEGER NOT NULL DEFAULT 0,
@@ -1168,6 +1182,10 @@ function getSqlite() {
   `);
 
   ensureSqliteColumn(sqlite, "users", "approved_at", "TEXT");
+  ensureSqliteColumn(sqlite, "users", "email", "TEXT");
+  ensureSqliteColumn(sqlite, "users", "google_sub", "TEXT");
+  ensureSqliteColumn(sqlite, "users", "google_linked_at", "TEXT");
+  ensureSqliteColumn(sqlite, "users", "auth_provider", "TEXT NOT NULL DEFAULT 'password'");
   ensureSqliteColumn(sqlite, "users", "rejected_at", "TEXT");
   ensureSqliteColumn(sqlite, "users", "blocked_at", "TEXT");
   ensureSqliteColumn(sqlite, "users", "deactivated_at", "TEXT");
@@ -1197,6 +1215,8 @@ function getSqlite() {
   ensureSqliteColumn(sqlite, "admins", "two_factor_secret", "TEXT");
   ensureSqliteColumn(sqlite, "admins", "blocked_at", "TEXT");
   ensureSqliteColumn(sqlite, "admins", "deactivated_at", "TEXT");
+  sqlite.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique ON users (email)`);
+  sqlite.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub_unique ON users (google_sub)`);
   ensureSqliteIndexes(sqlite);
   ensureSeedAdminInSqlite(sqlite, defaultUser);
 
@@ -1287,6 +1307,36 @@ export {
 export async function findUserByPhone(phone) {
   const { findUserByPhone: findUserByPhoneFromAuthDb } = await import("./db/auth-db.mjs");
   return findUserByPhoneFromAuthDb(phone);
+}
+
+export async function findUserByEmail(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  if (isStandalonePostgresEnabled()) {
+    const pool = await getReadyPgPool();
+    const result = await pool.query(
+      `SELECT id, phone, email, google_sub, google_linked_at, auth_provider, password_hash, mpin_hash, mpin_configured, name, role, referral_code, joined_at, approval_status, approved_at, rejected_at, blocked_at, deactivated_at, status_note, signup_bonus_granted, first_deposit_bonus_granted, referred_by_user_id
+       FROM users
+       WHERE LOWER(email) = $1
+       LIMIT 1`,
+      [normalizedEmail]
+    );
+    return mapUserRow(result.rows[0]);
+  }
+
+  return mapUserRow(
+    getSqlite()
+      .prepare(
+        `SELECT id, phone, email, google_sub, google_linked_at, auth_provider, password_hash, mpin_hash, mpin_configured, name, role, referral_code, joined_at, approval_status, approved_at, rejected_at, blocked_at, deactivated_at, status_note, signup_bonus_granted, first_deposit_bonus_granted, referred_by_user_id
+         FROM users
+         WHERE LOWER(email) = ?
+         LIMIT 1`
+      )
+      .get(normalizedEmail)
+  );
 }
 
 export async function createSession(userId) {
@@ -1383,10 +1433,16 @@ export async function updateUserProfile(userId, updates) {
   return mapUserRow(row);
 }
 
-export async function createUserAccount({ phone, passwordHash, referenceCode, firstName, lastName }) {
+export async function createUserAccount({ phone, passwordHash, referenceCode, firstName, lastName, email = "", googleSub = "", authProvider = "" }) {
   const existing = await findUserByPhone(phone);
   if (existing) {
     return { user: null, error: "Phone number already registered" };
+  }
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const normalizedGoogleSub = String(googleSub || "").trim();
+  const resolvedAuthProvider = String(authProvider || (normalizedGoogleSub ? "google" : "password")).trim() || "password";
+  if (normalizedEmail && await findUserByEmail(normalizedEmail)) {
+    return { user: null, error: "Email already registered" };
   }
 
   const normalizedReferenceCode = String(referenceCode ?? "").trim();
@@ -1397,6 +1453,7 @@ export async function createUserAccount({ phone, passwordHash, referenceCode, fi
 
   const userId = `user_${Date.now()}`;
   const joinedAt = nowIso();
+  const googleLinkedAt = normalizedGoogleSub ? joinedAt : null;
   const referralCode = String(Math.floor(100000 + Math.random() * 900000));
   const normalizedFirstName = String(firstName ?? "").trim();
   const normalizedLastName = String(lastName ?? "").trim();
@@ -1409,9 +1466,9 @@ export async function createUserAccount({ phone, passwordHash, referenceCode, fi
     try {
       await client.query("BEGIN");
       await client.query(
-        `INSERT INTO users (id, phone, password_hash, mpin_hash, mpin_configured, name, joined_at, referral_code, role, approval_status, approved_at, signup_bonus_granted, first_deposit_bonus_granted, referred_by_user_id)
-         VALUES ($1, $2, $3, $4, FALSE, $5, $6, $7, 'user', 'Approved', $6, FALSE, FALSE, $8)`,
-        [userId, phone, passwordHash, hashSecret("1234"), name, joinedAt, referralCode, referrer?.id ?? null]
+        `INSERT INTO users (id, phone, email, google_sub, google_linked_at, auth_provider, password_hash, mpin_hash, mpin_configured, name, joined_at, referral_code, role, approval_status, approved_at, signup_bonus_granted, first_deposit_bonus_granted, referred_by_user_id)
+         VALUES ($1, $2, NULLIF($3, ''), NULLIF($4, ''), $5, $6, $7, $8, FALSE, $9, $10, $11, 'user', 'Approved', $10, FALSE, FALSE, $12)`,
+        [userId, phone, normalizedEmail, normalizedGoogleSub, googleLinkedAt, resolvedAuthProvider, passwordHash, hashSecret("1234"), name, joinedAt, referralCode, referrer?.id ?? null]
       );
 
       const promoCountResult = await client.query(
@@ -1474,6 +1531,19 @@ export async function createUserAccount({ phone, passwordHash, referenceCode, fi
         )
         .run(userId, phone, passwordHash, hashSecret("1234"), name, joinedAt, referralCode, joinedAt, referrer?.id ?? null);
 
+      if (normalizedEmail || normalizedGoogleSub) {
+        sqlite
+          .prepare(
+            `UPDATE users
+             SET email = NULLIF(?, ''),
+                 google_sub = NULLIF(?, ''),
+                 google_linked_at = ?,
+                 auth_provider = ?
+             WHERE id = ?`
+          )
+          .run(normalizedEmail, normalizedGoogleSub, googleLinkedAt, resolvedAuthProvider, userId);
+      }
+
       const promoCountRow = sqlite
         .prepare(
           `SELECT setting_value
@@ -1529,6 +1599,10 @@ export async function createUserAccount({ phone, passwordHash, referenceCode, fi
     user: {
       id: userId,
       phone,
+      email: normalizedEmail,
+      googleSub: normalizedGoogleSub,
+      googleLinkedAt,
+      authProvider: resolvedAuthProvider,
       name,
       role: "user",
       referralCode,

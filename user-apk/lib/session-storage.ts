@@ -8,6 +8,7 @@ export type StoredSessionSnapshot = {
   user: {
     id: string;
     phone: string;
+    email?: string;
     name: string;
     role: string;
     hasMpin: boolean;

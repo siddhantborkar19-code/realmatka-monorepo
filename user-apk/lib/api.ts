@@ -14,6 +14,7 @@ type RequestOptions = {
 export type SessionUser = {
   id: string;
   phone: string;
+  email?: string;
   name: string;
   role: string;
   hasMpin: boolean;
@@ -131,6 +132,20 @@ export type OtpRequestResponse = {
   devCode: string | null;
   mode?: "otp" | "widget";
   widgetUrl?: string | null;
+};
+
+export type GoogleAuthResponse = {
+  needsRegistration: boolean;
+  registrationToken?: string;
+  profile?: {
+    email: string;
+    name: string;
+    givenName: string;
+    familyName: string;
+    picture: string;
+  };
+  token?: string;
+  user?: SessionUser;
 };
 
 export type ChartBatchPayload = {
@@ -372,6 +387,28 @@ export const api = {
     return request<{ token: string; user: SessionUser }>("/api/auth/login", {
       method: "POST",
       body: { phone, password }
+    });
+  },
+
+  googleLogin(payload: { accessToken?: string; idToken?: string }) {
+    return request<GoogleAuthResponse>("/api/auth/google-login", {
+      method: "POST",
+      body: payload
+    });
+  },
+
+  googleRegister(payload: {
+    registrationToken: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+    referenceCode?: string;
+  }) {
+    return request<{ token: string; user: SessionUser }>("/api/auth/google-register", {
+      method: "POST",
+      body: payload
     });
   },
 

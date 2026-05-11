@@ -111,6 +111,7 @@ function isAllowedCorsOrigin(origin) {
 }
 const routeModuleLoaders = {
   auth: () => import("./standalone/routes/auth.mjs"),
+  authGoogle: () => import("./standalone/routes/auth-google.mjs"),
   authAccount: () => import("./standalone/routes/auth-account.mjs"),
   authOtp: () => import("./standalone/routes/auth-otp.mjs"),
   authRegister: () => import("./standalone/routes/auth-register.mjs"),
@@ -146,6 +147,8 @@ async function loadStandaloneModule(key) {
 
 const standaloneRoutes = new Map([
   ["/api/auth/login", { loader: "auth", methods: { OPTIONS: "options", POST: "login" } }],
+  ["/api/auth/google-login", { loader: "authGoogle", methods: { OPTIONS: "options", POST: "login" } }],
+  ["/api/auth/google-register", { loader: "authGoogle", methods: { OPTIONS: "options", POST: "register" } }],
   ["/api/auth/admin-verify-2fa", { loader: "auth", methods: { OPTIONS: "options", POST: "verifyAdminTwoFactor" } }],
   ["/api/auth/me", { loader: "auth", methods: { OPTIONS: "options", GET: "me" } }],
   ["/api/auth/request-otp", { loader: "authOtp", methods: { OPTIONS: "options", POST: "requestOtp" } }],

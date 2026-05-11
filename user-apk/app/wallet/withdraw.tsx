@@ -404,9 +404,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject
   },
   keyboardWrap: {
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
+    alignItems: "center"
   },
   sheet: {
+    width: "100%",
+    maxWidth: 540,
     backgroundColor: colors.surface,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
@@ -516,10 +519,12 @@ const styles = StyleSheet.create({
   },
   infoStrip: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10
   },
   infoPill: {
     flex: 1,
+    minWidth: 88,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
@@ -530,6 +535,7 @@ const styles = StyleSheet.create({
   },
   infoPillAccent: {
     flex: 1.15,
+    minWidth: 112,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.accent,

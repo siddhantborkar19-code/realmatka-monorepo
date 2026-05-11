@@ -220,11 +220,11 @@ export default function ForgotPasswordScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.background },
-  hero: { paddingTop: 52, paddingBottom: 48, paddingHorizontal: 22, backgroundColor: colors.gradientStart },
-  logo: { width: 280, height: 110, marginTop: 20, marginBottom: 0 },
-  tagline: { maxWidth: 320, color: colors.whiteOverlayTextStrong, lineHeight: 20, marginTop: -14 },
-  content: { marginTop: 0, paddingHorizontal: 16, paddingBottom: 32 },
-  formCard: { borderRadius: 24 },
+  hero: { paddingTop: 52, paddingBottom: 48, paddingHorizontal: 22, backgroundColor: colors.gradientStart, alignItems: "center" },
+  logo: { width: "78%", maxWidth: 280, height: 110, marginTop: 20, marginBottom: 0 },
+  tagline: { maxWidth: 320, color: colors.whiteOverlayTextStrong, lineHeight: 20, marginTop: -14, textAlign: "center" },
+  content: { width: "100%", maxWidth: 480, marginTop: 0, paddingHorizontal: 16, paddingBottom: 32, alignSelf: "center" },
+  formCard: { width: "100%", borderRadius: 24 },
   title: { color: "#111827", fontSize: 24, fontWeight: "800" },
   subtitle: { color: "#64748b", lineHeight: 20 },
   label: { color: "#0f172a", fontWeight: "700" },

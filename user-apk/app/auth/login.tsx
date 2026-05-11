@@ -138,10 +138,12 @@ const styles = StyleSheet.create({
     paddingTop: 52,
     paddingBottom: 48,
     paddingHorizontal: 22,
-    backgroundColor: colors.gradientStart
+    backgroundColor: colors.gradientStart,
+    alignItems: "center"
   },
   logo: {
-    width: 280,
+    width: "78%",
+    maxWidth: 280,
     height: 110,
     marginTop: 20,
     marginBottom: 0
@@ -150,14 +152,19 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     color: colors.whiteOverlayTextStrong,
     lineHeight: 20,
-    marginTop: -14
+    marginTop: -14,
+    textAlign: "center"
   },
   content: {
+    width: "100%",
+    maxWidth: 480,
     marginTop: 0,
     paddingHorizontal: 16,
-    paddingBottom: 32
+    paddingBottom: 32,
+    alignSelf: "center"
   },
   formCard: {
+    width: "100%",
     borderRadius: 24
   },
   title: {

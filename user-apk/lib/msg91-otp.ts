@@ -151,7 +151,16 @@ function extractAccessToken(payload: Record<string, unknown>) {
 }
 
 function extractReqId(payload: Record<string, unknown>) {
-  const candidates = [payload.reqId, payload.req_id, payload.requestId, payload.request_id, payload.message, readNested(payload, "reqId"), readNested(payload, "req_id")];
+  const candidates = [
+    payload.reqId,
+    payload.req_id,
+    payload.requestId,
+    payload.request_id,
+    readNested(payload, "reqId"),
+    readNested(payload, "req_id"),
+    readNested(payload, "requestId"),
+    readNested(payload, "request_id")
+  ];
   for (const value of candidates) {
     const text = getString(value);
     if (text) {
@@ -163,12 +172,33 @@ function extractReqId(payload: Record<string, unknown>) {
 
 function assertSdkSuccess(payload: Record<string, unknown>, fallback: string) {
   const type = getString(payload.type).toLowerCase();
-  if (type && type !== "success") {
-    throw new Error(getString(payload.message) || fallback);
+  const status = getString(payload.status).toLowerCase();
+  const message = getString(payload.message) || getString(payload.error) || getString(readNested(payload, "message"));
+  const failed =
+    ["error", "failed", "failure", "invalid"].includes(type) ||
+    ["error", "failed", "failure", "invalid"].includes(status) ||
+    (typeof payload.success === "boolean" && !payload.success);
+
+  if (failed) {
+    throw new Error(message || fallback);
   }
 }
 
 export async function sendMsg91NativeOtp(phone: string) {
+  const normalizeSendResponse = (response: Record<string, unknown>) => {
+    assertSdkSuccess(response, "OTP send nahi hua. Dobara try karo.");
+    const reqId = extractReqId(response);
+    const accessToken = extractAccessToken(response);
+    if (!reqId && !accessToken) {
+      throw new Error(getString(response.message) || "MSG91 se OTP request id nahi mila. Widget/template settings check karo.");
+    }
+    return {
+      reqId,
+      accessToken,
+      raw: response
+    };
+  };
+
   if (Platform.OS === "web") {
     await initializeMsg91WebWidget();
     const browserWindow = getBrowserWindow();
@@ -178,22 +208,12 @@ export async function sendMsg91NativeOtp(phone: string) {
     const response = await new Promise<Record<string, unknown>>((resolve, reject) => {
       browserWindow.sendOtp?.(`91${phone.replace(/[^0-9]/g, "")}`, resolve, reject);
     });
-    assertSdkSuccess(response, "OTP send nahi hua. Dobara try karo.");
-    return {
-      reqId: extractReqId(response),
-      accessToken: extractAccessToken(response),
-      raw: response
-    };
+    return normalizeSendResponse(response);
   }
 
   const otpWidget = await getOtpWidget();
   const response = await otpWidget.sendOTP({ identifier: `91${phone.replace(/[^0-9]/g, "")}` });
-  assertSdkSuccess(response, "OTP send nahi hua. Dobara try karo.");
-  return {
-    reqId: extractReqId(response),
-    accessToken: extractAccessToken(response),
-    raw: response
-  };
+  return normalizeSendResponse(response);
 }
 
 export async function retryMsg91NativeOtp(reqId: string) {
@@ -207,9 +227,14 @@ export async function retryMsg91NativeOtp(reqId: string) {
       browserWindow.retryOtp?.(null, resolve, reject, reqId);
     });
     assertSdkSuccess(response, "OTP resend nahi hua. Dobara try karo.");
+    const nextReqId = extractReqId(response) || reqId;
+    const accessToken = extractAccessToken(response);
+    if (!nextReqId && !accessToken) {
+      throw new Error(getString(response.message) || "MSG91 se OTP resend request id nahi mila.");
+    }
     return {
-      reqId: extractReqId(response) || reqId,
-      accessToken: extractAccessToken(response),
+      reqId: nextReqId,
+      accessToken,
       raw: response
     };
   }
@@ -217,9 +242,14 @@ export async function retryMsg91NativeOtp(reqId: string) {
   const otpWidget = await getOtpWidget();
   const response = await otpWidget.retryOTP({ reqId, retryChannel: 11 });
   assertSdkSuccess(response, "OTP resend nahi hua. Dobara try karo.");
+  const nextReqId = extractReqId(response) || reqId;
+  const accessToken = extractAccessToken(response);
+  if (!nextReqId && !accessToken) {
+    throw new Error(getString(response.message) || "MSG91 se OTP resend request id nahi mila.");
+  }
   return {
-    reqId: extractReqId(response) || reqId,
-    accessToken: extractAccessToken(response),
+    reqId: nextReqId,
+    accessToken,
     raw: response
   };
 }

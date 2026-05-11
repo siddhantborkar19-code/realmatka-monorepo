@@ -72,7 +72,7 @@ export function validateEnvironment() {
   }
 
   if (summaries.otpProvider === "msg91") {
-    const msg91OtpMode = String(process.env.MSG91_OTP_MODE || "widget").trim().toLowerCase();
+    const msg91OtpMode = String(process.env.MSG91_OTP_MODE || (process.env.MSG91_OTP_TEMPLATE_ID?.trim() ? "api" : "widget")).trim().toLowerCase();
     const msg91Issues = [];
     if (!process.env.MSG91_AUTH_KEY?.trim()) msg91Issues.push("MSG91_AUTH_KEY");
     if (msg91OtpMode === "widget" && !process.env.MSG91_WIDGET_ID?.trim()) msg91Issues.push("MSG91_WIDGET_ID");
@@ -86,6 +86,9 @@ export function validateEnvironment() {
     }
     if (msg91OtpMode === "widget" && !process.env.MSG91_WIDGET_TOKEN_AUTH?.trim() && process.env.MSG91_AUTH_KEY?.trim()) {
       warnings.push("MSG91_WIDGET_TOKEN_AUTH missing, MSG91_AUTH_KEY will be used as widget tokenAuth fallback");
+    }
+    if (msg91OtpMode !== "widget" && !process.env.MSG91_OTP_TEMPLATE_ID?.trim()) {
+      warnings.push("MSG91 API OTP mode active hai, lekin MSG91_OTP_TEMPLATE_ID missing hai");
     }
   }
 

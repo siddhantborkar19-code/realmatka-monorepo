@@ -177,6 +177,9 @@ function mapUserFacingErrorMessage(message: string, fallback: string) {
   if (lower.includes("invalid otp")) {
     return "Wrong OTP. Dobara try karo.";
   }
+  if (lower.includes("otp send") || lower.includes("send otp") || lower.includes("otp sms") || lower.includes("msg91")) {
+    return normalized;
+  }
   if (
     lower.includes("verificationcheck was not found") ||
     lower.includes("/v2/services/") ||

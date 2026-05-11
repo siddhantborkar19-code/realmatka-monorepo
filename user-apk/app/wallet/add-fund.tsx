@@ -241,16 +241,10 @@ export default function AddFundScreen() {
                 <Text style={styles.statusLine}>Amount: Rs {pendingOrder.amount.toFixed(2)}</Text>
                 <Text style={styles.statusHint}>Payment complete karke app me wapas aao. Status auto verify ho jayega.</Text>
               </View>
-            {Platform.OS === "web" && pendingOrder.redirectUrl ? (
+
+            {pendingOrder.redirectUrl ? (
               <View style={styles.statusActions}>
-                <Pressable
-                  onPress={() => {
-                    void Linking.openURL(pendingOrder.redirectUrl as string).catch(() => {
-                      setError("Checkout link browser me open nahi hua.");
-                    });
-                  }}
-                  style={[styles.primaryButton, checkingStatus && styles.disabledButton]}
-                >
+                <Pressable onPress={() => void openHostedCheckout(pendingOrder)} style={[styles.primaryButton, checkingStatus && styles.disabledButton]}>
                   {checkingStatus ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Open Checkout</Text>}
                 </Pressable>
               </View>
@@ -313,7 +307,12 @@ export default function AddFundScreen() {
       setError("");
       setSuccessMessage("");
 
-      const order = await api.createPaymentOrder(sessionToken, numericAmount, Platform.OS === "web" ? "web" : "native");
+      if (pendingOrder?.redirectUrl) {
+        await openHostedCheckout(pendingOrder);
+        return;
+      }
+
+      const order = await api.createPaymentOrder(sessionToken, numericAmount, "web");
       setPendingOrder(order);
 
       if (Platform.OS !== "web" && order.checkoutMode === "native") {
@@ -325,14 +324,26 @@ export default function AddFundScreen() {
         throw new Error("Checkout link unavailable.");
       }
 
-      awaitingCheckoutReturnRef.current = true;
-      await Linking.openURL(order.redirectUrl);
+      await openHostedCheckout(order);
     } catch (startError) {
       awaitingCheckoutReturnRef.current = false;
       setError(formatApiError(startError, "Payment start nahi hua."));
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function openHostedCheckout(order: PaymentOrder) {
+    if (!order.redirectUrl) {
+      setError("Checkout link unavailable.");
+      return;
+    }
+
+    awaitingCheckoutReturnRef.current = true;
+    await Linking.openURL(order.redirectUrl).catch(() => {
+      awaitingCheckoutReturnRef.current = false;
+      setError("Checkout link browser me open nahi hua.");
+    });
   }
 
   async function openNativeRazorpayCheckout(order: PaymentOrder) {
@@ -356,6 +367,11 @@ export default function AddFundScreen() {
         name: order.displayName || "SDT Wedding",
         description: order.description || "Wallet Top Up",
         order_id: orderId,
+        timeout: 600,
+        retry: {
+          enabled: true,
+          max_count: 3
+        },
         prefill: {
           contact: order.customerContact || (currentUser?.phone ? `+91${currentUser.phone}` : undefined),
           email: order.customerEmail || (currentUser?.phone ? `${currentUser.phone}@sdtwedding.com` : "customer@sdtwedding.com"),

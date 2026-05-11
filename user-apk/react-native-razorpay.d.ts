@@ -6,6 +6,11 @@ declare module "react-native-razorpay" {
     name: string;
     description?: string;
     order_id: string;
+    timeout?: number;
+    retry?: {
+      enabled?: boolean;
+      max_count?: number;
+    };
     prefill?: {
       email?: string;
       contact?: string;

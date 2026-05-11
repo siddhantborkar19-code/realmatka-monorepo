@@ -4,6 +4,16 @@ export function redirectSystemPath({ path }: { path: string; initial: boolean })
 
   try {
     const parsed = new URL(rawPath);
+    const routeSegments = [
+      parsed.protocol === "realmatka:" ? parsed.host : "",
+      ...parsed.pathname.split("/").filter(Boolean)
+    ].filter(Boolean);
+    const appRoute = routeSegments.join("/");
+    const allowedCallbackRoutes = new Set(["auth/otp-login", "auth/register", "auth/forgot-password", "wallet/withdraw"]);
+    if (allowedCallbackRoutes.has(appRoute)) {
+      return `/${appRoute}${parsed.search}`;
+    }
+
     const referralCode =
       parsed.searchParams.get("ref") ??
       parsed.searchParams.get("referenceCode") ??

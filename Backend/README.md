@@ -106,6 +106,25 @@ After updating OTP env:
 3. user login/register OTP test karo
 4. withdraw OTP test karo
 
+### Real SMS mode with MSG91 OTP Widget
+
+Twilio ki jagah MSG91 live karne ke liye backend/Railway env me ye values set karo:
+
+```env
+OTP_PROVIDER=msg91
+MSG91_AUTH_KEY=your_msg91_authkey
+MSG91_WIDGET_ID=your_msg91_widget_id
+MSG91_WIDGET_TOKEN_AUTH=your_msg91_widget_token_auth
+EXPO_PUBLIC_APP_SCHEME=realmatka
+EXPO_PUBLIC_APP_URL=https://api.realmatka.in
+```
+
+Notes:
+
+- `OTP_PROVIDER=msg91` hone par Twilio calls nahi chalengi
+- login, register, forgot password aur withdraw OTP widget flow se verify honge
+- APK me browser se wapas app open karne ke liye scheme `realmatka` same rehna chahiye
+
 ## Razorpay local setup
 
 Add Razorpay test keys in:

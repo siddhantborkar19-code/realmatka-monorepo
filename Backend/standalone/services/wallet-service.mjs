@@ -152,7 +152,8 @@ export async function sendWithdrawOtp(user, amountInput) {
         sent: otpState.sent,
         expiresAt: otpState.expiresAt,
         provider: otpState.provider,
-        devCode: otpState.devCode
+        devCode: otpState.devCode,
+        mode: otpState.mode ?? "otp"
       }
     };
   } catch (error) {
@@ -163,6 +164,7 @@ export async function sendWithdrawOtp(user, amountInput) {
 export async function confirmWithdrawRequest(user, payload) {
   const amount = normalizeAmount(payload.amount);
   const otp = String(payload.otp ?? "").trim();
+  const accessToken = String(payload.accessToken ?? "").trim();
   const referenceId = String(payload.referenceId ?? "").trim();
   const proofUrl = String(payload.proofUrl ?? "").trim();
   const note = String(payload.note ?? "").trim();
@@ -172,13 +174,13 @@ export async function confirmWithdrawRequest(user, payload) {
     return guard;
   }
 
-  if (!/^[0-9]{6}$/.test(otp)) {
-    return { ok: false, status: 400, error: "Valid 6 digit OTP is required" };
+  if (!accessToken && !/^[0-9]{6}$/.test(otp)) {
+    return { ok: false, status: 400, error: "Valid OTP verification is required" };
   }
 
   let validOtp = false;
   try {
-    validOtp = await verifyOtp(user.phone, "withdraw", otp);
+    validOtp = await verifyOtp(user.phone, "withdraw", otp, accessToken);
   } catch (error) {
     return { ok: false, status: 500, error: error instanceof Error ? error.message : "Unable to verify withdraw OTP" };
   }

@@ -191,7 +191,9 @@ function buildMsg91ReturnUrl(request, purpose, phone) {
       ? "/auth/register"
       : purpose === "password_reset"
         ? "/auth/forgot-password"
-        : "/auth/otp-login";
+        : purpose === "withdraw"
+          ? "/wallet/withdraw"
+          : "/auth/otp-login";
   const query = `purpose=${encodeURIComponent(purpose)}&phone=${encodeURIComponent(phone)}`;
   const nativeUrl = `${defaultAppScheme}://${callbackPath.replace(/^\/+/, "")}?${query}`;
   if (request.headers.get("origin")) {
@@ -200,7 +202,7 @@ function buildMsg91ReturnUrl(request, purpose, phone) {
   return nativeUrl;
 }
 
-function buildMsg91WidgetUrl(request, phone, purpose) {
+export function buildMsg91WidgetUrl(request, phone, purpose) {
   const requestUrl = new URL(request.url);
   const baseUrl = new URL("/api/auth/msg91/widget", requestUrl.origin);
   baseUrl.searchParams.set("phone", phone);

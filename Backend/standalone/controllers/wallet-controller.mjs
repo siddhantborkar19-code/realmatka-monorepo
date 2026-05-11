@@ -1,4 +1,5 @@
 import { fail, getJsonBody, ok } from "../http.mjs";
+import { buildMsg91WidgetUrl } from "../routes/auth-otp.mjs";
 import { requireAuthenticatedUser } from "../middleware/auth-middleware.mjs";
 import {
   confirmWithdrawRequest,
@@ -45,6 +46,9 @@ export async function walletRequestWithdrawOtpController(request) {
   const body = await getJsonBody(request);
   const result = await sendWithdrawOtp(auth.user, body.amount);
   if (!result.ok) return fail(result.error, result.status, request);
+  if (result.data?.provider === "msg91" && result.data?.mode === "widget") {
+    result.data.widgetUrl = buildMsg91WidgetUrl(request, auth.user.phone, "withdraw");
+  }
   return ok(result.data, request);
 }
 

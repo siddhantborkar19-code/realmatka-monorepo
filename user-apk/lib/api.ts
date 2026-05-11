@@ -502,7 +502,7 @@ export const api = {
   },
 
   requestWithdrawOtp(token: string, amount: number) {
-    return request<{ sent: boolean; expiresAt: string; provider: string; devCode: string | null }>(
+    return request<OtpRequestResponse>(
       "/api/wallet/withdraw/request-otp",
       {
         method: "POST",
@@ -512,11 +512,11 @@ export const api = {
     );
   },
 
-  confirmWithdraw(token: string, amount: number, otp: string, referenceId = "", proofUrl = "", note = "") {
+  confirmWithdraw(token: string, amount: number, otp: string, referenceId = "", proofUrl = "", note = "", accessToken = "") {
     return request<WalletEntry>("/api/wallet/withdraw/confirm", {
       method: "POST",
       token,
-      body: { amount, otp, referenceId, proofUrl, note }
+      body: { amount, otp, referenceId, proofUrl, note, accessToken }
     });
   },
 

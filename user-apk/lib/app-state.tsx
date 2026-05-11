@@ -49,7 +49,7 @@ type AppStateValue = {
   verifyMpin: (pin: string) => Promise<void>;
   addBankAccount: (accountNumber: string, holderName: string, ifsc: string) => Promise<void>;
   requestWithdrawOtp: (amount: number) => Promise<OtpRequestResponse>;
-  confirmWithdraw: (amount: number, otp: string) => Promise<void>;
+  confirmWithdraw: (amount: number, otp: string, accessToken?: string) => Promise<void>;
   setDraftBid: (draft: DraftBid | null) => void;
   submitDraftBid: () => Promise<void>;
 };
@@ -631,14 +631,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     }
   }, [clearSession, sessionToken]);
 
-  const confirmWithdraw = useCallback(async (amount: number, otp: string) => {
+  const confirmWithdraw = useCallback(async (amount: number, otp: string, accessToken = "") => {
     if (!sessionToken) {
       throw new Error("Login required");
     }
 
     let entry: WalletEntry;
     try {
-      entry = await api.confirmWithdraw(sessionToken, amount, otp);
+      entry = await api.confirmWithdraw(sessionToken, amount, otp, "", "", "", accessToken);
     } catch (error) {
       if (isAuthFailure(error)) {
         await clearSession();

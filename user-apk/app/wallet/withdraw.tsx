@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
@@ -20,6 +20,7 @@ function getIndiaWeekday(date = new Date()) {
 
 export default function WithdrawScreen() {
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ msg91Token?: string; phone?: string; purpose?: string }>();
   const { walletBalance, requestWithdrawOtp, confirmWithdraw, bankAccounts, walletEntries, loadBankAccounts, loadWalletHistory } = useAppState();
   const latestBank = useMemo(() => bankAccounts[0] ?? null, [bankAccounts]);
   const pendingWithdraw = useMemo(
@@ -30,6 +31,7 @@ export default function WithdrawScreen() {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpMessage, setOtpMessage] = useState("");
+  const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -43,6 +45,7 @@ export default function WithdrawScreen() {
   const withdrawAmount = Number(amount || 0);
   const hasEnoughWalletBalanceForWithdraw = walletBalance >= MIN_WITHDRAW_AMOUNT;
   const hasValidOtp = otp.trim().length === 6;
+  const hasValidWithdrawVerification = Boolean(verifiedAccessToken) || hasValidOtp;
   const isMultipleOfHundred = Number.isFinite(withdrawAmount) && withdrawAmount % WITHDRAW_MULTIPLE === 0;
 
   useEffect(() => {
@@ -74,6 +77,19 @@ export default function WithdrawScreen() {
     },
     []
   );
+
+  useEffect(() => {
+    const token = String(params.msg91Token || "").trim();
+    const purpose = String(params.purpose || "").trim();
+    if (!token || (purpose && purpose !== "withdraw")) {
+      return;
+    }
+    setVerifiedAccessToken(token);
+    setOtp("");
+    setOtpSent(true);
+    setOtpMessage("Mobile verification complete. Ab withdraw confirm karo.");
+    setError("");
+  }, [params.msg91Token, params.purpose]);
 
   return (
     <View style={styles.overlay}>
@@ -155,21 +171,27 @@ export default function WithdrawScreen() {
 
             {otpSent ? (
               <>
-                <Text style={styles.fieldLabel}>Withdraw OTP</Text>
-                <View style={styles.inputRow}>
-                <TextInput
-                  keyboardType="number-pad"
-                  maxLength={6}
-                  onChangeText={(value) => {
-                    setOtp(value.replace(/[^0-9]/g, ""));
-                  }}
-                    placeholder="Enter 6 digit OTP"
-                    placeholderTextColor="rgba(100, 116, 139, 0.5)"
-                    style={styles.input}
-                    value={otp}
-                  />
-                  <Ionicons color={colors.primary} name="key-outline" size={18} />
-                </View>
+                {verifiedAccessToken ? (
+                  <Text style={styles.simpleInfoText}>Mobile verification complete. OTP manually daalne ki zaroorat nahi hai.</Text>
+                ) : (
+                  <>
+                    <Text style={styles.fieldLabel}>Withdraw OTP</Text>
+                    <View style={styles.inputRow}>
+                      <TextInput
+                        keyboardType="number-pad"
+                        maxLength={6}
+                        onChangeText={(value) => {
+                          setOtp(value.replace(/[^0-9]/g, ""));
+                        }}
+                        placeholder="Enter 6 digit OTP"
+                        placeholderTextColor="rgba(100, 116, 139, 0.5)"
+                        style={styles.input}
+                        value={otp}
+                      />
+                      <Ionicons color={colors.primary} name="key-outline" size={18} />
+                    </View>
+                  </>
+                )}
                 {otpMessage ? <Text style={styles.simpleInfoText}>{otpMessage}</Text> : null}
                 <Pressable
                   disabled={submitting || isWeekendWithdrawClosed}
@@ -258,6 +280,13 @@ export default function WithdrawScreen() {
       const response = await requestWithdrawOtp(withdrawAmount);
       setOtpSent(true);
       setOtp("");
+      setVerifiedAccessToken("");
+      if (response.mode === "widget" && response.widgetUrl) {
+        setOtpMessage("Verification window open ho rahi hai...");
+        showTransientMessage("success", "Mobile verification complete karke app me wapas aao.");
+        await Linking.openURL(response.widgetUrl);
+        return;
+      }
       setOtpMessage(response.provider === "twilio" ? "Withdraw OTP SMS successfully sent." : "Withdraw OTP generated.");
       showTransientMessage("success", "Withdraw OTP sent successfully.");
     } catch (submitError) {
@@ -297,16 +326,17 @@ export default function WithdrawScreen() {
       return;
     }
 
-    if (!hasValidOtp) {
-      showTransientMessage("error", "Valid 6 digit OTP dalo.");
+    if (!hasValidWithdrawVerification) {
+      showTransientMessage("error", "Valid OTP verification required hai.");
       return;
     }
 
     try {
       setSubmitting(true);
       setError("");
-      await confirmWithdraw(withdrawAmount, otp.trim());
+      await confirmWithdraw(withdrawAmount, otp.trim(), verifiedAccessToken);
       setSuccessMessage("Withdraw request OTP verify hone ke baad submit ho gayi.");
+      setVerifiedAccessToken("");
       setTimeout(() => {
         router.replace("/wallet/history");
       }, 700);

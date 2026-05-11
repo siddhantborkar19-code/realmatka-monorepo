@@ -311,7 +311,7 @@ export async function createWalletAdjustment({ userId, mode, amount, note = "" }
       mode === "debit"
         ? `Rs ${amount.toFixed(2)} deducted from your wallet.`
         : mode === "referral"
-          ? `Rs ${amount.toFixed(2)} referral income added to your wallet.`
+          ? `Rs ${amount.toFixed(2)} aapka referral amount hai. Wallet me add ho gaya hai.`
           : `Rs ${amount.toFixed(2)} added to your wallet.`,
     channel: "wallet",
     url: "/wallet/history"

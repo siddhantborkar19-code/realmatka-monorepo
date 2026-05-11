@@ -87,7 +87,8 @@ export function validateEnvironment() {
     if (msg91OtpMode === "widget" && !process.env.MSG91_WIDGET_TOKEN_AUTH?.trim() && process.env.MSG91_AUTH_KEY?.trim()) {
       warnings.push("MSG91_WIDGET_TOKEN_AUTH missing, MSG91_AUTH_KEY will be used as widget tokenAuth fallback");
     }
-    if (msg91OtpMode !== "widget" && !process.env.MSG91_OTP_TEMPLATE_ID?.trim()) {
+    const useDefaultMsg91Template = ["1", "true", "yes", "on"].includes(String(process.env.MSG91_USE_DEFAULT_TEMPLATE || "").trim().toLowerCase());
+    if (msg91OtpMode !== "widget" && !process.env.MSG91_OTP_TEMPLATE_ID?.trim() && !useDefaultMsg91Template) {
       warnings.push("MSG91 API OTP mode active hai, lekin MSG91_OTP_TEMPLATE_ID missing hai");
     }
   }

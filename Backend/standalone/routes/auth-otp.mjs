@@ -12,6 +12,7 @@ const msg91WidgetTokenAuth = cleanEnvValue(process.env.MSG91_WIDGET_TOKEN_AUTH |
 const msg91OtpTemplateId = cleanEnvValue(process.env.MSG91_OTP_TEMPLATE_ID || "");
 const msg91OtpMode = cleanEnvValue(process.env.MSG91_OTP_MODE || (msg91OtpTemplateId ? "api" : "widget")).toLowerCase();
 const msg91OtpSenderId = cleanEnvValue(process.env.MSG91_OTP_SENDER_ID || "");
+const msg91UseDefaultTemplate = ["1", "true", "yes", "on"].includes(cleanEnvValue(process.env.MSG91_USE_DEFAULT_TEMPLATE || "").toLowerCase());
 const defaultAppScheme = cleanEnvValue(process.env.EXPO_PUBLIC_APP_SCHEME || "realmatka") || "realmatka";
 const defaultAppWebUrl = cleanEnvValue(process.env.EXPO_PUBLIC_APP_URL || "https://play.realmatka.in") || "https://play.realmatka.in";
 
@@ -102,7 +103,7 @@ async function msg91SendOtp(phone, otp) {
   });
 
   let url = `https://api.msg91.com/api/sendotp.php?${params.toString()}`;
-  if (msg91OtpTemplateId) {
+  if (msg91OtpTemplateId && !msg91UseDefaultTemplate) {
     const v5Params = new URLSearchParams({
       authkey: msg91AuthKey,
       template_id: msg91OtpTemplateId,
@@ -121,10 +122,12 @@ async function msg91SendOtp(phone, otp) {
   }
 
   const response = await fetch(url, {
-    method: "GET",
+    method: msg91OtpTemplateId ? "POST" : "GET",
     headers: {
-      accept: "application/json"
-    }
+      accept: "application/json",
+      ...(msg91OtpTemplateId && !msg91UseDefaultTemplate ? { "Content-Type": "application/json" } : {})
+    },
+    ...(msg91OtpTemplateId && !msg91UseDefaultTemplate ? { body: "{}" } : {})
   });
 
   const raw = await response.text();

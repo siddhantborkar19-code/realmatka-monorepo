@@ -72,7 +72,7 @@ export function validateEnvironment() {
   }
 
   if (summaries.otpProvider === "msg91") {
-    const msg91OtpMode = String(process.env.MSG91_OTP_MODE || "api").trim().toLowerCase();
+    const msg91OtpMode = String(process.env.MSG91_OTP_MODE || "widget").trim().toLowerCase();
     const msg91Issues = [];
     if (!process.env.MSG91_AUTH_KEY?.trim()) msg91Issues.push("MSG91_AUTH_KEY");
     if (msg91OtpMode === "widget" && !process.env.MSG91_WIDGET_ID?.trim()) msg91Issues.push("MSG91_WIDGET_ID");

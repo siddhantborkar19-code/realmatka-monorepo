@@ -112,18 +112,21 @@ Twilio ki jagah MSG91 live karne ke liye backend/Railway env me ye values set ka
 
 ```env
 OTP_PROVIDER=msg91
-MSG91_OTP_MODE=api
+MSG91_OTP_MODE=widget
 MSG91_AUTH_KEY=your_msg91_authkey
+MSG91_WIDGET_ID=your_msg91_widget_id
+MSG91_WIDGET_TOKEN_AUTH=your_msg91_widget_token_auth
 EXPO_PUBLIC_APP_SCHEME=realmatka
-EXPO_PUBLIC_APP_URL=https://api.realmatka.in
+EXPO_PUBLIC_APP_URL=https://play.realmatka.in
 ```
 
 Notes:
 
 - `OTP_PROVIDER=msg91` hone par Twilio calls nahi chalengi
-- default `MSG91_OTP_MODE=api` hai, isme OTP app ke andar hi enter hota hai
-- agar MSG91 panel me approved template id chahiye ho to `MSG91_OTP_TEMPLATE_ID=your_template_id` add karo
-- widget flow wapas chahiye to `MSG91_OTP_MODE=widget`, `MSG91_WIDGET_ID`, aur optional `MSG91_WIDGET_TOKEN_AUTH` set karo
+- default recommended `MSG91_OTP_MODE=widget` hai, isme DLT direct SMS API setup ki zaroorat nahi hoti
+- `MSG91_WIDGET_TOKEN_AUTH` client integration wale `tokenAuth` se aata hai
+- server verification ke liye `MSG91_AUTH_KEY` server-side integration wale authkey se aata hai
+- direct app OTP field wala API mode chahiye to `MSG91_OTP_MODE=api` aur approved DLT/template config chahiye
 
 ## Razorpay local setup
 

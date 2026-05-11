@@ -9,10 +9,11 @@ const twilioVerifyServiceSid = String(process.env.TWILIO_VERIFY_SERVICE_SID || "
 const msg91AuthKey = cleanEnvValue(process.env.MSG91_AUTH_KEY || "");
 const msg91WidgetId = cleanEnvValue(process.env.MSG91_WIDGET_ID || "");
 const msg91WidgetTokenAuth = cleanEnvValue(process.env.MSG91_WIDGET_TOKEN_AUTH || process.env.MSG91_AUTH_KEY || "");
-const msg91OtpMode = cleanEnvValue(process.env.MSG91_OTP_MODE || "api").toLowerCase();
+const msg91OtpMode = cleanEnvValue(process.env.MSG91_OTP_MODE || "widget").toLowerCase();
 const msg91OtpTemplateId = cleanEnvValue(process.env.MSG91_OTP_TEMPLATE_ID || "");
 const msg91OtpSenderId = cleanEnvValue(process.env.MSG91_OTP_SENDER_ID || "");
 const defaultAppScheme = cleanEnvValue(process.env.EXPO_PUBLIC_APP_SCHEME || "realmatka") || "realmatka";
+const defaultAppWebUrl = cleanEnvValue(process.env.EXPO_PUBLIC_APP_URL || "https://play.realmatka.in") || "https://play.realmatka.in";
 
 function cleanEnvValue(value) {
   return String(value || "").trim().replace(/['"]/g, "").trim();
@@ -268,7 +269,7 @@ function buildNativeMsg91ReturnUrl(purpose, phone) {
 
 function normalizeMsg91ReturnUrl(returnUrl, purpose, phone) {
   const requested = cleanEnvValue(returnUrl);
-  if (requested.toLowerCase().startsWith(`${defaultAppScheme.toLowerCase()}://`)) {
+  if (/^https?:\/\//i.test(requested) || requested.toLowerCase().startsWith(`${defaultAppScheme.toLowerCase()}://`)) {
     return requested;
   }
   return buildNativeMsg91ReturnUrl(purpose, phone);
@@ -281,17 +282,12 @@ function buildMsg91ReturnUrl(request, purpose, phone) {
     return normalizeMsg91ReturnUrl(requested, purpose, phone);
   }
 
-  const callbackPath =
-    purpose === "register"
-      ? "/auth/register"
-      : purpose === "password_reset"
-        ? "/auth/forgot-password"
-        : purpose === "withdraw"
-          ? "/wallet/withdraw"
-          : "/auth/otp-login";
+  const callbackPath = getMsg91CallbackPath(purpose);
   const query = `purpose=${encodeURIComponent(purpose)}&phone=${encodeURIComponent(phone)}`;
-  const nativeUrl = `${defaultAppScheme}://${callbackPath.replace(/^\/+/, "")}?${query}`;
-  return nativeUrl;
+  if (request.headers.get("origin")) {
+    return `${defaultAppWebUrl.replace(/\/+$/, "")}${callbackPath}?${query}`;
+  }
+  return `${defaultAppScheme}://${callbackPath.replace(/^\/+/, "")}?${query}`;
 }
 
 export function buildMsg91WidgetUrl(request, phone, purpose) {

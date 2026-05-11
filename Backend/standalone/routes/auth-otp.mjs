@@ -9,8 +9,11 @@ const twilioVerifyServiceSid = String(process.env.TWILIO_VERIFY_SERVICE_SID || "
 const msg91AuthKey = String(process.env.MSG91_AUTH_KEY || "").trim();
 const msg91WidgetId = String(process.env.MSG91_WIDGET_ID || "").trim();
 const msg91WidgetTokenAuth = String(process.env.MSG91_WIDGET_TOKEN_AUTH || "").trim();
-const defaultAppScheme = String(process.env.EXPO_PUBLIC_APP_SCHEME || "realmatka").trim() || "realmatka";
-const defaultAppWebUrl = String(process.env.EXPO_PUBLIC_APP_URL || "https://play.realmatka.in").trim() || "https://play.realmatka.in";
+const defaultAppScheme = cleanEnvValue(process.env.EXPO_PUBLIC_APP_SCHEME || "realmatka") || "realmatka";
+
+function cleanEnvValue(value) {
+  return String(value || "").trim().replace(/['"]/g, "").trim();
+}
 
 function isMsg91Enabled() {
   return otpProvider === "msg91" && Boolean(msg91AuthKey && msg91WidgetId && msg91WidgetTokenAuth);
@@ -140,10 +143,14 @@ function getMsg91VerifiedIdentifier(payload) {
     payload?.mobile,
     payload?.phone,
     payload?.phone_number,
+    payload?.mobileNumber,
+    payload?.mobile_number,
     payload?.data?.identifier,
     payload?.data?.mobile,
     payload?.data?.phone,
-    payload?.data?.phone_number
+    payload?.data?.phone_number,
+    payload?.data?.mobileNumber,
+    payload?.data?.mobile_number
   ];
 
   for (const value of candidates) {
@@ -181,7 +188,7 @@ function isMsg91VerificationApproved(payload) {
 
 function buildMsg91ReturnUrl(request, purpose, phone) {
   const requestUrl = new URL(request.url);
-  const requested = String(requestUrl.searchParams.get("returnUrl") || "").trim();
+  const requested = cleanEnvValue(requestUrl.searchParams.get("returnUrl") || "");
   if (requested) {
     return requested;
   }
@@ -196,9 +203,6 @@ function buildMsg91ReturnUrl(request, purpose, phone) {
           : "/auth/otp-login";
   const query = `purpose=${encodeURIComponent(purpose)}&phone=${encodeURIComponent(phone)}`;
   const nativeUrl = `${defaultAppScheme}://${callbackPath.replace(/^\/+/, "")}?${query}`;
-  if (request.headers.get("origin")) {
-    return `${defaultAppWebUrl.replace(/\/+$/, "")}${callbackPath}?${query}`;
-  }
   return nativeUrl;
 }
 
@@ -420,7 +424,7 @@ export async function msg91Widget(request) {
   const url = new URL(request.url);
   const phone = normalizeIndianPhone(String(url.searchParams.get("phone") ?? "")) ?? String(url.searchParams.get("phone") ?? "").trim();
   const purpose = String(url.searchParams.get("purpose") || "login").trim();
-  const returnUrl = String(url.searchParams.get("returnUrl") || "").trim();
+  const returnUrl = cleanEnvValue(url.searchParams.get("returnUrl") || "");
   if (!phone || !returnUrl) {
     return new Response("Missing phone or returnUrl", { status: 400 });
   }
@@ -448,23 +452,59 @@ export async function msg91Widget(request) {
     <div id="error" class="error"></div>
   </div>
   <script>
+    function looksLikeToken(value) {
+      var text = typeof value === 'string' ? value.trim() : '';
+      if (!text) return false;
+      if (text.split('.').length >= 3 && text.length > 24) return true;
+      if (/^(success|verified|approved|true|false)$/i.test(text)) return false;
+      return text.length >= 32;
+    }
+    function findTokenByKey(payload, depth) {
+      if (!payload || depth > 4) return '';
+      if (typeof payload === 'string') return looksLikeToken(payload) ? payload.trim() : '';
+      if (typeof payload !== 'object') return '';
+      var keys = Object.keys(payload);
+      for (var i = 0; i < keys.length; i += 1) {
+        var key = keys[i];
+        var value = payload[key];
+        if (/token|access/i.test(key) && typeof value === 'string' && value.trim()) {
+          return value.trim();
+        }
+      }
+      for (var j = 0; j < keys.length; j += 1) {
+        var nested = findTokenByKey(payload[keys[j]], depth + 1);
+        if (nested) return nested;
+      }
+      return '';
+    }
     function extractVerifiedToken(payload) {
       var values = [
+        typeof payload === 'string' ? payload : '',
         payload && payload.token,
         payload && payload.accessToken,
         payload && payload.access_token,
+        payload && payload['access-token'],
         payload && payload.jwtToken,
         payload && payload.jwt_token,
+        payload && payload['jwt-token'],
         payload && payload.data && payload.data.token,
         payload && payload.data && payload.data.accessToken,
-        payload && payload.data && payload.data.access_token
+        payload && payload.data && payload.data.access_token,
+        payload && payload.data && payload.data['access-token'],
+        payload && payload.data && payload.data.jwtToken,
+        payload && payload.data && payload.data.jwt_token,
+        payload && payload.data && payload.data['jwt-token'],
+        payload && payload.response && payload.response.token,
+        payload && payload.response && payload.response.accessToken,
+        payload && payload.response && payload.response.access_token,
+        payload && payload.response && payload.response['access-token']
       ];
       for (var i = 0; i < values.length; i += 1) {
         if (typeof values[i] === 'string' && values[i].trim()) {
           return values[i].trim();
         }
       }
-      return '';
+      return findTokenByKey(payload, 0);
     }
     var configuration = {
       widgetId: ${JSON.stringify(msg91WidgetId)},
@@ -474,6 +514,7 @@ export async function msg91Widget(request) {
       success: function (data) {
         var token = extractVerifiedToken(data);
         if (!token) {
+          console.log('MSG91 success response without token', data);
           document.getElementById('error').textContent = 'Verified token receive nahi hua. Dobara try karo.';
           return;
         }

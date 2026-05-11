@@ -6,9 +6,9 @@ const otpProvider = String(process.env.OTP_PROVIDER || "local").trim().toLowerCa
 const twilioAccountSid = String(process.env.TWILIO_ACCOUNT_SID || "").trim();
 const twilioAuthToken = String(process.env.TWILIO_AUTH_TOKEN || "").trim();
 const twilioVerifyServiceSid = String(process.env.TWILIO_VERIFY_SERVICE_SID || "").trim();
-const msg91AuthKey = String(process.env.MSG91_AUTH_KEY || "").trim();
-const msg91WidgetId = String(process.env.MSG91_WIDGET_ID || "").trim();
-const msg91WidgetTokenAuth = String(process.env.MSG91_WIDGET_TOKEN_AUTH || "").trim();
+const msg91AuthKey = cleanEnvValue(process.env.MSG91_AUTH_KEY || "");
+const msg91WidgetId = cleanEnvValue(process.env.MSG91_WIDGET_ID || "");
+const msg91WidgetTokenAuth = cleanEnvValue(process.env.MSG91_WIDGET_TOKEN_AUTH || process.env.MSG91_AUTH_KEY || "");
 const defaultAppScheme = cleanEnvValue(process.env.EXPO_PUBLIC_APP_SCHEME || "realmatka") || "realmatka";
 
 function cleanEnvValue(value) {
@@ -533,7 +533,7 @@ export async function msg91Widget(request) {
     var configuration = {
       widgetId: ${JSON.stringify(msg91WidgetId)},
       tokenAuth: ${JSON.stringify(msg91WidgetTokenAuth)},
-      identifier: ${JSON.stringify(phone)},
+      identifier: ${JSON.stringify(`+91${phone}`)},
       exposeMethods: false,
       success: function (data) {
         var token = extractVerifiedToken(data);

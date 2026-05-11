@@ -124,6 +124,7 @@ Notes:
 - `OTP_PROVIDER=msg91` hone par Twilio calls nahi chalengi
 - login, register, forgot password aur withdraw OTP widget flow se verify honge
 - APK me browser se wapas app open karne ke liye scheme `realmatka` same rehna chahiye
+- agar MSG91 me separate widget token nahi mil raha hai to backend `MSG91_AUTH_KEY` ko `tokenAuth` fallback ke roop me use karega
 
 ## Razorpay local setup
 

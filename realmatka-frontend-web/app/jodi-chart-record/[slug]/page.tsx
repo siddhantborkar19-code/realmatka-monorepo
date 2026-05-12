@@ -17,9 +17,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   const label = getChartMarketLabel(slug);
+  const upperLabel = label.toUpperCase();
   return buildMetadata({
-    title: `${label.toUpperCase()} JODI CHART RECORD`,
-    description: `${label} Jodi Chart Satta Matka record old history, daily jodi result, bracket, open close chart aur online live chart dekho.`,
+    title: `${upperLabel} JODI CHART RECORD | OLD ${upperLabel} JODI RESULT CHART`,
+    description: `${label} Jodi Chart record old history, daily jodi result, open close chart, final ank, bracket aur old ${label} matka jodi records ko Real Matka par mobile-friendly format me dekho.`,
     path: `/jodi-chart-record/${slug}`,
     keywords: [
       `${label} jodi chart`,
@@ -27,7 +28,31 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       `${label} matka jodi chart`,
       `${label} old jodi chart`,
       `${label} jodi result`,
-      "satta matka jodi chart record"
+      `${label} jodi record`,
+      `${label} jodi chart 2015`,
+      `${label} jodi chart 2012`,
+      `${label} jodi chart 2012 to 2026`,
+      `${label} final ank`,
+      `${label} jodi chart matka`,
+      `${label} jodi chart book`,
+      `dpboss ${label} jodi chart`,
+      `dpboss ${label} jodi record`,
+      `dpboss ${label} jodi result`,
+      `${label} open close jodi chart`,
+      `${label} old jodi result chart`,
+      `matka jodi chart ${label}`,
+      `matka ${label} chart`,
+      `satta ${label} chart jodi`,
+      `${label} chart result`,
+      `${label} satta chart`,
+      `${label} matka chart`,
+      "satta matka jodi chart record",
+      "matka jodi chart",
+      "डीपी बॉस",
+      "सट्टा चार्ट",
+      "सट्टा मटका जॉडी चार्ट",
+      "मटका जोड़ी चार्ट",
+      `${upperLabel} JODI CHART RECORDS`
     ]
   });
 }

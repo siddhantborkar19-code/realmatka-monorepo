@@ -17,9 +17,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   const label = getChartMarketLabel(slug);
+  const upperLabel = label.toUpperCase();
   return buildMetadata({
-    title: `${label.toUpperCase()} PANEL CHART RECORD`,
-    description: `${label} Panel Chart Satta Matka record old history, panna chart, daily panel result, bracket, open close chart aur online live chart dekho.`,
+    title: `${upperLabel} PANEL CHART RECORD | OLD ${upperLabel} PANNA PATTI CHART`,
+    description: `${label} Panel Chart record old history, panna patti chart, daily panel result, open close chart, final ank aur old ${label} matka panel records ko Real Matka par clear mobile-friendly format me dekho.`,
     path: `/panel-chart-record/${slug}`,
     keywords: [
       `${label} panel chart`,
@@ -28,8 +29,32 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       `${label} panna chart record`,
       `${label} old panel chart`,
       `${label} panel result`,
+      `${label} pana patti chart`,
+      `${label} panel record`,
+      `${label} panel chart 2015`,
+      `${label} panel chart 2012`,
+      `${label} panel chart 2012 to 2026`,
+      `${label} final ank`,
+      `${label} panel chart matka`,
+      `${label} panel chart book`,
+      `dpboss ${label} panel chart`,
+      `dpboss ${label} pana patti chart`,
+      `dpboss ${label} panel record`,
+      `${label} open close panel chart`,
+      `${label} old panel patti chart`,
+      `matka panel chart ${label}`,
+      `matka ${label} chart`,
+      `satta ${label} chart panel`,
+      `${label} chart result`,
+      `${label} satta chart`,
+      `${label} matka chart`,
       "satta matka panel chart record",
-      "satta matka panna chart record"
+      "satta matka panna chart record",
+      "डीपी बॉस",
+      "सट्टा चार्ट",
+      "सट्टा मटका पैनल चार्ट",
+      "मटका पाना पत्ती चार्ट",
+      `${upperLabel} PANEL CHART RECORDS`
     ]
   });
 }

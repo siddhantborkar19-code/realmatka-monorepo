@@ -127,9 +127,9 @@ export default function AiMatkaGuessingPage() {
         </section>
 
         <section className="section-shell px-6 py-6 sm:px-8">
-          <h2 className="text-2xl font-extrabold">Low competition keyword topics</h2>
+          <h2 className="text-2xl font-extrabold">Popular guessing topics</h2>
           <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-base">
-            Ye terms long-tail search intent cover karte hain aur dedicated content ke saath rank karne ke liye better target ban sakte hain.
+            Guessing aur chart analysis se jude popular topics yahan quick reference ke liye diye gaye hain.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {lowCompetitionKeywords.map((keyword) => (
@@ -178,9 +178,9 @@ export default function AiMatkaGuessingPage() {
         </section>
 
         <section className="section-shell px-6 py-6 sm:px-8">
-          <h2 className="text-2xl font-extrabold">Related SEO pages</h2>
+          <h2 className="text-2xl font-extrabold">Related pages</h2>
           <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-base">
-            Guessing topic ke saath result aur chart pages ko bhi internally connect kiya gaya hai, taki Google ko page relation clear mile.
+            Result, jodi chart aur panna chart dekhne ke liye neeche ke related links use kar sakte ho.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/matka-chart" className="action-primary">

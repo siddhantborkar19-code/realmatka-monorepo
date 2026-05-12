@@ -30,7 +30,7 @@ const chartBlocks = [
   },
   {
     title: "Old Chart Reference",
-    body: "Historical rows aur old weekly chart review ko easy internal access dene ke liye."
+    body: "Historical rows aur old weekly chart review ko simple reference format me dekhne ke liye."
   }
 ];
 

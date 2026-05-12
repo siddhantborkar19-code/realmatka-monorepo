@@ -42,6 +42,7 @@ function ChartPageContent() {
     searchParams.get("label") ??
     slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
   const upperLabel = label.toUpperCase();
+  const seoTagText = buildSeoTagText(label, chartType);
   const [chart, setChart] = useState<ChartPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -192,7 +193,7 @@ function ChartPageContent() {
                 Go to Bottom
               </button>
               <div className="rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-2 text-center">
-                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">{upperLabel}</div>
+                <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-slate-300 sm:text-lg">{upperLabel}</div>
                 <div className="mt-1 text-lg font-extrabold text-orange-200">{marketResult}</div>
               </div>
               <button
@@ -281,7 +282,7 @@ function ChartPageContent() {
           {!loading && !error && hasRows ? (
             <div className="mt-5 flex flex-col items-center gap-4">
               <div className="w-full rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-3 text-center">
-                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">{upperLabel}</div>
+                <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-slate-300 sm:text-lg">{upperLabel}</div>
                 <div className="mt-1 text-lg font-extrabold text-orange-200">{marketResult}</div>
               </div>
               <button
@@ -301,6 +302,9 @@ function ChartPageContent() {
               >
                 Go to Top
               </button>
+              <div className="max-w-6xl text-center text-[11px] font-medium leading-6 text-slate-400 sm:text-xs sm:leading-7">
+                {seoTagText}
+              </div>
             </div>
           ) : null}
         </section>
@@ -470,4 +474,67 @@ function compactDateBlock(value: string) {
 
 function highlightCell(value: string) {
   return ["77", "88", "72", "05", "00", "49", "***", "**", "16", "50"].some((token) => value.includes(token));
+}
+
+function buildSeoTagText(marketLabel: string, chartType: "jodi" | "panna") {
+  const upperLabel = String(marketLabel ?? "").trim().toUpperCase();
+  const englishTags =
+    chartType === "panna"
+      ? [
+          `${upperLabel} PANEL CHART RECORDS`,
+          `dpboss ${upperLabel} panel chart`,
+          `dpboss ${upperLabel} pana patti chart`,
+          `dpboss ${upperLabel} panel record`,
+          `${upperLabel} panel chart`,
+          `old ${upperLabel} panel chart`,
+          `${upperLabel} pana patti chart`,
+          `${upperLabel} panel record`,
+          `${upperLabel} panel result chart`,
+          `${upperLabel} panel guessing chart`,
+          `${upperLabel} panel chart 2015`,
+          `${upperLabel} panel chart 2012`,
+          `${upperLabel} panel chart 2012 to 2026`,
+          `${upperLabel} final ank`,
+          `${upperLabel} panel chart matka`,
+          `${upperLabel} matka chart`,
+          `matka panel chart ${upperLabel}`,
+          `satta ${upperLabel} chart panel`,
+          `${upperLabel} chart result`,
+          `${upperLabel} open close panel chart`,
+          `${upperLabel} old panel patti chart`
+        ]
+      : [
+          `${upperLabel} JODI CHART RECORDS`,
+          `dpboss ${upperLabel} jodi chart`,
+          `dpboss ${upperLabel} jodi record`,
+          `dpboss ${upperLabel} jodi result`,
+          `${upperLabel} jodi chart`,
+          `old ${upperLabel} jodi chart`,
+          `${upperLabel} jodi record`,
+          `${upperLabel} jodi result chart`,
+          `${upperLabel} jodi guessing chart`,
+          `${upperLabel} jodi chart 2015`,
+          `${upperLabel} jodi chart 2012`,
+          `${upperLabel} jodi chart 2012 to 2026`,
+          `${upperLabel} final ank`,
+          `${upperLabel} jodi chart matka`,
+          `${upperLabel} matka chart`,
+          `matka jodi chart ${upperLabel}`,
+          `satta ${upperLabel} chart jodi`,
+          `${upperLabel} chart result`,
+          `${upperLabel} open close jodi chart`,
+          `${upperLabel} old jodi result chart`
+        ];
+
+  const hindiTags = [
+    "डीपी बॉस",
+    "सट्टा चार्ट",
+    chartType === "panna" ? "सट्टा मटका पैनल चार्ट" : "सट्टा मटका जॉडी चार्ट",
+    chartType === "panna" ? "मटका पाना पत्ती चार्ट" : "मटका जोड़ी चार्ट",
+    `${marketLabel} मटका चार्ट`,
+    `${marketLabel} सट्टा चार्ट`,
+    chartType === "panna" ? `${marketLabel} पैनल चार्ट` : `${marketLabel} जोड़ी चार्ट`
+  ];
+
+  return [...englishTags, ...hindiTags].map((tag) => `#${tag.replace(/\s+/g, " ").trim()}`).join(" ");
 }

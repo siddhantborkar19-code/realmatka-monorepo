@@ -1,4 +1,5 @@
 import { issueOtp, verifyOtp } from "../routes/auth-otp.mjs";
+import { findUserByPhone, verifyCredential } from "../db.mjs";
 import { addWalletEntry, getBankAccountsForUser, getUserBalance, getWalletEntriesForUser } from "../stores/wallet-store.mjs";
 
 export const MIN_WITHDRAW_AMOUNT = 500;
@@ -164,6 +165,7 @@ export async function sendWithdrawOtp(user, amountInput) {
 export async function confirmWithdrawRequest(user, payload) {
   const amount = normalizeAmount(payload.amount);
   const otp = String(payload.otp ?? "").trim();
+  const pin = String(payload.pin ?? "").trim();
   const accessToken = String(payload.accessToken ?? "").trim();
   const referenceId = String(payload.referenceId ?? "").trim();
   const proofUrl = String(payload.proofUrl ?? "").trim();
@@ -172,6 +174,34 @@ export async function confirmWithdrawRequest(user, payload) {
   const guard = await ensureWithdrawAllowed(user.id, amount);
   if (!guard.ok) {
     return guard;
+  }
+
+  if (pin) {
+    if (!/^[0-9]{4}$/.test(pin)) {
+      return { ok: false, status: 400, error: "PIN must be exactly 4 digits" };
+    }
+
+    const fullUser = await findUserByPhone(user.phone);
+    if (!fullUser || !fullUser.hasMpin) {
+      return { ok: false, status: 400, error: "PIN is not set for this account" };
+    }
+    if (!verifyCredential(pin, fullUser.mpinHash)) {
+      return { ok: false, status: 400, error: "Wrong PIN. Try again." };
+    }
+
+    const entry = await addWalletEntry({
+      userId: user.id,
+      type: "WITHDRAW",
+      status: "INITIATED",
+      amount,
+      beforeBalance: guard.data.beforeBalance,
+      afterBalance: guard.data.beforeBalance,
+      referenceId,
+      proofUrl,
+      note
+    });
+
+    return { ok: true, data: entry };
   }
 
   if (!accessToken && !/^[0-9]{6}$/.test(otp)) {

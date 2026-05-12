@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { corsPreflight, fail, getJsonBody, normalizeIndianPhone, ok } from "../http.mjs";
-import { addBankAccount, createSession, createUserAccount, findUserByEmail, hashCredential } from "../db.mjs";
+import { createSession, createUserAccount, findUserByEmail, hashCredential } from "../db.mjs";
 
 const googleRegistrationTokens = new Map();
 const GOOGLE_REGISTRATION_TOKEN_TTL_MS = 15 * 60 * 1000;
@@ -203,10 +203,6 @@ export async function register(request) {
     const password = String(body.password || "");
     const confirmPassword = String(body.confirmPassword || "");
     const referenceCode = String(body.referenceCode || "").trim();
-    const accountNumber = String(body.accountNumber || "").replace(/[^0-9]/g, "");
-    const holderName = String(body.holderName || "").trim();
-    const ifsc = String(body.ifsc || "").trim().toUpperCase();
-    const hasAnyBankDetail = Boolean(accountNumber || holderName || ifsc);
 
     if (!firstName || !lastName || !phone || !password || !confirmPassword) {
       return fail("Name, phone number, password, and confirm password required hai.", 400, request);
@@ -216,9 +212,6 @@ export async function register(request) {
     }
     if (password !== confirmPassword) {
       return fail("Password and confirm password must match", 400, request);
-    }
-    if (hasAnyBankDetail && (!accountNumber || !holderName || !ifsc)) {
-      return fail("Bank details sahi se fill karo ya blank chhod do.", 400, request);
     }
 
     const created = await createUserAccount({
@@ -234,10 +227,6 @@ export async function register(request) {
 
     if (!created.user) {
       return fail(created.error, 400, request);
-    }
-
-    if (hasAnyBankDetail) {
-      await addBankAccount({ userId: created.user.id, accountNumber, holderName, ifsc });
     }
 
     googleRegistrationTokens.delete(registrationToken);

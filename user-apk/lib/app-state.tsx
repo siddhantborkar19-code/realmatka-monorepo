@@ -46,9 +46,6 @@ type AppStateValue = {
     password: string;
     confirmPassword: string;
     referenceCode?: string;
-    accountNumber?: string;
-    holderName?: string;
-    ifsc?: string;
   }) => Promise<void>;
   otpLogin: (phone: string, otp: string, accessToken?: string) => Promise<void>;
   register: (firstName: string, lastName: string, phone: string, otp: string, password: string, confirmPassword: string, referenceCode?: string, accessToken?: string) => Promise<void>;
@@ -60,9 +57,9 @@ type AppStateValue = {
   updatePassword: (currentPassword: string, password: string, confirmPassword: string) => Promise<void>;
   updateMpin: (pin: string, confirmPin: string) => Promise<void>;
   verifyMpin: (pin: string) => Promise<void>;
-  addBankAccount: (accountNumber: string, holderName: string, ifsc: string) => Promise<void>;
+  addBankAccount: (accountNumber: string, holderName: string, ifsc: string, pin: string) => Promise<void>;
   requestWithdrawOtp: (amount: number) => Promise<OtpRequestResponse>;
-  confirmWithdraw: (amount: number, otp: string, accessToken?: string) => Promise<void>;
+  confirmWithdraw: (amount: number, pin: string) => Promise<void>;
   setDraftBid: (draft: DraftBid | null) => void;
   submitDraftBid: () => Promise<void>;
 };
@@ -343,9 +340,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     password: string;
     confirmPassword: string;
     referenceCode?: string;
-    accountNumber?: string;
-    holderName?: string;
-    ifsc?: string;
   }) => {
     const response = await api.googleRegister(payload);
     await writeStoredSessionToken(response.token);
@@ -650,14 +644,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     }
   }, [clearSession, currentUser?.id, sessionToken]);
 
-  const addBankAccount = useCallback(async (accountNumber: string, holderName: string, ifsc: string) => {
+  const addBankAccount = useCallback(async (accountNumber: string, holderName: string, ifsc: string, pin: string) => {
     if (!sessionToken) {
       throw new Error("Login required");
     }
 
     let account: BankAccount;
     try {
-      account = await api.addBankAccount(sessionToken, accountNumber, holderName, ifsc);
+      account = await api.addBankAccount(sessionToken, accountNumber, holderName, ifsc, pin);
     } catch (error) {
       if (isAuthFailure(error)) {
         await clearSession();
@@ -683,14 +677,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     }
   }, [clearSession, sessionToken]);
 
-  const confirmWithdraw = useCallback(async (amount: number, otp: string, accessToken = "") => {
+  const confirmWithdraw = useCallback(async (amount: number, pin: string) => {
     if (!sessionToken) {
       throw new Error("Login required");
     }
 
     let entry: WalletEntry;
     try {
-      entry = await api.confirmWithdraw(sessionToken, amount, otp, "", "", "", accessToken);
+      entry = await api.confirmWithdraw(sessionToken, amount, pin);
     } catch (error) {
       if (isAuthFailure(error)) {
         await clearSession();

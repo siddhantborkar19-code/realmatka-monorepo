@@ -1,13 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { PinVerificationModal } from "@/components/pin-verification-modal";
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 
 export default function AddBankDetailsScreen() {
-  const { addBankAccount, bankAccounts, loadBankAccounts } = useAppState();
+  const { addBankAccount, bankAccounts, currentUser, loadBankAccounts } = useAppState();
   const latestBank = useMemo(() => bankAccounts[0] ?? null, [bankAccounts]);
   const [accountNumber, setAccountNumber] = useState(latestBank?.accountNumber ?? "");
   const [holderName, setHolderName] = useState(latestBank?.holderName ?? "");
@@ -15,6 +17,7 @@ export default function AddBankDetailsScreen() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [pinModalVisible, setPinModalVisible] = useState(false);
 
   useEffect(() => {
     void loadBankAccounts();
@@ -53,20 +56,40 @@ export default function AddBankDetailsScreen() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
           {message ? <Text style={styles.success}>{message}</Text> : null}
 
-          <Pressable onPress={() => void submit()} style={[styles.primary, submitting && styles.disabled]}>
+          <Pressable onPress={() => requestPinBeforeSubmit()} style={[styles.primary, submitting && styles.disabled]}>
             {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Save Bank Details</Text>}
           </Pressable>
         </SurfaceCard>
       </AppScreen>
+      <PinVerificationModal
+        visible={pinModalVisible}
+        title="Verify PIN"
+        message="Bank details save karne ke liye PIN verify karo."
+        setupRequired
+        onCancel={() => setPinModalVisible(false)}
+        onVerified={async (pin) => {
+          setPinModalVisible(false);
+          await submit(pin);
+        }}
+      />
     </View>
   );
 
-  async function submit() {
+  function requestPinBeforeSubmit() {
+    if (!currentUser?.hasMpin) {
+      setError("Bank details save karne se pehle 4 digit PIN setup karo.");
+      router.push("/security/update-pin");
+      return;
+    }
+    setPinModalVisible(true);
+  }
+
+  async function submit(pin: string) {
     try {
       setSubmitting(true);
       setError("");
       setMessage("");
-      await addBankAccount(accountNumber, holderName, ifsc);
+      await addBankAccount(accountNumber, holderName, ifsc, pin);
       setMessage("Bank details saved successfully.");
     } catch (saveError) {
       setError(formatApiError(saveError, "Unable to save bank details"));

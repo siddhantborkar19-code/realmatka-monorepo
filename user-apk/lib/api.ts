@@ -405,9 +405,6 @@ export const api = {
     password: string;
     confirmPassword: string;
     referenceCode?: string;
-    accountNumber?: string;
-    holderName?: string;
-    ifsc?: string;
   }) {
     return request<{ token: string; user: SessionUser }>("/api/auth/google-register", {
       method: "POST",
@@ -564,11 +561,11 @@ export const api = {
     );
   },
 
-  confirmWithdraw(token: string, amount: number, otp: string, referenceId = "", proofUrl = "", note = "", accessToken = "") {
+  confirmWithdraw(token: string, amount: number, pin: string, referenceId = "", proofUrl = "", note = "") {
     return request<WalletEntry>("/api/wallet/withdraw/confirm", {
       method: "POST",
       token,
-      body: { amount, otp, referenceId, proofUrl, note, accessToken }
+      body: { amount, pin, referenceId, proofUrl, note }
     });
   },
 
@@ -576,11 +573,11 @@ export const api = {
     return request<BankAccount[]>("/api/bank/list", { token });
   },
 
-  addBankAccount(token: string, accountNumber: string, holderName: string, ifsc: string) {
+  addBankAccount(token: string, accountNumber: string, holderName: string, ifsc: string, pin: string) {
     return request<BankAccount>("/api/bank/add", {
       method: "POST",
       token,
-      body: { accountNumber, holderName, ifsc }
+      body: { accountNumber, holderName, ifsc, pin }
     });
   },
 

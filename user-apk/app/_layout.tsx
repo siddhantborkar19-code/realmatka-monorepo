@@ -3,8 +3,9 @@ import { Component, ReactNode, useEffect, useRef, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import Constants from "expo-constants";
 import * as Linking from "expo-linking";
-import { Modal, Platform, Pressable, Text, View } from "react-native";
+import { AppState as NativeAppState, Modal, Platform, Pressable, Text, View } from "react-native";
 import { AppChromeProvider } from "@/components/ui";
+import { PinVerificationModal } from "@/components/pin-verification-modal";
 import { UniversalBottomTabs } from "@/components/universal-bottom-tabs";
 import { api } from "@/lib/api";
 import { AppStateProvider, useAppState } from "@/lib/app-state";
@@ -21,6 +22,7 @@ const WEB_ACTIVE_WINDOW_KEY = "realmatka.active-web-window";
 const WEB_WINDOW_HEARTBEAT_MS = 3000;
 const WEB_WINDOW_STALE_MS = 9000;
 const UPDATE_DOWNLOAD_PAGE_URL = "https://realmatka.in/download";
+const PIN_IDLE_LOCK_MS = 10 * 60 * 1000;
 
 export default function RootLayout() {
   return (
@@ -37,7 +39,10 @@ export default function RootLayout() {
 function RootNavigator() {
   const router = useRouter();
   const pathname = usePathname();
-  const { currentUser, loading, sessionToken } = useAppState();
+  const { currentUser, loading, logout, sessionToken } = useAppState();
+  const isAuthRoute = pathname.startsWith("/auth");
+  const isPinSetupRoute = pathname.startsWith("/security/update-pin");
+  const isAuthenticated = Boolean(sessionToken && currentUser);
   const [appUpdatePrompt, setAppUpdatePrompt] = useState<{
     latestVersion: string;
     apkUrl: string;
@@ -47,17 +52,24 @@ function RootNavigator() {
   } | null>(null);
   const [windowGuardBlocked, setWindowGuardBlocked] = useState(false);
   const [windowGuardCloseHint, setWindowGuardCloseHint] = useState(false);
+  const [pinLockVisible, setPinLockVisible] = useState(false);
+  const [pinSetupPromptVisible, setPinSetupPromptVisible] = useState(false);
   const registeredPushSessionTokenRef = useRef("");
   const updateCheckCompletedRef = useRef(false);
   const webWindowIdRef = useRef(`web_${Math.random().toString(36).slice(2, 10)}`);
+  const unlockedSessionTokenRef = useRef("");
+  const pinPromptDismissedSessionRef = useRef("");
+  const lastActivityAtRef = useRef(Date.now());
+  const wasBackgroundedRef = useRef(false);
+
+  function markUserActivity() {
+    lastActivityAtRef.current = Date.now();
+  }
 
   useEffect(() => {
     if (loading) {
       return;
     }
-
-    const isAuthRoute = pathname.startsWith("/auth");
-    const isAuthenticated = Boolean(sessionToken && currentUser);
 
     if (!isAuthenticated && !isAuthRoute) {
       router.replace("/auth/login");
@@ -67,7 +79,125 @@ function RootNavigator() {
     if (isAuthenticated && isAuthRoute) {
       router.replace("/(tabs)");
     }
-  }, [currentUser, loading, pathname, router, sessionToken]);
+  }, [currentUser, isAuthRoute, isAuthenticated, loading, router, sessionToken]);
+
+  useEffect(() => {
+    if (!sessionToken || !currentUser) {
+      unlockedSessionTokenRef.current = "";
+      pinPromptDismissedSessionRef.current = "";
+      setPinLockVisible(false);
+      setPinSetupPromptVisible(false);
+      return;
+    }
+
+    if (loading || isAuthRoute) {
+      return;
+    }
+
+    if (isPinSetupRoute) {
+      unlockedSessionTokenRef.current = sessionToken;
+      setPinLockVisible(false);
+      setPinSetupPromptVisible(false);
+      return;
+    }
+
+    if (currentUser.hasMpin) {
+      setPinSetupPromptVisible(false);
+      if (unlockedSessionTokenRef.current !== sessionToken) {
+        setPinLockVisible(true);
+      }
+      return;
+    }
+
+    if (pinPromptDismissedSessionRef.current !== sessionToken) {
+      setPinSetupPromptVisible(true);
+    }
+  }, [currentUser, isAuthRoute, isPinSetupRoute, loading, sessionToken]);
+
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") {
+      return;
+    }
+
+    const events = ["pointerdown", "keydown", "scroll", "touchstart", "mousemove"];
+    events.forEach((eventName) => window.addEventListener(eventName, markUserActivity, { passive: true }));
+    return () => {
+      events.forEach((eventName) => window.removeEventListener(eventName, markUserActivity));
+    };
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof document === "undefined") {
+      return;
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        wasBackgroundedRef.current = true;
+        return;
+      }
+
+      markUserActivity();
+      if (wasBackgroundedRef.current && sessionToken && currentUser && !isAuthRoute && !isPinSetupRoute) {
+        if (currentUser.hasMpin) {
+          setPinLockVisible(true);
+        } else if (pinPromptDismissedSessionRef.current !== sessionToken) {
+          setPinSetupPromptVisible(true);
+        }
+      }
+      wasBackgroundedRef.current = false;
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [currentUser, isAuthRoute, isPinSetupRoute, sessionToken]);
+
+  useEffect(() => {
+    const subscription = NativeAppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        markUserActivity();
+        if (wasBackgroundedRef.current && sessionToken && currentUser && !isAuthRoute && !isPinSetupRoute) {
+          if (currentUser.hasMpin) {
+            setPinLockVisible(true);
+          } else if (pinPromptDismissedSessionRef.current !== sessionToken) {
+            setPinSetupPromptVisible(true);
+          }
+        }
+        wasBackgroundedRef.current = false;
+        return;
+      }
+
+      if (nextState === "background" || nextState === "inactive") {
+        wasBackgroundedRef.current = true;
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [currentUser, isAuthRoute, isPinSetupRoute, sessionToken]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser?.hasMpin) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      if (pinLockVisible || isAuthRoute || isPinSetupRoute) {
+        return;
+      }
+
+      if (Date.now() - lastActivityAtRef.current >= PIN_IDLE_LOCK_MS) {
+        setPinLockVisible(true);
+      }
+    }, 30_000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [currentUser?.hasMpin, isAuthRoute, isAuthenticated, isPinSetupRoute, pinLockVisible]);
 
   useEffect(() => {
     if (isExpoGoEnvironment()) {
@@ -332,7 +462,13 @@ function RootNavigator() {
   }, [windowGuardBlocked]);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      onStartShouldSetResponderCapture={() => {
+        markUserActivity();
+        return false;
+      }}
+      style={{ flex: 1 }}
+    >
       {windowGuardBlocked ? (
         <View style={{ flex: 1, backgroundColor: colors.background, alignItems: "center", justifyContent: "center", padding: 24 }}>
           <StatusBar style="dark" />
@@ -409,6 +545,31 @@ function RootNavigator() {
               </View>
             </View>
           </Modal>
+          <PinVerificationModal
+            visible={pinLockVisible && Boolean(currentUser?.hasMpin)}
+            title="Enter PIN"
+            message="App unlock karne ke liye 4 digit PIN enter karo."
+            cancelLabel="Logout"
+            onCancel={() => {
+              void logout();
+            }}
+            onVerified={() => {
+              unlockedSessionTokenRef.current = sessionToken;
+              markUserActivity();
+              setPinLockVisible(false);
+            }}
+          />
+          <PinVerificationModal
+            visible={pinSetupPromptVisible && Boolean(currentUser) && !currentUser?.hasMpin}
+            title="Set PIN"
+            message="Account security ke liye 4 digit PIN setup karo."
+            cancelLabel="Later"
+            onCancel={() => {
+              pinPromptDismissedSessionRef.current = sessionToken;
+              unlockedSessionTokenRef.current = sessionToken;
+              setPinSetupPromptVisible(false);
+            }}
+          />
         </>
       )}
     </View>

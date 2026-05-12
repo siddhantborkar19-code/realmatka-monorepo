@@ -27,9 +27,6 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [referenceCode, setReferenceCode] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [holderName, setHolderName] = useState("");
-  const [ifsc, setIfsc] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -40,17 +37,12 @@ export default function RegisterScreen() {
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const normalizedFirstName = firstName.trim();
   const normalizedLastName = lastName.trim();
-  const normalizedAccountNumber = accountNumber.replace(/[^0-9]/g, "");
-  const normalizedHolderName = holderName.trim();
-  const normalizedIfsc = ifsc.trim().toUpperCase();
   const hasValidFirstName = normalizedFirstName.length >= 2;
   const hasValidLastName = normalizedLastName.length >= 2;
   const hasValidPhone = normalizedPhone.length === 10;
   const hasValidPassword = password.trim().length >= 8;
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
   const isGoogleRegistration = Boolean(googleRegistrationToken && googleEmail);
-  const hasAnyBankDetail = Boolean(normalizedAccountNumber || normalizedHolderName || normalizedIfsc);
-  const hasCompleteBankDetails = normalizedAccountNumber.length >= 6 && normalizedHolderName.length >= 2 && normalizedIfsc.length >= 4;
   const canCreateAccount =
     isGoogleRegistration &&
     !submitting &&
@@ -58,8 +50,7 @@ export default function RegisterScreen() {
     hasValidLastName &&
     hasValidPhone &&
     hasValidPassword &&
-    passwordsMatch &&
-    (!hasAnyBankDetail || hasCompleteBankDetails);
+    passwordsMatch;
 
   useEffect(() => {
     let active = true;
@@ -154,11 +145,6 @@ export default function RegisterScreen() {
       setError("Password aur confirm password same dalo.");
       return;
     }
-    if (hasAnyBankDetail && !hasCompleteBankDetails) {
-      setError("Bank details sahi se fill karo ya blank chhod do.");
-      return;
-    }
-
     try {
       setSubmitting(true);
       setError("");
@@ -170,13 +156,10 @@ export default function RegisterScreen() {
         phone: normalizedPhone,
         password: password.trim(),
         confirmPassword: confirmPassword.trim(),
-        referenceCode,
-        accountNumber: hasCompleteBankDetails ? normalizedAccountNumber : "",
-        holderName: hasCompleteBankDetails ? normalizedHolderName : "",
-        ifsc: hasCompleteBankDetails ? normalizedIfsc : ""
+        referenceCode
       });
       await clearStoredReferralCode();
-      router.replace("/(tabs)");
+      router.replace("/security/update-pin");
     } catch (registrationError) {
       setError(formatApiError(registrationError, "Registration failed"));
     } finally {
@@ -219,159 +202,111 @@ export default function RegisterScreen() {
                 <Text style={styles.googleVerifiedTitle}>Google verified</Text>
                 <Text style={styles.googleVerifiedEmail}>{googleEmail}</Text>
               </View>
-            ) : (
-              <View style={styles.lockedCard}>
-                <Text style={styles.lockedTitle}>Google verification required</Text>
-                <Text style={styles.lockedText}>Details form tabhi active hoga jab user Gmail se verify ho jayega.</Text>
-              </View>
-            )}
+            ) : null}
 
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>First Name</Text>
-              <TextInput
-                editable={isGoogleRegistration}
-                onChangeText={(value) => {
-                  setFirstName(value);
-                  setError("");
-                }}
-                placeholder="Enter first name"
-                placeholderTextColor="#94a3b8"
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={firstName}
-              />
-            </View>
+            {isGoogleRegistration ? (
+              <>
+                <View style={styles.fieldWrap}>
+                  <Text style={styles.label}>First Name</Text>
+                  <TextInput
+                    onChangeText={(value) => {
+                      setFirstName(value);
+                      setError("");
+                    }}
+                    placeholder="Enter first name"
+                    placeholderTextColor="#94a3b8"
+                    style={styles.input}
+                    value={firstName}
+                  />
+                </View>
 
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>Last Name</Text>
-              <TextInput
-                editable={isGoogleRegistration}
-                onChangeText={(value) => {
-                  setLastName(value);
-                  setError("");
-                }}
-                placeholder="Enter last name"
-                placeholderTextColor="#94a3b8"
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={lastName}
-              />
-            </View>
+                <View style={styles.fieldWrap}>
+                  <Text style={styles.label}>Last Name</Text>
+                  <TextInput
+                    onChangeText={(value) => {
+                      setLastName(value);
+                      setError("");
+                    }}
+                    placeholder="Enter last name"
+                    placeholderTextColor="#94a3b8"
+                    style={styles.input}
+                    value={lastName}
+                  />
+                </View>
 
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>Phone Number</Text>
-              <TextInput
-                editable={isGoogleRegistration}
-                keyboardType="phone-pad"
-                maxLength={10}
-                onChangeText={(value) => {
-                  setPhone(value.replace(/[^0-9]/g, ""));
-                  setError("");
-                }}
-                placeholder="Enter phone number"
-                placeholderTextColor="#94a3b8"
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={phone}
-              />
-            </View>
+                <View style={styles.fieldWrap}>
+                  <Text style={styles.label}>Phone Number</Text>
+                  <TextInput
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                    onChangeText={(value) => {
+                      setPhone(value.replace(/[^0-9]/g, ""));
+                      setError("");
+                    }}
+                    placeholder="Enter phone number"
+                    placeholderTextColor="#94a3b8"
+                    style={styles.input}
+                    value={phone}
+                  />
+                </View>
 
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                editable={isGoogleRegistration}
-                onChangeText={setPassword}
-                placeholder="Enter password"
-                placeholderTextColor="#94a3b8"
-                secureTextEntry
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={password}
-              />
-              <Text style={styles.helperText}>Minimum 8 characters required.</Text>
-            </View>
+                <View style={styles.fieldWrap}>
+                  <Text style={styles.label}>Password</Text>
+                  <TextInput
+                    onChangeText={setPassword}
+                    placeholder="Enter password"
+                    placeholderTextColor="#94a3b8"
+                    secureTextEntry
+                    style={styles.input}
+                    value={password}
+                  />
+                  <Text style={styles.helperText}>Minimum 8 characters required.</Text>
+                </View>
 
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <TextInput
-                editable={isGoogleRegistration}
-                onChangeText={setConfirmPassword}
-                placeholder="Confirm password"
-                placeholderTextColor="#94a3b8"
-                secureTextEntry
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={confirmPassword}
-              />
-            </View>
+                <View style={styles.fieldWrap}>
+                  <Text style={styles.label}>Confirm Password</Text>
+                  <TextInput
+                    onChangeText={setConfirmPassword}
+                    placeholder="Confirm password"
+                    placeholderTextColor="#94a3b8"
+                    secureTextEntry
+                    style={styles.input}
+                    value={confirmPassword}
+                  />
+                </View>
 
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Bank Details</Text>
-              <Text style={styles.sectionHint}>Optional now, withdraw ke liye required.</Text>
-            </View>
-
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>Account Number</Text>
-              <TextInput
-                editable={isGoogleRegistration}
-                keyboardType="number-pad"
-                onChangeText={(value) => setAccountNumber(value.replace(/[^0-9]/g, ""))}
-                placeholder="Enter account number"
-                placeholderTextColor="#94a3b8"
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={accountNumber}
-              />
-            </View>
-
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>Holder Name</Text>
-              <TextInput
-                editable={isGoogleRegistration}
-                onChangeText={setHolderName}
-                placeholder="Enter holder name"
-                placeholderTextColor="#94a3b8"
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={holderName}
-              />
-            </View>
-
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>IFSC Code</Text>
-              <TextInput
-                autoCapitalize="characters"
-                editable={isGoogleRegistration}
-                onChangeText={(value) => setIfsc(value.toUpperCase())}
-                placeholder="Enter IFSC code"
-                placeholderTextColor="#94a3b8"
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={ifsc}
-              />
-            </View>
-
-            <View style={styles.fieldWrap}>
-              <Text style={styles.label}>Reference Code (Optional)</Text>
-              <TextInput
-                autoCapitalize="characters"
-                editable={isGoogleRegistration}
-                onChangeText={(value) => {
-                  const normalized = normalizeReferralCode(value);
-                  setReferenceCode(normalized);
-                  void writeStoredReferralCode(normalized);
-                }}
-                placeholder="Enter reference code if you have one"
-                placeholderTextColor="#94a3b8"
-                style={[styles.input, !isGoogleRegistration && styles.disabledInput]}
-                value={referenceCode}
-              />
-            </View>
+                <View style={styles.fieldWrap}>
+                  <Text style={styles.label}>Reference Code (Optional)</Text>
+                  <TextInput
+                    autoCapitalize="characters"
+                    onChangeText={(value) => {
+                      const normalized = normalizeReferralCode(value);
+                      setReferenceCode(normalized);
+                      void writeStoredReferralCode(normalized);
+                    }}
+                    placeholder="Enter reference code if you have one"
+                    placeholderTextColor="#94a3b8"
+                    style={styles.input}
+                    value={referenceCode}
+                  />
+                </View>
+              </>
+            ) : null}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
             {success ? <Text style={styles.success}>{success}</Text> : null}
 
-            <Pressable
-              onPress={() => {
-                void submitRegistration();
-              }}
-              style={[styles.primaryButton, !canCreateAccount && styles.disabled]}
-              disabled={!canCreateAccount}
-            >
-              {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Create Account</Text>}
-            </Pressable>
+            {isGoogleRegistration ? (
+              <Pressable
+                onPress={() => {
+                  void submitRegistration();
+                }}
+                style={[styles.primaryButton, !canCreateAccount && styles.disabled]}
+                disabled={!canCreateAccount}
+              >
+                {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Create Account</Text>}
+              </Pressable>
+            ) : null}
 
             <View style={styles.linkGroup}>
               <Link href="/auth/login" style={styles.link}>
@@ -453,10 +388,6 @@ const styles = StyleSheet.create({
     color: "#111827",
     backgroundColor: "#f8fafc"
   },
-  disabledInput: {
-    backgroundColor: "#f1f5f9",
-    color: "#94a3b8"
-  },
   googleButton: {
     minHeight: 50,
     borderRadius: 999,
@@ -492,37 +423,6 @@ const styles = StyleSheet.create({
   },
   googleVerifiedEmail: {
     color: "#166534",
-    fontWeight: "700"
-  },
-  lockedCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#fed7aa",
-    backgroundColor: "#fff7ed",
-    padding: 12,
-    gap: 4
-  },
-  lockedTitle: {
-    color: "#9a3412",
-    fontWeight: "900"
-  },
-  lockedText: {
-    color: "#9a3412",
-    lineHeight: 18,
-    fontWeight: "600"
-  },
-  sectionHeader: {
-    gap: 3,
-    paddingTop: 4
-  },
-  sectionTitle: {
-    color: "#111827",
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  sectionHint: {
-    color: "#64748b",
-    fontSize: 12,
     fontWeight: "700"
   },
   primaryButton: {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { router } from "expo-router";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { AppScreen, BackHeader } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
@@ -6,12 +7,13 @@ import { formatApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 
 export default function UpdatePinScreen() {
-  const { updateMpin } = useAppState();
+  const { currentUser, updateMpin } = useAppState();
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const isFirstSetup = !currentUser?.hasMpin;
 
   function appendDigit(digit: string) {
     if (pin.length < 4) {
@@ -35,9 +37,10 @@ export default function UpdatePinScreen() {
 
   return (
     <View style={styles.page}>
-      <BackHeader title="Update PIN" subtitle={undefined} />
+      <BackHeader title={isFirstSetup ? "Set PIN" : "Update PIN"} subtitle={undefined} />
       <AppScreen showPromo={false}>
-        <Text style={styles.heading}>Update MPIN</Text>
+        <Text style={styles.heading}>{isFirstSetup ? "Set 4 Digit PIN" : "Update MPIN"}</Text>
+        <Text style={styles.subheading}>App unlock aur sensitive actions ke liye ye PIN use hoga.</Text>
 
         <Text style={styles.label}>New MPIN</Text>
         <View style={styles.pinWrap}>
@@ -58,7 +61,7 @@ export default function UpdatePinScreen() {
         </View>
 
         <View style={styles.keypad}>
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "0", "⌫"].map((key) => (
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "0", "DEL"].map((key) => (
             <Pressable
               key={key}
               onPress={() => {
@@ -67,7 +70,7 @@ export default function UpdatePinScreen() {
                   setConfirmPin("");
                   return;
                 }
-                if (key === "⌫") {
+                if (key === "DEL") {
                   backspace();
                   return;
                 }
@@ -92,7 +95,10 @@ export default function UpdatePinScreen() {
               await updateMpin(pin, confirmPin);
               setPin("");
               setConfirmPin("");
-              setMessage("PIN updated successfully.");
+              setMessage(isFirstSetup ? "PIN setup successfully." : "PIN updated successfully.");
+              if (isFirstSetup) {
+                router.replace("/(tabs)");
+              }
             } catch (updateError) {
               setError(formatApiError(updateError, "Unable to update PIN"));
             } finally {
@@ -101,7 +107,7 @@ export default function UpdatePinScreen() {
           }}
           style={[styles.primary, submitting && styles.disabled]}
         >
-          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Update MPIN</Text>}
+          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>{isFirstSetup ? "Set PIN" : "Update MPIN"}</Text>}
         </Pressable>
       </AppScreen>
     </View>
@@ -118,6 +124,12 @@ const styles = StyleSheet.create({
     color: "#111827",
     fontSize: 22,
     fontWeight: "900"
+  },
+  subheading: {
+    color: "#64748b",
+    lineHeight: 20,
+    textAlign: "center",
+    fontWeight: "600"
   },
   label: {
     color: "#111827",

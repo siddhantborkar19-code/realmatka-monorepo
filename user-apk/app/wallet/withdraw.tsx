@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PinVerificationModal } from "@/components/pin-verification-modal";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
-import { isMsg91NativeOtpAvailable, sendMsg91NativeOtp, verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { colors } from "@/theme/colors";
 
 const MIN_WITHDRAW_AMOUNT = 500;
@@ -21,23 +21,18 @@ function getIndiaWeekday(date = new Date()) {
 
 export default function WithdrawScreen() {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ msg91Token?: string; phone?: string; purpose?: string }>();
-  const { currentUser, walletBalance, requestWithdrawOtp, confirmWithdraw, bankAccounts, walletEntries, loadBankAccounts, loadWalletHistory } = useAppState();
+  const { currentUser, walletBalance, confirmWithdraw, bankAccounts, walletEntries, loadBankAccounts, loadWalletHistory } = useAppState();
   const latestBank = useMemo(() => bankAccounts[0] ?? null, [bankAccounts]);
   const pendingWithdraw = useMemo(
     () => walletEntries.find((entry) => entry.type === "WITHDRAW" && (entry.status === "INITIATED" || entry.status === "BACKOFFICE")) ?? null,
     [walletEntries]
   );
   const [amount, setAmount] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpMessage, setOtpMessage] = useState("");
-  const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
-  const [sdkReqId, setSdkReqId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [pinModalVisible, setPinModalVisible] = useState(false);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isWeekendWithdrawClosed = useMemo(() => {
     const weekday = getIndiaWeekday();
@@ -46,8 +41,6 @@ export default function WithdrawScreen() {
 
   const withdrawAmount = Number(amount || 0);
   const hasEnoughWalletBalanceForWithdraw = walletBalance >= MIN_WITHDRAW_AMOUNT;
-  const hasValidOtp = otp.trim().length === 6;
-  const hasValidWithdrawVerification = Boolean(verifiedAccessToken) || hasValidOtp;
   const isMultipleOfHundred = Number.isFinite(withdrawAmount) && withdrawAmount % WITHDRAW_MULTIPLE === 0;
 
   useEffect(() => {
@@ -79,19 +72,6 @@ export default function WithdrawScreen() {
     },
     []
   );
-
-  useEffect(() => {
-    const token = String(params.msg91Token || "").trim();
-    const purpose = String(params.purpose || "").trim();
-    if (!token || (purpose && purpose !== "withdraw")) {
-      return;
-    }
-    setVerifiedAccessToken(token);
-    setOtp("");
-    setOtpSent(true);
-    setOtpMessage("Mobile verification complete. Ab withdraw confirm karo.");
-    setError("");
-  }, [params.msg91Token, params.purpose]);
 
   return (
     <View style={styles.overlay}>
@@ -171,47 +151,13 @@ export default function WithdrawScreen() {
               <Ionicons color={colors.primary} name="cash-outline" size={18} />
             </View>
 
-            {otpSent ? (
-              <>
-                {verifiedAccessToken ? (
-                  <Text style={styles.simpleInfoText}>Mobile verification complete. OTP manually daalne ki zaroorat nahi hai.</Text>
-                ) : (
-                  <>
-                    <Text style={styles.fieldLabel}>Withdraw OTP</Text>
-                    <View style={styles.inputRow}>
-                      <TextInput
-                        keyboardType="number-pad"
-                        maxLength={6}
-                        onChangeText={(value) => {
-                          setOtp(value.replace(/[^0-9]/g, ""));
-                        }}
-                        placeholder="Enter 6 digit OTP"
-                        placeholderTextColor="rgba(100, 116, 139, 0.5)"
-                        style={styles.input}
-                        value={otp}
-                      />
-                      <Ionicons color={colors.primary} name="key-outline" size={18} />
-                    </View>
-                  </>
-                )}
-                {otpMessage ? <Text style={styles.simpleInfoText}>{otpMessage}</Text> : null}
-                <Pressable
-                  disabled={submitting || isWeekendWithdrawClosed}
-                  onPress={() => void submitWithdraw()}
-                  style={[styles.primaryButton, (submitting || isWeekendWithdrawClosed) && styles.disabledButton]}
-                >
-                  {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>Confirm Withdraw</Text>}
-                </Pressable>
-              </>
-            ) : (
-              <Pressable
-                disabled={submitting || isWeekendWithdrawClosed}
-                onPress={() => void sendWithdrawOtp()}
-                style={[styles.primaryButton, (submitting || isWeekendWithdrawClosed) && styles.disabledButton]}
-              >
-                {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>Withdraw</Text>}
-              </Pressable>
-            )}
+            <Pressable
+              disabled={submitting || isWeekendWithdrawClosed}
+              onPress={() => requestPinBeforeWithdraw()}
+              style={[styles.primaryButton, (submitting || isWeekendWithdrawClosed) && styles.disabledButton]}
+            >
+              {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>Verify PIN & Withdraw</Text>}
+            </Pressable>
             {isWeekendWithdrawClosed ? (
               <View style={styles.feedbackCardError}>
                 <Text style={styles.feedbackTextError}>{WEEKEND_WITHDRAW_CLOSED_MESSAGE}</Text>
@@ -233,9 +179,21 @@ export default function WithdrawScreen() {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
+      <PinVerificationModal
+        visible={pinModalVisible}
+        title="Verify PIN"
+        message="Withdraw request submit karne ke liye PIN verify karo."
+        setupRequired
+        onCancel={() => setPinModalVisible(false)}
+        onVerified={async (pin) => {
+          setPinModalVisible(false);
+          await submitWithdraw(pin);
+        }}
+      />
     </View>
   );
-  async function sendWithdrawOtp() {
+
+  function requestPinBeforeWithdraw() {
     if (isWeekendWithdrawClosed) {
       showTransientMessage("error", WEEKEND_WITHDRAW_CLOSED_MESSAGE);
       return;
@@ -275,44 +233,16 @@ export default function WithdrawScreen() {
       return;
     }
 
-    try {
-      setSubmitting(true);
-      setError("");
-      setSuccessMessage("");
-      const response = await requestWithdrawOtp(withdrawAmount);
-      setOtpSent(true);
-      setOtp("");
-      setVerifiedAccessToken("");
-      setSdkReqId("");
-      if (response.mode === "widget" && response.widgetUrl) {
-        if (isMsg91NativeOtpAvailable()) {
-          const userPhone = String(currentUser?.phone || "").replace(/[^0-9]/g, "").slice(-10);
-          const sdkResponse = await sendMsg91NativeOtp(userPhone);
-          if (sdkResponse.accessToken) {
-            setVerifiedAccessToken(sdkResponse.accessToken);
-            setOtpMessage("Mobile verification complete. Ab withdraw confirm karo.");
-          } else {
-            setSdkReqId(sdkResponse.reqId);
-            setOtpMessage("Withdraw OTP SMS successfully sent.");
-          }
-          showTransientMessage("success", "Withdraw OTP sent successfully.");
-          return;
-        }
-        setOtpMessage("Verification window open ho rahi hai...");
-        showTransientMessage("success", "Mobile verification complete karke app me wapas aao.");
-        await Linking.openURL(response.widgetUrl);
-        return;
-      }
-      setOtpMessage(response.provider === "local" ? "Withdraw OTP generated." : "Withdraw OTP SMS successfully sent.");
-      showTransientMessage("success", "Withdraw OTP sent successfully.");
-    } catch (submitError) {
-      showTransientMessage("error", formatApiError(submitError, "Withdraw OTP send nahi hui."));
-    } finally {
-      setSubmitting(false);
+    if (!currentUser?.hasMpin) {
+      showTransientMessage("error", "Withdraw se pehle 4 digit PIN setup karo.");
+      router.push("/security/update-pin");
+      return;
     }
+
+    setPinModalVisible(true);
   }
 
-  async function submitWithdraw() {
+  async function submitWithdraw(pin: string) {
     if (isWeekendWithdrawClosed) {
       showTransientMessage("error", WEEKEND_WITHDRAW_CLOSED_MESSAGE);
       return;
@@ -342,24 +272,16 @@ export default function WithdrawScreen() {
       return;
     }
 
-    if (!hasValidWithdrawVerification) {
-      showTransientMessage("error", "Valid OTP verification required hai.");
+    if (!/^[0-9]{4}$/.test(pin)) {
+      showTransientMessage("error", "Valid 4 digit PIN required hai.");
       return;
     }
 
     try {
       setSubmitting(true);
       setError("");
-      let accessToken = verifiedAccessToken;
-      if (!accessToken && sdkReqId) {
-        setOtpMessage("OTP verify ho raha hai...");
-        const verified = await verifyMsg91NativeOtp(sdkReqId, otp.trim());
-        accessToken = verified.accessToken;
-        setVerifiedAccessToken(accessToken);
-      }
-      await confirmWithdraw(withdrawAmount, accessToken ? "" : otp.trim(), accessToken);
-      setSuccessMessage("Withdraw request OTP verify hone ke baad submit ho gayi.");
-      setVerifiedAccessToken("");
+      await confirmWithdraw(withdrawAmount, pin);
+      setSuccessMessage("PIN verify hone ke baad withdraw request submit ho gayi.");
       setTimeout(() => {
         router.replace("/wallet/history");
       }, 700);

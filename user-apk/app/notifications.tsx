@@ -29,7 +29,7 @@ export default function NotificationsScreen() {
   const [allNotificationsEnabled, setAllNotificationsEnabled] = useState(true);
   const [error, setError] = useState("");
   const inFlightRef = useRef<Promise<void> | null>(null);
-  const visibleItems = items.filter((item) => String(item.channel || "").trim().toLowerCase() !== "result");
+  const visibleItems = items;
 
   useFocusEffect(
     useCallback(() => {
@@ -100,11 +100,11 @@ export default function NotificationsScreen() {
 
   return (
     <View style={styles.page}>
-      <BackHeader title="Notifications" subtitle="Wallet, security aur support updates yahan milenge." />
+      <BackHeader title="Notifications" subtitle="Result aur important updates yahan milenge." />
       <AppScreen onRefresh={sessionToken ? () => void refreshNow() : undefined} refreshing={refreshing} showPromo={false}>
         <View style={styles.hero}>
           <Text style={styles.heading}>Notification Center</Text>
-          <Text style={styles.subheading}>Wallet, security aur support related updates yahan history me save rahenge.</Text>
+          <Text style={styles.subheading}>Result aur important notifications yahan history me save rahengi.</Text>
           {!loading && visibleItems.some((item) => !item.read) ? (
             <Pressable disabled={markingAll} onPress={() => void markAllAsRead()} style={[styles.markAllButton, markingAll && styles.markAllButtonDisabled]}>
               <Text style={styles.markAllText}>{markingAll ? "Updating..." : "Mark all as read"}</Text>

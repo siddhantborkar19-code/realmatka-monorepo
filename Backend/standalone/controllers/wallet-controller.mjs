@@ -13,7 +13,9 @@ import {
 export async function walletHistoryController(request) {
   const auth = await requireAuthenticatedUser(request);
   if (auth.response) return auth.response;
-  return ok(await getWalletHistory(auth.user.id), request);
+  const url = new URL(request.url);
+  const limit = Number(url.searchParams.get("limit") || 5000);
+  return ok(await getWalletHistory(auth.user.id, limit), request);
 }
 
 export async function walletBalanceController(request) {

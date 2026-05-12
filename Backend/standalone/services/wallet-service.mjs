@@ -85,8 +85,8 @@ async function ensureWithdrawAllowed(userId, amount) {
   return { ok: true, data: { beforeBalance } };
 }
 
-export async function getWalletHistory(userId) {
-  return getWalletEntriesForUser(userId);
+export async function getWalletHistory(userId, limit = 5000) {
+  return getWalletEntriesForUser(userId, limit);
 }
 
 export async function getWalletBalance(userId) {

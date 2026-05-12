@@ -8,6 +8,7 @@ import { AppChromeProvider } from "@/components/ui";
 import { PinVerificationModal } from "@/components/pin-verification-modal";
 import { UniversalBottomTabs } from "@/components/universal-bottom-tabs";
 import { api } from "@/lib/api";
+import { clearPersistedUnlockState, readPersistedUnlockState, writePersistedUnlockState } from "@/lib/app-unlock-storage";
 import { AppStateProvider, useAppState } from "@/lib/app-state";
 import {
   getNotificationTargetUrl,
@@ -23,6 +24,7 @@ const WEB_WINDOW_HEARTBEAT_MS = 3000;
 const WEB_WINDOW_STALE_MS = 9000;
 const UPDATE_DOWNLOAD_PAGE_URL = "https://realmatka.in/download";
 const PIN_IDLE_LOCK_MS = 10 * 60 * 1000;
+const PIN_REOPEN_LOCK_MS = 5 * 60 * 1000;
 
 export default function RootLayout() {
   return (
@@ -61,9 +63,22 @@ function RootNavigator() {
   const pinPromptDismissedSessionRef = useRef("");
   const lastActivityAtRef = useRef(Date.now());
   const wasBackgroundedRef = useRef(false);
+  const backgroundedAtRef = useRef(0);
 
   function markUserActivity() {
     lastActivityAtRef.current = Date.now();
+  }
+
+  function persistUnlockState(interactionAt = lastActivityAtRef.current) {
+    if (!sessionToken) {
+      return;
+    }
+
+    void writePersistedUnlockState({
+      sessionToken,
+      unlockedAt: Date.now(),
+      lastInteractionAt: interactionAt
+    });
   }
 
   useEffect(() => {
@@ -87,6 +102,7 @@ function RootNavigator() {
       pinPromptDismissedSessionRef.current = "";
       setPinLockVisible(false);
       setPinSetupPromptVisible(false);
+      void clearPersistedUnlockState();
       return;
     }
 
@@ -103,10 +119,34 @@ function RootNavigator() {
 
     if (currentUser.hasMpin) {
       setPinSetupPromptVisible(false);
-      if (unlockedSessionTokenRef.current !== sessionToken) {
-        setPinLockVisible(true);
+      if (unlockedSessionTokenRef.current === sessionToken) {
+        return;
       }
-      return;
+
+      let active = true;
+      void (async () => {
+        const persistedState = await readPersistedUnlockState();
+        const shouldBypassLock =
+          persistedState?.sessionToken === sessionToken &&
+          Date.now() - Number(persistedState?.lastInteractionAt || 0) < PIN_REOPEN_LOCK_MS;
+
+        if (!active) {
+          return;
+        }
+
+        if (shouldBypassLock) {
+          unlockedSessionTokenRef.current = sessionToken;
+          markUserActivity();
+          setPinLockVisible(false);
+          return;
+        }
+
+        setPinLockVisible(true);
+      })();
+
+      return () => {
+        active = false;
+      };
     }
 
     if (pinPromptDismissedSessionRef.current !== sessionToken) {
@@ -134,12 +174,15 @@ function RootNavigator() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         wasBackgroundedRef.current = true;
+        backgroundedAtRef.current = Date.now();
+        persistUnlockState(Date.now());
         return;
       }
 
       markUserActivity();
       if (wasBackgroundedRef.current && sessionToken && currentUser && !isAuthRoute && !isPinSetupRoute) {
-        if (currentUser.hasMpin) {
+        const awayMs = backgroundedAtRef.current > 0 ? Date.now() - backgroundedAtRef.current : 0;
+        if (currentUser.hasMpin && awayMs >= PIN_REOPEN_LOCK_MS) {
           setPinLockVisible(true);
         } else if (pinPromptDismissedSessionRef.current !== sessionToken) {
           setPinSetupPromptVisible(true);
@@ -159,7 +202,8 @@ function RootNavigator() {
       if (nextState === "active") {
         markUserActivity();
         if (wasBackgroundedRef.current && sessionToken && currentUser && !isAuthRoute && !isPinSetupRoute) {
-          if (currentUser.hasMpin) {
+          const awayMs = backgroundedAtRef.current > 0 ? Date.now() - backgroundedAtRef.current : 0;
+          if (currentUser.hasMpin && awayMs >= PIN_REOPEN_LOCK_MS) {
             setPinLockVisible(true);
           } else if (pinPromptDismissedSessionRef.current !== sessionToken) {
             setPinSetupPromptVisible(true);
@@ -171,6 +215,8 @@ function RootNavigator() {
 
       if (nextState === "background" || nextState === "inactive") {
         wasBackgroundedRef.current = true;
+        backgroundedAtRef.current = Date.now();
+        persistUnlockState(Date.now());
       }
     });
 
@@ -557,6 +603,7 @@ function RootNavigator() {
             onVerified={() => {
               unlockedSessionTokenRef.current = sessionToken;
               markUserActivity();
+              persistUnlockState(Date.now());
               setPinLockVisible(false);
             }}
           />
@@ -568,6 +615,7 @@ function RootNavigator() {
             onCancel={() => {
               pinPromptDismissedSessionRef.current = sessionToken;
               unlockedSessionTokenRef.current = sessionToken;
+              persistUnlockState(Date.now());
               setPinSetupPromptVisible(false);
             }}
           />

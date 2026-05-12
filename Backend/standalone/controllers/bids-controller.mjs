@@ -5,5 +5,7 @@ import { getBidHistory } from "../services/bids-service.mjs";
 export async function bidsHistoryController(request) {
   const auth = await requireAuthenticatedUser(request);
   if (auth.response) return auth.response;
-  return ok(await getBidHistory(auth.user.id), request);
+  const url = new URL(request.url);
+  const limit = Number(url.searchParams.get("limit") || 5000);
+  return ok(await getBidHistory(auth.user.id, limit), request);
 }

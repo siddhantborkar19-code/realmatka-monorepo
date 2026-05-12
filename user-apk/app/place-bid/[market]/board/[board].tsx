@@ -532,7 +532,9 @@ function SinglePanaBulkBoard({ marketLabel, boardLabel, marketPhase }: { marketL
                   }
 
                   if (active) {
-                    setHelperMessage(`${digit} digit family already added hai.`);
+                    setHelperMessage("");
+                    setSelectedDigits((current) => current.filter((item) => item !== digit));
+                    setEntries((current) => current.filter((entry) => entry.sourceDigit !== digit));
                     return;
                   }
 
@@ -715,7 +717,9 @@ function DoublePanaBulkBoard({ marketLabel, boardLabel, marketPhase }: { marketL
                   }
 
                   if (active) {
-                    setHelperMessage(`${digit} digit family already added hai.`);
+                    setHelperMessage("");
+                    setSelectedDigits((current) => current.filter((item) => item !== digit));
+                    setEntries((current) => current.filter((entry) => entry.sourceDigit !== digit));
                     return;
                   }
 

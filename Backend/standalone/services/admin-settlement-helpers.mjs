@@ -31,6 +31,16 @@ function roundAmount(value) {
   return Math.round(Number(value || 0) * 100) / 100;
 }
 
+function formatResultNotificationBody(result) {
+  const parts = String(result ?? "")
+    .trim()
+    .split("-")
+    .map((part) => String(part).replace(/\*/g, "").trim())
+    .filter(Boolean);
+
+  return parts.join("-") || String(result ?? "").trim() || "---";
+}
+
 const MARKET_DAY_ROLLOVER_MINUTES = 30;
 
 function getIndiaDateParts(date = new Date()) {
@@ -517,10 +527,8 @@ export async function settlePendingBidsForMarket(market) {
 
   const notificationEntries = [...impactedUsers.values()].map((entry) => ({
     userId: entry.userId,
-    title: `${market.name} result declared`,
-    body: entry.wins > 0
-      ? `${market.result} declared. You won ${entry.wins} bid${entry.wins > 1 ? "s" : ""} and Rs ${roundAmount(entry.payout)} credited to wallet.`
-      : `${market.result} declared. Your bids for ${market.name} are settled.`,
+    title: `${market.name}`,
+    body: formatResultNotificationBody(market.result),
     channel: "result",
     url: `/charts/${market.slug}`,
     data: { marketSlug: market.slug, marketName: market.name, result: market.result }

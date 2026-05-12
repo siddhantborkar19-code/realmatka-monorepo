@@ -513,8 +513,8 @@ export const api = {
     );
   },
 
-  bidHistory(token: string) {
-    return request<BidEntry[]>("/api/bids/history", { token });
+  bidHistory(token: string, limit = 5000) {
+    return request<BidEntry[]>(`/api/bids/history${queryString({ limit: String(limit) })}`, { token });
   },
 
   placeBids(
@@ -538,8 +538,8 @@ export const api = {
     return request<{ balance: number }>("/api/wallet/balance", { token });
   },
 
-  walletHistory(token: string) {
-    return request<WalletEntry[]>("/api/wallet/history", { token });
+  walletHistory(token: string, limit = 5000) {
+    return request<WalletEntry[]>(`/api/wallet/history${queryString({ limit: String(limit) })}`, { token });
   },
 
   withdraw(token: string, amount: number, referenceId = "", proofUrl = "", note = "") {

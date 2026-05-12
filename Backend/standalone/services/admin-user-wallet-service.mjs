@@ -18,8 +18,6 @@ import {
   updateUserApprovalStatus,
   updateWalletEntryAdmin
 } from "../stores/admin-store.mjs";
-import { sendUserNotification } from "./notification-events-service.mjs";
-
 function roundAmount(value) {
   return Math.round(Number(value || 0) * 100) / 100;
 }
@@ -31,59 +29,8 @@ async function sendWalletActionNotification(entry, action, settlementEntry = nul
   }
 
   const type = String(entry?.type ?? settlementEntry?.type ?? "").toUpperCase();
-  const amount = roundAmount(Number(entry?.amount ?? settlementEntry?.amount ?? 0));
-
-  if (action === "approve" && type === "DEPOSIT") {
-    await sendUserNotification({
-      userId,
-      title: "Deposit approved",
-      body: `Rs ${amount.toFixed(2)} successfully added to your wallet.`,
-      channel: "wallet",
-      url: "/wallet/history"
-    });
-    const bonusAmount = roundAmount(Number(settlementEntry?.amount ?? 0));
-    if (String(settlementEntry?.type || "").toUpperCase() === "FIRST_DEPOSIT_BONUS" && bonusAmount > 0) {
-      await sendUserNotification({
-        userId,
-        title: "First deposit bonus added",
-        body: `Rs ${bonusAmount.toFixed(2)} first deposit bonus added to your wallet.`,
-        channel: "wallet",
-        url: "/wallet/history"
-      });
-    }
+  if (type === "DEPOSIT" || type === "WITHDRAW") {
     return;
-  }
-
-  if (action === "approve" && type === "WITHDRAW") {
-    await sendUserNotification({
-      userId,
-      title: "Withdraw moved to processing",
-      body: `Your withdraw request of Rs ${amount.toFixed(2)} is now processing. Amount has been blocked from your wallet.`,
-      channel: "wallet",
-      url: "/wallet/history"
-    });
-    return;
-  }
-
-  if (action === "reject" && type === "DEPOSIT") {
-    await sendUserNotification({
-      userId,
-      title: "Deposit rejected",
-      body: `Your deposit request of Rs ${amount.toFixed(2)} was rejected.`,
-      channel: "wallet",
-      url: "/wallet/history"
-    });
-    return;
-  }
-
-  if (action === "reject" && type === "WITHDRAW") {
-    await sendUserNotification({
-      userId,
-      title: "Withdraw rejected",
-      body: `Your withdraw request of Rs ${amount.toFixed(2)} was rejected and amount has been restored to your wallet.`,
-      channel: "wallet",
-      url: "/wallet/history"
-    });
   }
 }
 
@@ -302,19 +249,6 @@ export async function createWalletAdjustment({ userId, mode, amount, note = "" }
     beforeBalance,
     afterBalance: isDebit ? beforeBalance - amount : beforeBalance + amount,
     note: String(note || "").trim() || null
-  });
-
-  await sendUserNotification({
-    userId,
-    title: mode === "debit" ? "System debited" : mode === "referral" ? "Referral income credited" : "System credited",
-    body:
-      mode === "debit"
-        ? `Rs ${amount.toFixed(2)} deducted from your wallet.`
-        : mode === "referral"
-          ? `Rs ${amount.toFixed(2)} aapka referral amount hai. Wallet me add ho gaya hai.`
-          : `Rs ${amount.toFixed(2)} added to your wallet.`,
-    channel: "wallet",
-    url: "/wallet/history"
   });
 
   return { ok: true, entry };

@@ -2324,18 +2324,10 @@ async function getReferralLossCommissionRecordedTotal(referrerUserId, referredUs
   return roundMoney(row?.total ?? 0);
 }
 
-async function getReferralExternalCreditTotal(userId) {
+async function getReferralDepositCreditTotal(userId) {
   if (!userId) {
     return 0;
   }
-
-  const creditTypes = [
-    "DEPOSIT",
-    "ADMIN_CREDIT",
-    "SIGNUP_BONUS",
-    "FIRST_DEPOSIT_BONUS",
-    "REFERRAL_COMMISSION"
-  ];
 
   if (isStandalonePostgresEnabled()) {
     const pool = await getReadyPgPool();
@@ -2343,9 +2335,9 @@ async function getReferralExternalCreditTotal(userId) {
       `SELECT COALESCE(SUM(amount), 0) AS total
        FROM wallet_entries
        WHERE user_id = $1
-         AND status = 'SUCCESS'
-         AND type = ANY($2::text[])`,
-      [userId, creditTypes]
+         AND type = 'DEPOSIT'
+         AND status IN ('SUCCESS', 'BACKOFFICE')`,
+      [userId]
     );
     return roundMoney(result.rows[0]?.total ?? 0);
   }
@@ -2355,11 +2347,65 @@ async function getReferralExternalCreditTotal(userId) {
       `SELECT COALESCE(SUM(amount), 0) AS total
        FROM wallet_entries
        WHERE user_id = ?
-         AND status = 'SUCCESS'
-         AND type IN (?, ?, ?, ?, ?)`
+         AND type = 'DEPOSIT'
+         AND status IN ('SUCCESS', 'BACKOFFICE')`
     )
-    .get(userId, ...creditTypes);
+    .get(userId);
   return roundMoney(row?.total ?? 0);
+}
+
+async function getReferralSettledBetNetLossTotal(userId) {
+  if (!userId) {
+    return 0;
+  }
+
+  if (isStandalonePostgresEnabled()) {
+    const pool = await getReadyPgPool();
+    const result = await pool.query(
+      `SELECT COALESCE(
+         SUM(
+           CASE
+             WHEN LOWER(status) IN ('won', 'lost') THEN COALESCE(points, 0)
+             ELSE 0
+           END
+         )
+         - SUM(
+           CASE
+             WHEN LOWER(status) = 'won' THEN COALESCE(payout, 0)
+             ELSE 0
+           END
+         ),
+         0
+       ) AS total
+       FROM bids
+       WHERE user_id = $1`,
+      [userId]
+    );
+    return Math.max(0, roundMoney(result.rows[0]?.total ?? 0));
+  }
+
+  const row = getSqlite()
+    .prepare(
+      `SELECT COALESCE(
+         SUM(
+           CASE
+             WHEN LOWER(status) IN ('won', 'lost') THEN COALESCE(points, 0)
+             ELSE 0
+           END
+         )
+         - SUM(
+           CASE
+             WHEN LOWER(status) = 'won' THEN COALESCE(payout, 0)
+             ELSE 0
+           END
+         ),
+         0
+       ) AS total
+       FROM bids
+       WHERE user_id = ?`
+    )
+    .get(userId);
+  return Math.max(0, roundMoney(row?.total ?? 0));
 }
 
 async function getSuccessfulWithdrawTotal(userId) {
@@ -2403,15 +2449,17 @@ export async function applyReferralLossCommission({ userId, lostAmount, bidId, m
     return null;
   }
 
-  const [externalCredits, currentBalanceRaw, successfulWithdraws, alreadyRecorded] = await Promise.all([
-    getReferralExternalCreditTotal(player.id),
-    getUserBalance(player.id),
+  const [depositCredits, settledBetNetLoss, successfulWithdraws, alreadyRecorded] = await Promise.all([
+    getReferralDepositCreditTotal(player.id),
+    getReferralSettledBetNetLossTotal(player.id),
     getSuccessfulWithdrawTotal(player.id),
     getReferralLossCommissionRecordedTotal(referrer.id, player.id)
   ]);
-  const currentBalance = Math.max(0, roundMoney(currentBalanceRaw));
-  const currentNetLoss = Math.max(0, roundMoney(externalCredits - currentBalance - successfulWithdraws));
-  const targetCommissionTotal = roundMoney(currentNetLoss * (referralLossCommissionRate / 100));
+  // Referral loss commission is only for real deposit money that is currently lost.
+  // Pending stakes, recycled winnings, bonuses, referral income, and admin credits do not increase this base.
+  const depositAtRisk = Math.max(0, roundMoney(depositCredits - successfulWithdraws));
+  const commissionableLoss = Math.min(depositAtRisk, settledBetNetLoss);
+  const targetCommissionTotal = roundMoney(commissionableLoss * (referralLossCommissionRate / 100));
   const commissionAmount = roundMoney(targetCommissionTotal - alreadyRecorded);
   if (commissionAmount <= 0) {
     return null;

@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, router } from "expo-router";
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
 import { requestGoogleAccessToken } from "@/lib/google-auth";
 import { colors } from "@/theme/colors";
+
+const webAuthBaseUrl = String(process.env.EXPO_PUBLIC_WEB_AUTH_BASE_URL || "https://play.realmatka.in").replace(/\/+$/, "");
 
 export default function LoginScreen() {
   const { login, googleLogin, isAuthenticated, loading } = useAppState();
@@ -19,6 +21,7 @@ export default function LoginScreen() {
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const hasValidPhone = normalizedPhone.length === 10;
   const hasPassword = password.trim().length > 0;
+  const isNativeApp = Platform.OS !== "web";
 
   async function submitLogin() {
     if (submitting) {
@@ -74,6 +77,10 @@ export default function LoginScreen() {
     }
   }
 
+  async function openWebAuth(path: "/auth/register" | "/auth/forgot-password") {
+    await Linking.openURL(`${webAuthBaseUrl}${path}`);
+  }
+
   useEffect(() => {
     if (!loading && isAuthenticated) {
       router.replace("/(tabs)");
@@ -91,27 +98,31 @@ export default function LoginScreen() {
         <SurfaceCard style={styles.formCard}>
           <Text style={styles.title}>Login</Text>
           <Text style={styles.subtitle}>Use your registered phone number and password to continue.</Text>
-          <Pressable
-            onPress={() => {
-              void submitGoogleLogin();
-            }}
-            disabled={googleSubmitting}
-            style={[styles.googleButton, googleSubmitting && styles.disabled]}
-          >
-            {googleSubmitting ? (
-              <ActivityIndicator color="#111827" />
-            ) : (
-              <>
-                <Text style={styles.googleMark}>G</Text>
-                <Text style={styles.googleText}>Continue with Google</Text>
-              </>
-            )}
-          </Pressable>
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or phone login</Text>
-            <View style={styles.dividerLine} />
-          </View>
+          {!isNativeApp ? (
+            <>
+              <Pressable
+                onPress={() => {
+                  void submitGoogleLogin();
+                }}
+                disabled={googleSubmitting}
+                style={[styles.googleButton, googleSubmitting && styles.disabled]}
+              >
+                {googleSubmitting ? (
+                  <ActivityIndicator color="#111827" />
+                ) : (
+                  <>
+                    <Text style={styles.googleMark}>G</Text>
+                    <Text style={styles.googleText}>Continue with Google</Text>
+                  </>
+                )}
+              </Pressable>
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or phone login</Text>
+                <View style={styles.dividerLine} />
+              </View>
+            </>
+          ) : null}
           <View style={styles.fieldWrap}>
             <Text style={styles.label}>Phone Number</Text>
             <TextInput
@@ -164,17 +175,38 @@ export default function LoginScreen() {
           </Pressable>
 
           <View style={styles.linkGroup}>
-            <Link href="/auth/register" style={styles.link}>
-              Create new account
-            </Link>
+            {isNativeApp ? (
+              <>
+                <Pressable
+                  onPress={() => {
+                    void openWebAuth("/auth/register");
+                  }}
+                >
+                  <Text style={styles.link}>Create new account</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    void openWebAuth("/auth/forgot-password");
+                  }}
+                >
+                  <Text style={styles.link}>Forgot password</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/register" style={styles.link}>
+                  Create new account
+                </Link>
 
-            <Link href="/auth/otp-login" style={styles.link}>
-              Login with OTP
-            </Link>
+                <Link href="/auth/otp-login" style={styles.link}>
+                  Login with OTP
+                </Link>
 
-            <Link href="/auth/forgot-password" style={styles.link}>
-              Forgot password
-            </Link>
+                <Link href="/auth/forgot-password" style={styles.link}>
+                  Forgot password
+                </Link>
+              </>
+            )}
           </View>
         </SurfaceCard>
       </View>

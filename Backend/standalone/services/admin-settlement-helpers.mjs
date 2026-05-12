@@ -41,6 +41,10 @@ function formatResultNotificationBody(result) {
   return parts.join("-") || String(result ?? "").trim() || "---";
 }
 
+function formatResultNotificationTitle(name) {
+  return String(name ?? "").trim().toUpperCase() || "MARKET";
+}
+
 const MARKET_DAY_ROLLOVER_MINUTES = 30;
 
 function getIndiaDateParts(date = new Date()) {
@@ -527,7 +531,7 @@ export async function settlePendingBidsForMarket(market) {
 
   const notificationEntries = [...impactedUsers.values()].map((entry) => ({
     userId: entry.userId,
-    title: `${market.name}`,
+    title: formatResultNotificationTitle(market.name),
     body: formatResultNotificationBody(market.result),
     channel: "result",
     url: `/charts/${market.slug}`,

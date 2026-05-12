@@ -154,9 +154,11 @@ export default function NotificationsScreen() {
               <Pressable key={item.id} onPress={() => void openNotification(item)}>
                 <SurfaceCard style={[styles.itemCard, !item.read && styles.itemCardUnread]}>
                 <View style={styles.badgeRow}>
-                  <View style={styles.channelBadge}>
-                    <Text style={styles.channelText}>{item.channel || "general"}</Text>
-                  </View>
+                  {String(item.channel || "").trim().toLowerCase() === "result" ? <View /> : (
+                    <View style={styles.channelBadge}>
+                      <Text style={styles.channelText}>{item.channel || "general"}</Text>
+                    </View>
+                  )}
                   <View style={styles.badgeMeta}>
                     {!item.read ? <View style={styles.unreadDot} /> : null}
                     <Text style={styles.timeText}>{formatDate(item.createdAt)}</Text>

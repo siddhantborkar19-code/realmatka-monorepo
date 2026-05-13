@@ -25,6 +25,51 @@ function validateDepositAmount(amountPaise) {
   return "";
 }
 
+function readBooleanEnv(name, fallback = true) {
+  const raw = String(process.env[name] ?? "").trim().toLowerCase();
+  if (!raw) {
+    return fallback;
+  }
+  return !["0", "false", "no", "off", "disabled"].includes(raw);
+}
+
+function readNumberEnv(name, fallback) {
+  const value = Number(process.env[name] ?? fallback);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+export function getDepositConfigSnapshot() {
+  const allowedModes = new Set(["manual_qr", "maintenance", "razorpay", "upi_intent"]);
+  const configuredMode = String(process.env.DEPOSIT_MODE || "manual_qr").trim().toLowerCase();
+  const mode = allowedModes.has(configuredMode) ? configuredMode : "manual_qr";
+  const minAmount = Math.max(1, readNumberEnv("DEPOSIT_MIN_AMOUNT", 100));
+  const upiId = String(process.env.DEPOSIT_UPI_ID || process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "s7568539842258141@slc").trim();
+  const upiName = String(process.env.DEPOSIT_UPI_NAME || process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "slice").trim();
+  const whatsappNumber = String(process.env.DEPOSIT_WHATSAPP_PHONE || process.env.EXPO_PUBLIC_PAYMENT_WHATSAPP_PHONE || "8446012081").replace(/\D/g, "");
+
+  return {
+    version: 1,
+    enabled: readBooleanEnv("DEPOSIT_ENABLED", true),
+    mode,
+    minAmount,
+    upiId,
+    upiName,
+    whatsappNumber,
+    razorpayPlatform: String(process.env.DEPOSIT_RAZORPAY_PLATFORM || "web").trim().toLowerCase() === "native" ? "native" : "web",
+    title: String(process.env.DEPOSIT_TITLE || "Add Fund").trim(),
+    message: String(
+      process.env.DEPOSIT_MESSAGE ||
+        "Amount enter karke QR generate karein, payment complete karein, aur screenshot WhatsApp par bhejein."
+    ).trim(),
+    maintenanceTitle: String(process.env.DEPOSIT_MAINTENANCE_TITLE || "Deposit temporarily manual").trim(),
+    maintenanceMessage: String(
+      process.env.DEPOSIT_MAINTENANCE_MESSAGE ||
+        "Technical update ke kaaran deposit flow temporarily manual hai. Kripya latest APK use karein."
+    ).trim(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
 function buildCheckoutCustomer(user) {
   const phone = String(user?.phone || "").replace(/\D/g, "");
   return {

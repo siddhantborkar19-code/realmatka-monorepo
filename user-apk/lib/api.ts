@@ -110,6 +110,22 @@ export type PaymentOrder = {
   customerEmail?: string | null;
 };
 
+export type DepositConfig = {
+  version: number;
+  enabled: boolean;
+  mode: "manual_qr" | "maintenance" | "razorpay" | "upi_intent";
+  minAmount: number;
+  upiId: string;
+  upiName: string;
+  whatsappNumber: string;
+  razorpayPlatform?: "web" | "native";
+  title: string;
+  message: string;
+  maintenanceTitle: string;
+  maintenanceMessage: string;
+  updatedAt: string;
+};
+
 export type HealthSnapshot = {
   ok: boolean;
   status: "ok" | "warn" | "error";
@@ -651,6 +667,10 @@ export const api = {
       token,
       body: { amount, platform }
     });
+  },
+
+  getDepositConfig() {
+    return request<DepositConfig>("/api/payments/deposit-config", { retries: 1, timeoutMs: 6_000 });
   },
 
   confirmPaymentOrder(

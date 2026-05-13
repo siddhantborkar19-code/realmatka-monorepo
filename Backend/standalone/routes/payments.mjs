@@ -6,6 +6,7 @@ import {
   createHostedPaymentOrder,
   createNativePaymentOrder,
   confirmNativePaymentOrder,
+  getDepositConfigSnapshot,
   getPaymentOrderStatusSnapshot,
   getUpiDepositEntry,
   processUpiNotificationCredit,
@@ -197,6 +198,10 @@ async function getCallbackPayload(request) {
 
 export function options(request) {
   return corsPreflight(request);
+}
+
+export async function depositConfig(request) {
+  return ok(getDepositConfigSnapshot(), request);
 }
 
 export async function createOrder(request) {

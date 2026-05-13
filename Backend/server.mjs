@@ -179,6 +179,7 @@ const standaloneRoutes = new Map([
   ["/api/notifications/read", { loader: "notifications", methods: { OPTIONS: "options", POST: "markRead" } }],
   ["/api/chat/conversation", { loader: "chat", methods: { OPTIONS: "options", GET: "userConversation" } }],
   ["/api/chat/send", { loader: "chat", methods: { OPTIONS: "options", POST: "userSend" } }],
+  ["/api/payments/deposit-config", { loader: "payments", methods: { OPTIONS: "options", GET: "depositConfig" } }],
   ["/api/payments/create-order", { loader: "payments", methods: { OPTIONS: "options", POST: "createOrder" } }],
   ["/api/payments/confirm", { loader: "payments", methods: { OPTIONS: "options", POST: "confirmOrder" } }],
   ["/api/payments/status", { loader: "payments", methods: { OPTIONS: "options", GET: "getPaymentOrderStatus", POST: "getPaymentOrderStatus" } }],

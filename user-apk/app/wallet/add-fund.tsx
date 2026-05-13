@@ -1,27 +1,40 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
-import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import QRCode from "qrcode-terminal/vendor/QRCode";
 import QRErrorCorrectLevel from "qrcode-terminal/vendor/QRCode/QRErrorCorrectLevel";
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
+import { api, formatApiError, type DepositConfig } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import { colors } from "@/theme/colors";
 
 const MIN_DEPOSIT_AMOUNT = 100;
-const MANUAL_UPI_ID = (process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "s7568539842258141@slc").trim();
-const MANUAL_UPI_NAME = (process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "slice").trim();
-const PAYMENT_WHATSAPP_PHONE = (process.env.EXPO_PUBLIC_PAYMENT_WHATSAPP_PHONE || "9309782081").replace(/\D/g, "");
+const DEFAULT_DEPOSIT_CONFIG: DepositConfig = {
+  version: 1,
+  enabled: true,
+  mode: "manual_qr",
+  minAmount: MIN_DEPOSIT_AMOUNT,
+  upiId: (process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "s7568539842258141@slc").trim(),
+  upiName: (process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "slice").trim(),
+  whatsappNumber: (process.env.EXPO_PUBLIC_PAYMENT_WHATSAPP_PHONE || "8446012081").replace(/\D/g, ""),
+  razorpayPlatform: "web",
+  title: "Add Fund",
+  message: "Amount enter karke QR generate karein, payment complete karein, aur screenshot WhatsApp par bhejein.",
+  maintenanceTitle: "Deposit temporarily manual",
+  maintenanceMessage: "Technical update ke kaaran deposit flow temporarily manual hai. Kripya latest APK use karein.",
+  updatedAt: ""
+};
 
-function buildUpiUrl(amount: number | null) {
+function buildUpiUrl(amount: number | null, config: DepositConfig) {
   const params = new URLSearchParams({
-    pa: MANUAL_UPI_ID,
-    pn: MANUAL_UPI_NAME,
+    pa: config.upiId,
+    pn: config.upiName,
     cu: "INR",
     tn: "Wallet Deposit"
   });
 
-  if (amount && Number.isFinite(amount) && amount >= MIN_DEPOSIT_AMOUNT) {
+  if (amount && Number.isFinite(amount) && amount >= config.minAmount) {
     params.set("am", amount.toFixed(2));
   }
 
@@ -40,18 +53,54 @@ function buildQrMatrix(value: string) {
 }
 
 export default function AddFundScreen() {
-  const { currentUser, walletBalance } = useAppState();
+  const { currentUser, sessionToken, walletBalance } = useAppState();
+  const [depositConfig, setDepositConfig] = useState<DepositConfig>(DEFAULT_DEPOSIT_CONFIG);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const [amount, setAmount] = useState("");
   const [generatedAmount, setGeneratedAmount] = useState<number | null>(null);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const numericAmount = Number(amount || 0);
-  const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= MIN_DEPOSIT_AMOUNT;
+  const minAmount = Math.max(1, Number(depositConfig.minAmount || MIN_DEPOSIT_AMOUNT));
+  const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= minAmount;
   const hasGeneratedQr = generatedAmount !== null;
-  const upiUrl = useMemo(() => buildUpiUrl(generatedAmount), [generatedAmount]);
+  const isManualMode = depositConfig.enabled && (depositConfig.mode === "manual_qr" || depositConfig.mode === "upi_intent");
+  const isRazorpayMode = depositConfig.enabled && depositConfig.mode === "razorpay";
+  const isMaintenanceMode = !depositConfig.enabled || depositConfig.mode === "maintenance";
+  const upiUrl = useMemo(() => buildUpiUrl(generatedAmount, depositConfig), [depositConfig, generatedAmount]);
   const qrMatrix = useMemo(() => buildQrMatrix(upiUrl), [upiUrl]);
   const moduleSize = Math.max(3, Math.floor(232 / qrMatrix.length));
   const qrSize = qrMatrix.length * moduleSize;
+
+  useEffect(() => {
+    let active = true;
+    async function loadDepositConfig() {
+      try {
+        setLoadingConfig(true);
+        const nextConfig = await api.getDepositConfig();
+        if (active) {
+          setDepositConfig({ ...DEFAULT_DEPOSIT_CONFIG, ...nextConfig });
+        }
+      } catch (configError) {
+        if (active) {
+          // If the backend has not been redeployed yet, keep Add Fund usable with the built-in manual QR fallback.
+          setDepositConfig(DEFAULT_DEPOSIT_CONFIG);
+          setError("");
+        }
+      } finally {
+        if (active) {
+          setLoadingConfig(false);
+        }
+      }
+    }
+
+    void loadDepositConfig();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <View style={styles.page}>
@@ -78,27 +127,48 @@ export default function AddFundScreen() {
                 setGeneratedAmount(null);
                 setMessage("");
               }}
-              placeholder="Enter amount min 100"
+              placeholder={`Enter amount min ${minAmount}`}
               placeholderTextColor={colors.textMuted}
               style={styles.amountInput}
               value={amount}
             />
           </View>
-          {!hasValidAmount && amount ? <Text style={styles.errorText}>Minimum deposit Rs {MIN_DEPOSIT_AMOUNT} hai.</Text> : null}
-          <Pressable
-            disabled={!hasValidAmount}
-            onPress={() => {
-              setGeneratedAmount(numericAmount);
-              setMessage(`Rs ${numericAmount} ka QR generate ho gaya. Ab payment karo aur screenshot bhejo.`);
-            }}
-            style={[styles.generateButton, !hasValidAmount && styles.disabledButton]}
-          >
-            <Ionicons color={colors.surface} name="qr-code-outline" size={18} />
-            <Text style={styles.generateButtonText}>Generate QR</Text>
-          </Pressable>
+          {!hasValidAmount && amount ? <Text style={styles.errorText}>Minimum deposit Rs {minAmount} hai.</Text> : null}
+          {isManualMode ? (
+            <Pressable
+              disabled={!hasValidAmount || loadingConfig}
+              onPress={() => {
+                setGeneratedAmount(numericAmount);
+                setError("");
+                setMessage(`Rs ${numericAmount} ka QR generate ho gaya. Ab payment karo aur screenshot bhejo.`);
+              }}
+              style={[styles.generateButton, (!hasValidAmount || loadingConfig) && styles.disabledButton]}
+            >
+              {loadingConfig ? <ActivityIndicator color={colors.surface} size="small" /> : <Ionicons color={colors.surface} name="qr-code-outline" size={18} />}
+              <Text style={styles.generateButtonText}>Generate QR</Text>
+            </Pressable>
+          ) : null}
+          {isRazorpayMode ? (
+            <Pressable
+              disabled={!hasValidAmount || submitting || !sessionToken}
+              onPress={() => void startGatewayPayment()}
+              style={[styles.generateButton, (!hasValidAmount || submitting || !sessionToken) && styles.disabledButton]}
+            >
+              {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Ionicons color={colors.surface} name="card-outline" size={18} />}
+              <Text style={styles.generateButtonText}>Pay Now</Text>
+            </Pressable>
+          ) : null}
         </SurfaceCard>
 
-        {hasGeneratedQr ? (
+        {isMaintenanceMode ? (
+          <SurfaceCard style={styles.placeholderCard}>
+            <Ionicons color={colors.warning} name="alert-circle-outline" size={34} />
+            <Text style={styles.placeholderTitle}>{depositConfig.maintenanceTitle}</Text>
+            <Text style={styles.placeholderText}>{depositConfig.maintenanceMessage}</Text>
+          </SurfaceCard>
+        ) : null}
+
+        {isManualMode && hasGeneratedQr ? (
           <SurfaceCard style={styles.qrCard}>
             <View style={styles.qrHeader}>
               <View>
@@ -140,20 +210,20 @@ export default function AddFundScreen() {
             <View style={styles.upiInfo}>
               <Text style={styles.upiLabel}>UPI ID</Text>
               <Text selectable style={styles.upiValue}>
-                {MANUAL_UPI_ID}
+                {depositConfig.upiId}
               </Text>
             </View>
             <Text style={styles.qrHint}>
               Payment ke baad QR/payment ka screenshot lo, phir WhatsApp par proof bhejo. Admin verify karke wallet credit karega.
             </Text>
           </SurfaceCard>
-        ) : (
+        ) : isManualMode ? (
           <SurfaceCard style={styles.placeholderCard}>
             <Ionicons color={colors.textMuted} name="qr-code-outline" size={34} />
             <Text style={styles.placeholderTitle}>QR abhi generate nahi hua</Text>
             <Text style={styles.placeholderText}>Amount enter karke Generate QR dabao. Uske baad QR screenshot lekar payment proof bhejna.</Text>
           </SurfaceCard>
-        )}
+        ) : null}
 
         {message ? (
           <SurfaceCard style={styles.messageCard}>
@@ -161,26 +231,44 @@ export default function AddFundScreen() {
           </SurfaceCard>
         ) : null}
 
+        {error ? (
+          <SurfaceCard style={styles.messageCard}>
+            <Text style={styles.errorText}>{error}</Text>
+          </SurfaceCard>
+        ) : null}
+
         <SurfaceCard>
           <Text style={styles.sectionTitle}>How It Works</Text>
           <View style={styles.steps}>
-            <Text style={styles.stepText}>1. Amount enter karo.</Text>
-            <Text style={styles.stepText}>2. Generate QR dabao.</Text>
-            <Text style={styles.stepText}>3. QR screenshot lo aur UPI app se payment complete karo.</Text>
-            <Text style={styles.stepText}>4. WhatsApp par payment screenshot bhejo.</Text>
-            <Text style={styles.stepText}>5. Admin verify karke wallet balance add karega.</Text>
+            {isRazorpayMode ? (
+              <>
+                <Text style={styles.stepText}>1. Amount enter karo.</Text>
+                <Text style={styles.stepText}>2. Pay Now dabao.</Text>
+                <Text style={styles.stepText}>3. Payment complete hone ke baad wallet history check karo.</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.stepText}>1. Amount enter karo.</Text>
+                <Text style={styles.stepText}>2. Generate QR dabao.</Text>
+                <Text style={styles.stepText}>3. QR screenshot lo aur UPI app se payment complete karo.</Text>
+                <Text style={styles.stepText}>4. WhatsApp par payment screenshot bhejo.</Text>
+                <Text style={styles.stepText}>5. Admin verify karke wallet balance add karega.</Text>
+              </>
+            )}
           </View>
         </SurfaceCard>
 
         <View style={styles.footerActions}>
-          <Pressable
-            disabled={!hasGeneratedQr}
-            onPress={() => void sendWhatsAppProof()}
-            style={[styles.whatsappButton, !hasGeneratedQr && styles.disabledButton]}
-          >
-            <Ionicons color={colors.surface} name="logo-whatsapp" size={19} />
-            <Text style={styles.whatsappButtonText}>Send WhatsApp Proof</Text>
-          </Pressable>
+          {isManualMode ? (
+            <Pressable
+              disabled={!hasGeneratedQr}
+              onPress={() => void sendWhatsAppProof()}
+              style={[styles.whatsappButton, !hasGeneratedQr && styles.disabledButton]}
+            >
+              <Ionicons color={colors.surface} name="logo-whatsapp" size={19} />
+              <Text style={styles.whatsappButtonText}>Send WhatsApp Proof</Text>
+            </Pressable>
+          ) : null}
 
           <Pressable onPress={() => router.push("/wallet/history")} style={styles.historyButton}>
             <Text style={styles.historyButtonText}>View Wallet History</Text>
@@ -202,12 +290,13 @@ export default function AddFundScreen() {
     const text = [
       "Wallet deposit payment proof",
       `Amount: Rs ${generatedAmount}`,
-      `UPI ID: ${MANUAL_UPI_ID}`,
+      `UPI ID: ${depositConfig.upiId}`,
       userLine,
       "",
       "Payment screenshot attached. Please verify and credit my wallet."
     ].join("\n");
-    const phone = PAYMENT_WHATSAPP_PHONE.startsWith("91") ? PAYMENT_WHATSAPP_PHONE : `91${PAYMENT_WHATSAPP_PHONE}`;
+    const cleanPhone = String(depositConfig.whatsappNumber || DEFAULT_DEPOSIT_CONFIG.whatsappNumber).replace(/\D/g, "");
+    const phone = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 
     try {
@@ -215,6 +304,34 @@ export default function AddFundScreen() {
       setMessage("WhatsApp open ho gaya. Ab payment screenshot attach karke send karo.");
     } catch {
       setMessage("WhatsApp open nahi hua. Screenshot manually WhatsApp par bhejo.");
+    }
+  }
+
+  async function startGatewayPayment() {
+    if (!sessionToken) {
+      setError("Login required");
+      return;
+    }
+    if (!hasValidAmount) {
+      setError(`Minimum deposit Rs ${minAmount} hai.`);
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError("");
+      setMessage("");
+      const order = await api.createPaymentOrder(sessionToken, numericAmount, depositConfig.razorpayPlatform || "web");
+      if (!order.redirectUrl) {
+        setError("Payment link create nahi hua. Thodi der baad retry karo.");
+        return;
+      }
+      await Linking.openURL(order.redirectUrl);
+      setMessage("Payment page open ho gaya. Payment complete hone ke baad wallet history check karo.");
+    } catch (paymentError) {
+      setError(formatApiError(paymentError, "Payment start nahi hua."));
+    } finally {
+      setSubmitting(false);
     }
   }
 }

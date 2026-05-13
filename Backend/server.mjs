@@ -185,6 +185,7 @@ const standaloneRoutes = new Map([
   ["/api/payments/upi-start", { loader: "payments", methods: { OPTIONS: "options", GET: "startUpiDeposit", POST: "startUpiDeposit" } }],
   ["/api/payments/upi-report", { loader: "payments", methods: { OPTIONS: "options", GET: "reportUpiDeposit", POST: "reportUpiDeposit" } }],
   ["/api/payments/upi-status", { loader: "payments", methods: { OPTIONS: "options", GET: "getUpiDepositStatus", POST: "getUpiDepositStatus" } }],
+  ["/api/payments/upi-auto-credit", { loader: "payments", methods: { OPTIONS: "options", POST: "upiAutoCreditWebhook" } }],
   ["/api/payments/webhook", { loader: "payments", methods: { OPTIONS: "options", POST: "webhook" } }],
   ["/api/settings", { loader: "admin", methods: { OPTIONS: "options", GET: "settingsPublic" } }],
   ["/api/admin/users", { loader: "admin", methods: { OPTIONS: "options", GET: "users" } }],

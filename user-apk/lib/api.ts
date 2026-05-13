@@ -682,6 +682,39 @@ export const api = {
     });
   },
 
+  startUpiDeposit(token: string, amount: number, appName: string, referenceId: string) {
+    return request<WalletEntry>("/api/payments/upi-start", {
+      method: "POST",
+      token,
+      body: { amount, appName, referenceId }
+    });
+  },
+
+  reportUpiDeposit(
+    token: string,
+    payload: {
+      referenceId: string;
+      appName: string;
+      utr: string;
+      appReportedStatus: "SUBMITTED" | "FAILED" | "CANCELLED";
+      rawResponse?: string;
+    }
+  ) {
+    return request<WalletEntry>("/api/payments/upi-report", {
+      method: "POST",
+      token,
+      body: payload
+    });
+  },
+
+  getUpiDepositStatus(token: string, referenceId: string) {
+    return request<WalletEntry>("/api/payments/upi-status", {
+      method: "POST",
+      token,
+      body: { referenceId }
+    });
+  },
+
   health() {
     return healthRequest();
   }

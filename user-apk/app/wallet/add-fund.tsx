@@ -2,17 +2,24 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, AppState, AppStateStatus, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import RazorpayCheckout from "react-native-razorpay";
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
-import { api, formatApiError, type PaymentOrder } from "@/lib/api";
+import { api, formatApiError, type WalletEntry } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import { getAddFundUnsupportedMessage, isSupportedAddFundPlatform } from "@/lib/payment-platform";
+import { buildReferenceId, createDepositSession, type PreferredUpiTarget } from "@/lib/payment-processor";
 import { colors } from "@/theme/colors";
 
 const MIN_DEPOSIT_AMOUNT = 100;
 const PAYMENT_STATUS_REFRESH_MS = 10_000;
-const PAYMENT_RETURN_RETRY_ATTEMPTS = 3;
-const PAYMENT_RETURN_RETRY_DELAY_MS = 3_000;
+const DIRECT_UPI_ID = (process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "9309782081@okbizaxis").trim();
+const DIRECT_UPI_NAME = (process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "Real Matka").trim();
+
+const UPI_TARGETS: Array<{ label: string; appName: string; target: PreferredUpiTarget }> = [
+  { label: "Google Pay", appName: "GOOGLE_PAY", target: "googlePay" },
+  { label: "PhonePe", appName: "PHONEPE", target: "phonePe" },
+  { label: "Paytm", appName: "PAYTM", target: "paytm" },
+  { label: "Other UPI", appName: "UPI", target: "generic" }
+];
 
 function statusTone(status: string) {
   const normalized = status.trim().toUpperCase();
@@ -29,18 +36,19 @@ export default function AddFundScreen() {
   const { currentUser, sessionToken, walletBalance, reloadSessionData, loadWalletHistory, loadBidHistory } = useAppState();
   const addFundSupported = isSupportedAddFundPlatform();
   const [amount, setAmount] = useState("");
+  const [utr, setUtr] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [pendingOrder, setPendingOrder] = useState<PaymentOrder | null>(null);
-  const awaitingCheckoutReturnRef = useRef(false);
+  const [pendingDeposit, setPendingDeposit] = useState<WalletEntry | null>(null);
+  const activeUpiAppRef = useRef("UPI");
 
   const numericAmount = Number(amount || 0);
   const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= MIN_DEPOSIT_AMOUNT;
-  const displayStatus = useMemo(() => pendingOrder?.remoteStatus || pendingOrder?.status || "", [pendingOrder]);
+  const displayStatus = useMemo(() => pendingDeposit?.status || "", [pendingDeposit]);
 
-  const pollPaymentStatus = useCallback(
+  const pollDepositStatus = useCallback(
     async (referenceId: string, { silent = false } = {}) => {
       if (!sessionToken) {
         return null;
@@ -50,10 +58,10 @@ export default function AddFundScreen() {
         if (!silent) {
           setCheckingStatus(true);
         }
-        const next = await api.getPaymentOrderStatus(sessionToken, referenceId);
-        setPendingOrder(next);
+        const next = await api.getUpiDepositStatus(sessionToken, referenceId);
+        setPendingDeposit(next);
 
-        const normalized = String(next.remoteStatus || next.status || "")
+        const normalized = String(next.status || "")
           .trim()
           .toUpperCase();
 
@@ -63,18 +71,18 @@ export default function AddFundScreen() {
             loadWalletHistory({ force: true }),
             loadBidHistory({ force: true })
           ]);
-          setSuccessMessage(`Deposit successful. Reference ${next.reference} wallet history me aa gaya hai.`);
+          setSuccessMessage(`Deposit approved. Reference ${next.referenceId || referenceId} wallet history me aa gaya hai.`);
           router.replace({
             pathname: "/wallet/history",
-            params: { payment: "success", reference: next.reference }
+            params: { payment: "success", reference: next.referenceId || referenceId }
           } as never);
-        } else if (normalized === "FAILED" || normalized === "CANCELLED" || normalized === "EXPIRED") {
-          setError(`Payment ${normalized.toLowerCase()} ho gaya. Zarurat ho to dobara try karo.`);
+        } else if (normalized === "FAILED" || normalized === "CANCELLED" || normalized === "REJECTED") {
+          setError(`Deposit ${normalized.toLowerCase()} ho gaya. Zarurat ho to dobara try karo.`);
           router.replace({
             pathname: "/wallet/history",
             params: {
               payment: "failed",
-              reference: next.reference,
+              reference: next.referenceId || referenceId,
               status: normalized.toLowerCase(),
               amount: String(next.amount ?? "")
             }
@@ -83,7 +91,7 @@ export default function AddFundScreen() {
 
         return next;
       } catch (statusError) {
-        setError(formatApiError(statusError, "Payment status check nahi hua."));
+        setError(formatApiError(statusError, "Deposit status check nahi hua."));
         return null;
       } finally {
         if (!silent) {
@@ -94,62 +102,18 @@ export default function AddFundScreen() {
     [loadBidHistory, loadWalletHistory, reloadSessionData, sessionToken]
   );
 
-  const markReturnedPaymentAsIncomplete = useCallback(
-    (order: PaymentOrder | null) => {
-      if (!order?.reference) {
-        return;
-      }
-
-      setError("Payment complete nahi hua. Wrong PIN ya insufficient balance ho to dobara try karo.");
-      router.replace({
-        pathname: "/wallet/history",
-        params: {
-          payment: "failed",
-          reference: order.reference,
-          status: "not_completed",
-          amount: String(order.amount ?? "")
-        }
-      } as never);
-    },
-    []
-  );
-
-  const resolveReturnedPaymentStatus = useCallback(
-    async (referenceId: string) => {
-      let latest: PaymentOrder | null = null;
-
-      for (let attempt = 0; attempt < PAYMENT_RETURN_RETRY_ATTEMPTS; attempt += 1) {
-        latest = await pollPaymentStatus(referenceId, { silent: true });
-        const normalized = String(latest?.remoteStatus || latest?.status || "")
-          .trim()
-          .toUpperCase();
-
-        if (normalized === "SUCCESS" || normalized === "PAID" || normalized === "FAILED" || normalized === "CANCELLED" || normalized === "EXPIRED") {
-          return;
-        }
-
-        if (attempt < PAYMENT_RETURN_RETRY_ATTEMPTS - 1) {
-          await new Promise((resolve) => setTimeout(resolve, PAYMENT_RETURN_RETRY_DELAY_MS));
-        }
-      }
-
-      markReturnedPaymentAsIncomplete(latest ?? pendingOrder);
-    },
-    [markReturnedPaymentAsIncomplete, pendingOrder, pollPaymentStatus]
-  );
-
   useFocusEffect(
     useCallback(() => {
-      if (!pendingOrder?.reference || submitting) {
+      if (!pendingDeposit?.referenceId || submitting) {
         return;
       }
 
       let active = true;
-      void pollPaymentStatus(pendingOrder.reference, { silent: true });
+      void pollDepositStatus(pendingDeposit.referenceId, { silent: true });
 
       const interval = setInterval(() => {
         if (active) {
-          void pollPaymentStatus(pendingOrder.reference, { silent: true });
+          void pollDepositStatus(pendingDeposit.referenceId ?? "", { silent: true });
         }
       }, PAYMENT_STATUS_REFRESH_MS);
 
@@ -157,11 +121,11 @@ export default function AddFundScreen() {
         active = false;
         clearInterval(interval);
       };
-    }, [pendingOrder?.reference, pollPaymentStatus, submitting])
+    }, [pendingDeposit?.referenceId, pollDepositStatus, submitting])
   );
 
   useEffect(() => {
-    if (!pendingOrder?.reference) {
+    if (!pendingDeposit?.referenceId) {
       return;
     }
 
@@ -170,12 +134,7 @@ export default function AddFundScreen() {
         return;
       }
       if (nextState === "active") {
-        if (awaitingCheckoutReturnRef.current) {
-          awaitingCheckoutReturnRef.current = false;
-          void resolveReturnedPaymentStatus(pendingOrder.reference);
-          return;
-        }
-        void pollPaymentStatus(pendingOrder.reference, { silent: true });
+        void pollDepositStatus(pendingDeposit.referenceId ?? "", { silent: true });
       }
     };
 
@@ -183,7 +142,7 @@ export default function AddFundScreen() {
     return () => {
       subscription.remove();
     };
-  }, [pendingOrder?.reference, pollPaymentStatus, resolveReturnedPaymentStatus, submitting]);
+  }, [pendingDeposit?.referenceId, pollDepositStatus, submitting]);
 
   return (
     <View style={styles.page}>
@@ -230,25 +189,50 @@ export default function AddFundScreen() {
 
         </SurfaceCard>
 
-        {pendingOrder ? (
+        {pendingDeposit ? (
             <SurfaceCard style={styles.statusCard}>
               <View style={styles.statusHeader}>
-                <Text style={styles.sectionTitle}>Pending Payment</Text>
+                <Text style={styles.sectionTitle}>Pending UPI Deposit</Text>
                 <Text style={[styles.statusBadge, statusTone(displayStatus)]}>{displayStatus || "PENDING"}</Text>
               </View>
               <View style={styles.statusMeta}>
-                <Text style={styles.statusLine}>Reference: {pendingOrder.reference}</Text>
-                <Text style={styles.statusLine}>Amount: Rs {pendingOrder.amount.toFixed(2)}</Text>
-                <Text style={styles.statusHint}>Payment complete karke app me wapas aao. Status auto verify ho jayega.</Text>
+                <Text style={styles.statusLine}>Reference: {pendingDeposit.referenceId}</Text>
+                <Text style={styles.statusLine}>UPI ID: {DIRECT_UPI_ID}</Text>
+                <Text style={styles.statusLine}>Amount: Rs {pendingDeposit.amount.toFixed(2)}</Text>
+                <Text style={styles.statusHint}>Payment ke baad UTR submit karo. Admin verify karke wallet credit karega.</Text>
               </View>
 
-            {pendingOrder.redirectUrl ? (
               <View style={styles.statusActions}>
-                <Pressable onPress={() => void openHostedCheckout(pendingOrder)} style={[styles.primaryButton, checkingStatus && styles.disabledButton]}>
-                  {checkingStatus ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Open Checkout</Text>}
-                </Pressable>
+                {UPI_TARGETS.map((item) => (
+                  <Pressable key={item.appName} onPress={() => void openUpiApp(item.target, item.appName)} style={styles.upiButton}>
+                    <Text style={styles.upiButtonText}>{item.label}</Text>
+                  </Pressable>
+                ))}
               </View>
-            ) : null}
+
+              <View style={styles.inputRow}>
+                <Ionicons color={colors.textMuted} name="receipt-outline" size={18} />
+                <TextInput
+                  autoCapitalize="characters"
+                  onChangeText={(value) => {
+                    setUtr(value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
+                    setError("");
+                    setSuccessMessage("");
+                  }}
+                  placeholder="Enter UTR / transaction ID"
+                  placeholderTextColor={colors.textMuted}
+                  style={styles.amountInput}
+                  value={utr}
+                />
+              </View>
+
+              <Pressable
+                disabled={!utr.trim() || submitting || !sessionToken}
+                onPress={() => void submitUtr()}
+                style={[styles.primaryButton, (!utr.trim() || submitting || !sessionToken) && styles.disabledButton]}
+              >
+                {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Submit UTR</Text>}
+              </Pressable>
           </SurfaceCard>
         ) : null}
 
@@ -267,9 +251,9 @@ export default function AddFundScreen() {
         <SurfaceCard>
           <Text style={styles.sectionTitle}>How It Works</Text>
           <View style={styles.steps}>
-            <Text style={styles.stepText}>1. Amount enter karo aur checkout start karo.</Text>
-            <Text style={styles.stepText}>2. Razorpay/UPI app me payment complete karo.</Text>
-            <Text style={styles.stepText}>3. App me wapas aate hi status automatically verify ho jayega.</Text>
+            <Text style={styles.stepText}>1. Amount enter karo aur UPI request start karo.</Text>
+            <Text style={styles.stepText}>2. Google Pay, PhonePe, Paytm ya kisi bhi UPI app se payment complete karo.</Text>
+            <Text style={styles.stepText}>3. UTR submit karo. Verification ke baad wallet credit hoga.</Text>
           </View>
         </SurfaceCard>
 
@@ -279,7 +263,7 @@ export default function AddFundScreen() {
             onPress={() => void startDeposit()}
             style={[styles.primaryButton, (!hasValidAmount || submitting || !sessionToken) && styles.disabledButton]}
           >
-            {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Pay Now</Text>}
+            {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Start UPI Deposit</Text>}
           </Pressable>
 
           <Pressable onPress={() => router.push("/wallet/history")} style={styles.historyButton}>
@@ -307,122 +291,65 @@ export default function AddFundScreen() {
       setError("");
       setSuccessMessage("");
 
-      if (pendingOrder?.redirectUrl) {
-        await openHostedCheckout(pendingOrder);
-        return;
-      }
-
-      const order = await api.createPaymentOrder(sessionToken, numericAmount, "web");
-      setPendingOrder(order);
-
-      if (Platform.OS !== "web" && order.checkoutMode === "native") {
-        await openNativeRazorpayCheckout(order);
-        return;
-      }
-
-      if (!order.redirectUrl) {
-        throw new Error("Checkout link unavailable.");
-      }
-
-      await openHostedCheckout(order);
+      const referenceId = pendingDeposit?.referenceId || buildReferenceId();
+      const deposit = await api.startUpiDeposit(sessionToken, numericAmount, "UPI", referenceId);
+      setPendingDeposit(deposit);
+      setSuccessMessage("UPI request ready hai. Payment app choose karke pay karo, phir UTR submit karo.");
     } catch (startError) {
-      awaitingCheckoutReturnRef.current = false;
       setError(formatApiError(startError, "Payment start nahi hua."));
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function openHostedCheckout(order: PaymentOrder) {
-    if (!order.redirectUrl) {
-      setError("Checkout link unavailable.");
+  async function openUpiApp(target: PreferredUpiTarget, appName: string) {
+    if (!pendingDeposit?.referenceId) {
+      setError("Pehle UPI deposit request start karo.");
       return;
     }
-
-    awaitingCheckoutReturnRef.current = true;
-    await Linking.openURL(order.redirectUrl).catch(() => {
-      awaitingCheckoutReturnRef.current = false;
-      setError("Checkout link browser me open nahi hua.");
-    });
+    try {
+      activeUpiAppRef.current = appName;
+      const session = createDepositSession({
+        amount: pendingDeposit.amount,
+        upiId: DIRECT_UPI_ID,
+        referenceId: pendingDeposit.referenceId,
+        payerLabel: DIRECT_UPI_NAME,
+        note: pendingDeposit.referenceId,
+        preferredTarget: target
+      });
+      await Linking.openURL(session.launchUrl);
+    } catch {
+      setError("UPI app open nahi hua. Other UPI option try karo.");
+    }
   }
 
-  async function openNativeRazorpayCheckout(order: PaymentOrder) {
-    const key = String(order.keyId || "").trim();
-    const orderId = String(order.gatewayOrderId || "").trim();
-    if (!key || !orderId) {
-      throw new Error("Native checkout details unavailable.");
-    }
-
-    let checkoutResult: {
-      razorpay_payment_id: string;
-      razorpay_order_id: string;
-      razorpay_signature: string;
-    };
-
-    try {
-      checkoutResult = await RazorpayCheckout.open({
-        key,
-        amount: Math.round(Number(order.amount || 0) * 100),
-        currency: "INR",
-        name: order.displayName || "SDT Wedding",
-        description: order.description || "Wallet Top Up",
-        order_id: orderId,
-        timeout: 600,
-        retry: {
-          enabled: true,
-          max_count: 3
-        },
-        prefill: {
-          contact: order.customerContact || (currentUser?.phone ? `+91${currentUser.phone}` : undefined),
-          email: order.customerEmail || (currentUser?.phone ? `${currentUser.phone}@sdtwedding.com` : "customer@sdtwedding.com"),
-          name: order.customerName || currentUser?.name || undefined
-        },
-        notes: {
-          reference: order.reference,
-          payment_order_id: order.id,
-          user_id: currentUser?.id || "",
-          user_phone: currentUser?.phone || ""
-        },
-        theme: {
-          color: colors.primary
-        }
-      });
-    } catch {
-      setError("Payment complete nahi hua. Wrong PIN, insufficient balance, ya cancel hua ho to dobara try karo.");
-      await pollPaymentStatus(order.reference, { silent: true });
-      router.replace({
-        pathname: "/wallet/history",
-        params: {
-          payment: "failed",
-          reference: order.reference,
-          status: "not_completed",
-          amount: String(order.amount ?? "")
-        }
-      } as never);
+  async function submitUtr() {
+    if (!sessionToken || !pendingDeposit?.referenceId) {
+      setError("Deposit request missing hai. Dobara start karo.");
       return;
     }
-
+    const cleanUtr = utr.trim().toUpperCase();
+    if (!cleanUtr) {
+      setError("UTR / transaction ID required hai.");
+      return;
+    }
     try {
-      const confirmed = await api.confirmPaymentOrder(sessionToken, order.reference, {
-        razorpayPaymentId: checkoutResult.razorpay_payment_id,
-        razorpayOrderId: checkoutResult.razorpay_order_id,
-        razorpaySignature: checkoutResult.razorpay_signature
+      setSubmitting(true);
+      setError("");
+      const updated = await api.reportUpiDeposit(sessionToken, {
+        referenceId: pendingDeposit.referenceId,
+        appName: activeUpiAppRef.current || "UPI",
+        utr: cleanUtr,
+        appReportedStatus: "SUBMITTED",
+        rawResponse: "user_submitted_utr"
       });
-
-      setPendingOrder(confirmed);
-      await reloadSessionData({ force: true });
-      await Promise.allSettled([
-        loadWalletHistory({ force: true }),
-        loadBidHistory({ force: true })
-      ]);
-      setSuccessMessage(`Deposit successful. Reference ${confirmed.reference} wallet history me aa gaya hai.`);
-      router.replace({
-        pathname: "/wallet/history",
-        params: { payment: "success", reference: confirmed.reference }
-      } as never);
-    } catch (confirmError) {
-      setError(formatApiError(confirmError, "Payment hua ho sakta hai, lekin verify nahi hua. Status check ho raha hai."));
-      await pollPaymentStatus(order.reference);
+      setPendingDeposit(updated);
+      setSuccessMessage("UTR submit ho gaya. Admin verify karte hi wallet credit ho jayega.");
+      await loadWalletHistory({ force: true });
+    } catch (submitError) {
+      setError(formatApiError(submitError, "UTR submit nahi hua."));
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -550,7 +477,23 @@ const styles = StyleSheet.create({
   },
   statusActions: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10
+  },
+  upiButton: {
+    minHeight: 42,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    paddingHorizontal: 14
+  },
+  upiButtonText: {
+    color: colors.primaryDark,
+    fontSize: 13,
+    fontWeight: "800"
   },
   primaryButton: {
     flex: 1,

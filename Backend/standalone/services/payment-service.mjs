@@ -48,6 +48,41 @@ function normalizeUpiClientStatus(value) {
   return "";
 }
 
+function normalizeUtr(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function parseUpiAmount(value) {
+  const text = String(value || "");
+  const match = text.match(/(?:rs\.?|inr|₹)\s*([0-9]+(?:\.[0-9]{1,2})?)/i) || text.match(/\b([0-9]+(?:\.[0-9]{1,2})?)\s*(?:rs\.?|inr|₹)/i);
+  return match ? Number(match[1]) : 0;
+}
+
+function parseUpiUtr(value) {
+  const text = String(value || "");
+  const match =
+    text.match(/\b(?:utr|upi\s*ref(?:erence)?|ref(?:erence)?\s*no\.?|txn(?:\.|action)?\s*id)\s*[:#-]?\s*([A-Z0-9]{8,24})\b/i) ||
+    text.match(/\b([0-9]{10,18})\b/);
+  return normalizeUtr(match?.[1] || "");
+}
+
+function parseDepositReference(value) {
+  const match = String(value || "").match(/\b(RM[A-Z0-9]{6,20})\b/i);
+  return match ? String(match[1]).trim().toUpperCase() : "";
+}
+
+function roundMoney(value) {
+  return Math.round(Number(value || 0) * 100) / 100;
+}
+
+function getUpiAutoCreditWindowMs() {
+  const minutes = Number(process.env.UPI_AUTO_CREDIT_WINDOW_MINUTES || 45);
+  return Math.max(5, Math.min(180, Number.isFinite(minutes) ? minutes : 45)) * 60 * 1000;
+}
+
 function getLatestPaymentLinkAttemptStatus(paymentLink) {
   const items = Array.isArray(paymentLink?.payments) ? paymentLink.payments : [];
   if (!items.length) {
@@ -362,8 +397,8 @@ export async function confirmNativePaymentOrder({ userId, referenceId, payload }
 }
 
 export async function startUpiDepositEntry({ userId, amount, appName, referenceId }) {
-  if (amount <= 0) {
-    return { ok: false, status: 400, error: "Amount must be greater than 0" };
+  if (amount < 100) {
+    return { ok: false, status: 400, error: "Minimum deposit is Rs. 100" };
   }
   if (!referenceId) {
     return { ok: false, status: 400, error: "referenceId is required" };
@@ -418,7 +453,7 @@ export async function reportUpiDepositEntry({ userId, referenceId, appName, rawR
 
   const updated = await updateWalletEntryAdmin(existing.id, {
     status: mappedStatus,
-    referenceId: utr || referenceId,
+    referenceId,
     note: nextNote
   });
 
@@ -436,6 +471,81 @@ export async function getUpiDepositEntry({ userId, referenceId }) {
   }
 
   return { ok: true, data: existing };
+}
+
+export async function processUpiNotificationCredit({ amount, utr, appName, rawText, referenceId }) {
+  const normalizedUtr = normalizeUtr(utr) || parseUpiUtr(rawText);
+  const normalizedAmount = roundMoney(Number(amount || 0) || parseUpiAmount(rawText));
+  const normalizedReferenceId = String(referenceId || "").trim().toUpperCase() || parseDepositReference(rawText);
+  const normalizedAppName = String(appName || "UPI_NOTIFICATION").trim() || "UPI_NOTIFICATION";
+  const raw = String(rawText || "").trim();
+
+  if (!normalizedUtr) {
+    return { ok: false, status: 400, error: "UTR not found in notification" };
+  }
+  if (!Number.isFinite(normalizedAmount) || normalizedAmount < 100) {
+    return { ok: false, status: 400, error: "Valid amount not found in notification" };
+  }
+
+  const { getWalletApprovalRequests, getWalletRequestHistory, resolveWalletApprovalRequest, updateWalletEntryAdmin } = await import("../db/wallet-db.mjs");
+  const allPendingDeposits = (await getWalletApprovalRequests()).filter((entry) => entry.type === "DEPOSIT" && entry.status === "INITIATED");
+  const pendingDeposits = allPendingDeposits.filter((entry) => {
+    if (entry.type !== "DEPOSIT" || entry.status !== "INITIATED") {
+      return false;
+    }
+    if (normalizedReferenceId && String(entry.referenceId || "").trim().toUpperCase() !== normalizedReferenceId) {
+      return false;
+    }
+    if (roundMoney(entry.amount) !== normalizedAmount) {
+      return false;
+    }
+    const createdAt = new Date(entry.createdAt || "").getTime();
+    return Number.isFinite(createdAt) && createdAt >= Date.now() - getUpiAutoCreditWindowMs();
+  });
+
+  const alreadyUsed = (await getWalletRequestHistory()).some((entry) => {
+    const note = String(entry.note || "").toUpperCase();
+    return note.includes(`UTR: ${normalizedUtr}`);
+  });
+  if (alreadyUsed) {
+    return { ok: false, status: 409, error: "UTR already used" };
+  }
+
+  if (pendingDeposits.length !== 1) {
+    return {
+      ok: true,
+      data: {
+        credited: false,
+        reviewRequired: true,
+        reason: pendingDeposits.length > 1 ? "Multiple pending deposits matched amount" : "No pending deposit matched amount",
+        amount: normalizedAmount,
+        utr: normalizedUtr,
+        matchedCount: pendingDeposits.length
+      }
+    };
+  }
+
+  const matched = pendingDeposits[0];
+  const note = [
+    `UPI App: ${normalizedAppName}`,
+    "Client Status: AUTO_NOTIFICATION",
+    `UTR: ${normalizedUtr}`,
+    raw ? `Raw: ${raw.slice(0, 260)}` : ""
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
+  await updateWalletEntryAdmin(matched.id, { note, referenceId: matched.referenceId });
+  const approved = await resolveWalletApprovalRequest(matched.id, "approve");
+  return {
+    ok: true,
+    data: {
+      credited: Boolean(approved?.request),
+      amount: normalizedAmount,
+      utr: normalizedUtr,
+      request: approved?.request || null
+    }
+  };
 }
 
 export async function resolveCheckoutSession({ paymentOrderId, checkoutToken }) {

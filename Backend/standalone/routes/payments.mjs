@@ -8,6 +8,7 @@ import {
   confirmNativePaymentOrder,
   getPaymentOrderStatusSnapshot,
   getUpiDepositEntry,
+  processUpiNotificationCredit,
   processPaymentWebhook,
   reportUpiDepositEntry,
   resolveCheckoutSession,
@@ -350,6 +351,27 @@ export async function getUpiDepositStatus(request) {
   const result = await getUpiDepositEntry({
     userId: user.id,
     referenceId: String(body.referenceId ?? "").trim()
+  });
+  if (!result.ok) {
+    return fail(result.error, result.status, request);
+  }
+  return ok(result.data, request);
+}
+
+export async function upiAutoCreditWebhook(request) {
+  const expectedSecret = String(process.env.UPI_AUTO_CREDIT_SECRET || "").trim();
+  const providedSecret = String(request.headers.get("x-upi-listener-secret") || request.headers.get("x-webhook-secret") || "").trim();
+  if (!expectedSecret || providedSecret !== expectedSecret) {
+    return fail("Unauthorized UPI listener webhook", 401, request);
+  }
+
+  const body = await getJsonBody(request);
+  const result = await processUpiNotificationCredit({
+    amount: Number(body.amount ?? 0),
+    utr: String(body.utr ?? body.reference ?? "").trim(),
+    referenceId: String(body.referenceId ?? body.depositReference ?? "").trim(),
+    appName: String(body.appName ?? body.packageName ?? "UPI_NOTIFICATION").trim(),
+    rawText: String(body.rawText ?? body.text ?? "").trim()
   });
   if (!result.ok) {
     return fail(result.error, result.status, request);

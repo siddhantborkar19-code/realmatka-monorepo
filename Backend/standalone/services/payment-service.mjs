@@ -18,9 +18,15 @@ function roundToPaise(amount) {
   return Math.round(Number(amount || 0) * 100);
 }
 
+function getConfiguredDepositMinAmount() {
+  const value = Number(process.env.DEPOSIT_MIN_AMOUNT || 100);
+  return Math.max(1, Number.isFinite(value) ? value : 100);
+}
+
 function validateDepositAmount(amountPaise) {
-  if (amountPaise < 10000) {
-    return "Minimum deposit is Rs. 100";
+  const minAmount = getConfiguredDepositMinAmount();
+  if (amountPaise < roundToPaise(minAmount)) {
+    return `Minimum deposit is Rs. ${minAmount}`;
   }
   return "";
 }
@@ -42,7 +48,7 @@ export function getDepositConfigSnapshot() {
   const allowedModes = new Set(["manual_qr", "maintenance", "razorpay", "upi_intent"]);
   const configuredMode = String(process.env.DEPOSIT_MODE || "manual_qr").trim().toLowerCase();
   const mode = allowedModes.has(configuredMode) ? configuredMode : "manual_qr";
-  const minAmount = Math.max(1, readNumberEnv("DEPOSIT_MIN_AMOUNT", 100));
+  const minAmount = getConfiguredDepositMinAmount();
   const upiId = String(process.env.DEPOSIT_UPI_ID || process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "s7568539842258141@slc").trim();
   const upiName = String(process.env.DEPOSIT_UPI_NAME || process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "slice").trim();
   const whatsappNumber = String(process.env.DEPOSIT_WHATSAPP_PHONE || process.env.EXPO_PUBLIC_PAYMENT_WHATSAPP_PHONE || "8446012081").replace(/\D/g, "");
@@ -442,8 +448,9 @@ export async function confirmNativePaymentOrder({ userId, referenceId, payload }
 }
 
 export async function startUpiDepositEntry({ userId, amount, appName, referenceId }) {
-  if (amount < 100) {
-    return { ok: false, status: 400, error: "Minimum deposit is Rs. 100" };
+  const minAmount = getConfiguredDepositMinAmount();
+  if (amount < minAmount) {
+    return { ok: false, status: 400, error: `Minimum deposit is Rs. ${minAmount}` };
   }
   if (!referenceId) {
     return { ok: false, status: 400, error: "referenceId is required" };
@@ -528,7 +535,7 @@ export async function processUpiNotificationCredit({ amount, utr, appName, rawTe
   if (!normalizedUtr) {
     return { ok: false, status: 400, error: "UTR not found in notification" };
   }
-  if (!Number.isFinite(normalizedAmount) || normalizedAmount < 100) {
+  if (!Number.isFinite(normalizedAmount) || normalizedAmount < getConfiguredDepositMinAmount()) {
     return { ok: false, status: 400, error: "Valid amount not found in notification" };
   }
 

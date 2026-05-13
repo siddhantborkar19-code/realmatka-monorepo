@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, AppState, Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import QRCode from "qrcode-terminal/vendor/QRCode";
 import QRErrorCorrectLevel from "qrcode-terminal/vendor/QRCode/QRErrorCorrectLevel";
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
-import { api, formatApiError, type DepositConfig } from "@/lib/api";
+import { api, formatApiError, type DepositConfig, type PaymentOrder } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import { colors } from "@/theme/colors";
 
@@ -53,7 +53,7 @@ function buildQrMatrix(value: string) {
 }
 
 export default function AddFundScreen() {
-  const { currentUser, sessionToken, walletBalance } = useAppState();
+  const { currentUser, sessionToken, walletBalance, reloadSessionData, loadWalletHistory } = useAppState();
   const [depositConfig, setDepositConfig] = useState<DepositConfig>(DEFAULT_DEPOSIT_CONFIG);
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [amount, setAmount] = useState("");
@@ -61,6 +61,8 @@ export default function AddFundScreen() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const [pendingGatewayOrder, setPendingGatewayOrder] = useState<PaymentOrder | null>(null);
 
   const numericAmount = Number(amount || 0);
   const minAmount = Math.max(1, Number(depositConfig.minAmount || MIN_DEPOSIT_AMOUNT));
@@ -101,6 +103,22 @@ export default function AddFundScreen() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!pendingGatewayOrder?.reference || !sessionToken) {
+      return;
+    }
+
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        void checkGatewayPaymentStatus(false);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [pendingGatewayOrder?.reference, sessionToken]);
 
   return (
     <View style={styles.page}>
@@ -231,6 +249,23 @@ export default function AddFundScreen() {
           </SurfaceCard>
         ) : null}
 
+        {isRazorpayMode && pendingGatewayOrder ? (
+          <SurfaceCard style={styles.gatewayStatusCard}>
+            <Text style={styles.sectionTitle}>Payment Verification</Text>
+            <Text style={styles.statusLine}>Reference: {pendingGatewayOrder.reference}</Text>
+            <Text style={styles.statusLine}>Amount: Rs {pendingGatewayOrder.amount}</Text>
+            <Text style={styles.qrHint}>Payment complete karne ke baad app me wapas aakar status check karo. Agar webhook miss hua to ye button backend se status fetch karke wallet credit karega.</Text>
+            <Pressable
+              disabled={checkingPayment}
+              onPress={() => void checkGatewayPaymentStatus(true)}
+              style={[styles.secondaryActionButton, checkingPayment && styles.disabledButton]}
+            >
+              {checkingPayment ? <ActivityIndicator color={colors.primaryDark} size="small" /> : <Ionicons color={colors.primaryDark} name="refresh-outline" size={18} />}
+              <Text style={styles.secondaryActionText}>Check Payment Status</Text>
+            </Pressable>
+          </SurfaceCard>
+        ) : null}
+
         {error ? (
           <SurfaceCard style={styles.messageCard}>
             <Text style={styles.errorText}>{error}</Text>
@@ -326,12 +361,52 @@ export default function AddFundScreen() {
         setError("Payment link create nahi hua. Thodi der baad retry karo.");
         return;
       }
+      setPendingGatewayOrder(order);
       await Linking.openURL(order.redirectUrl);
-      setMessage("Payment page open ho gaya. Payment complete hone ke baad wallet history check karo.");
+      setMessage("Payment page open ho gaya. Payment complete hone ke baad app me wapas aakar status check karo.");
     } catch (paymentError) {
       setError(formatApiError(paymentError, "Payment start nahi hua."));
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function checkGatewayPaymentStatus(showPendingMessage: boolean) {
+    if (!sessionToken || !pendingGatewayOrder?.reference) {
+      return;
+    }
+
+    try {
+      setCheckingPayment(true);
+      setError("");
+      const next = await api.getPaymentOrderStatus(sessionToken, pendingGatewayOrder.reference);
+      setPendingGatewayOrder(next);
+      const normalized = String(next.remoteStatus || next.status || "")
+        .trim()
+        .toUpperCase();
+
+      if (normalized === "SUCCESS" || normalized === "PAID") {
+        await reloadSessionData({ force: true });
+        await loadWalletHistory({ force: true });
+        router.replace({
+          pathname: "/wallet/history",
+          params: { payment: "success", reference: next.reference, amount: String(next.amount) }
+        } as never);
+        return;
+      }
+
+      if (normalized === "FAILED" || normalized === "CANCELLED" || normalized === "EXPIRED") {
+        setError(`Payment ${normalized.toLowerCase()} ho gaya. Dobara try karo.`);
+        return;
+      }
+
+      if (showPendingMessage) {
+        setMessage("Payment abhi pending/processing hai. Kuch seconds baad dobara check karo.");
+      }
+    } catch (statusError) {
+      setError(formatApiError(statusError, "Payment status check nahi hua."));
+    } finally {
+      setCheckingPayment(false);
     }
   }
 }
@@ -509,6 +584,31 @@ const styles = StyleSheet.create({
   },
   messageCard: {
     gap: 0
+  },
+  gatewayStatusCard: {
+    gap: 10
+  },
+  statusLine: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "700"
+  },
+  secondaryActionButton: {
+    minHeight: 48,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    paddingHorizontal: 16
+  },
+  secondaryActionText: {
+    color: colors.primaryDark,
+    fontSize: 14,
+    fontWeight: "900"
   },
   successText: {
     color: colors.success,

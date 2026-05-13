@@ -42,11 +42,13 @@ function buildQrMatrix(value: string) {
 export default function AddFundScreen() {
   const { currentUser, walletBalance } = useAppState();
   const [amount, setAmount] = useState("");
+  const [generatedAmount, setGeneratedAmount] = useState<number | null>(null);
   const [message, setMessage] = useState("");
 
   const numericAmount = Number(amount || 0);
   const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= MIN_DEPOSIT_AMOUNT;
-  const upiUrl = useMemo(() => buildUpiUrl(hasValidAmount ? numericAmount : null), [hasValidAmount, numericAmount]);
+  const hasGeneratedQr = generatedAmount !== null;
+  const upiUrl = useMemo(() => buildUpiUrl(generatedAmount), [generatedAmount]);
   const qrMatrix = useMemo(() => buildQrMatrix(upiUrl), [upiUrl]);
   const moduleSize = Math.max(3, Math.floor(232 / qrMatrix.length));
   const qrSize = qrMatrix.length * moduleSize;
@@ -73,6 +75,7 @@ export default function AddFundScreen() {
               keyboardType="numeric"
               onChangeText={(value) => {
                 setAmount(value.replace(/[^0-9]/g, ""));
+                setGeneratedAmount(null);
                 setMessage("");
               }}
               placeholder="Enter amount min 100"
@@ -82,51 +85,75 @@ export default function AddFundScreen() {
             />
           </View>
           {!hasValidAmount && amount ? <Text style={styles.errorText}>Minimum deposit Rs {MIN_DEPOSIT_AMOUNT} hai.</Text> : null}
+          <Pressable
+            disabled={!hasValidAmount}
+            onPress={() => {
+              setGeneratedAmount(numericAmount);
+              setMessage(`Rs ${numericAmount} ka QR generate ho gaya. Ab payment karo aur screenshot bhejo.`);
+            }}
+            style={[styles.generateButton, !hasValidAmount && styles.disabledButton]}
+          >
+            <Ionicons color={colors.surface} name="qr-code-outline" size={18} />
+            <Text style={styles.generateButtonText}>Generate QR</Text>
+          </Pressable>
         </SurfaceCard>
 
-        <SurfaceCard style={styles.qrCard}>
-          <View style={styles.qrHeader}>
-            <View>
-              <Text style={styles.sectionTitle}>Scan QR & Pay</Text>
-              <Text style={styles.qrSubText}>Screenshot lo, kisi bhi UPI app se payment karo.</Text>
+        {hasGeneratedQr ? (
+          <SurfaceCard style={styles.qrCard}>
+            <View style={styles.qrHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Scan QR & Pay</Text>
+                <Text style={styles.qrSubText}>Rs {generatedAmount} ka QR generated hai.</Text>
+              </View>
+              <View style={styles.manualBadge}>
+                <Text style={styles.manualBadgeText}>Manual</Text>
+              </View>
             </View>
-            <View style={styles.manualBadge}>
-              <Text style={styles.manualBadgeText}>Manual</Text>
-            </View>
-          </View>
 
-          <View style={styles.qrFrame}>
-            <View style={[styles.qrGrid, { height: qrSize, width: qrSize }]}>
-              {qrMatrix.map((row, rowIndex) => (
-                <View key={`row-${rowIndex}`} style={styles.qrRow}>
-                  {row.map((dark, colIndex) => (
-                    <View
-                      key={`cell-${rowIndex}-${colIndex}`}
-                      style={[
-                        styles.qrCell,
-                        {
-                          backgroundColor: dark ? "#000000" : "#ffffff",
-                          height: moduleSize,
-                          width: moduleSize
-                        }
-                      ]}
-                    />
-                  ))}
-                </View>
-              ))}
+            <View style={styles.amountPill}>
+              <Text style={styles.amountPillLabel}>Pay Amount</Text>
+              <Text style={styles.amountPillValue}>Rs {generatedAmount}</Text>
             </View>
-          </View>
 
-          <View style={styles.upiInfo}>
-            <Text style={styles.upiLabel}>UPI ID</Text>
-            <Text selectable style={styles.upiValue}>
-              {MANUAL_UPI_ID}
+            <View style={styles.qrFrame}>
+              <View style={[styles.qrGrid, { height: qrSize, width: qrSize }]}>
+                {qrMatrix.map((row, rowIndex) => (
+                  <View key={`row-${rowIndex}`} style={styles.qrRow}>
+                    {row.map((dark, colIndex) => (
+                      <View
+                        key={`cell-${rowIndex}-${colIndex}`}
+                        style={[
+                          styles.qrCell,
+                          {
+                            backgroundColor: dark ? "#000000" : "#ffffff",
+                            height: moduleSize,
+                            width: moduleSize
+                          }
+                        ]}
+                      />
+                    ))}
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.upiInfo}>
+              <Text style={styles.upiLabel}>UPI ID</Text>
+              <Text selectable style={styles.upiValue}>
+                {MANUAL_UPI_ID}
+              </Text>
+            </View>
+            <Text style={styles.qrHint}>
+              Payment ke baad QR/payment ka screenshot lo, phir WhatsApp par proof bhejo. Admin verify karke wallet credit karega.
             </Text>
-          </View>
-          <Text style={styles.qrHint}>
-            Payment ke baad WhatsApp button dabao aur payment screenshot attach karke bhejo. Admin verify karke wallet credit karega.
-          </Text>
-        </SurfaceCard>
+          </SurfaceCard>
+        ) : (
+          <SurfaceCard style={styles.placeholderCard}>
+            <Ionicons color={colors.textMuted} name="qr-code-outline" size={34} />
+            <Text style={styles.placeholderTitle}>QR abhi generate nahi hua</Text>
+            <Text style={styles.placeholderText}>Amount enter karke Generate QR dabao. Uske baad QR screenshot lekar payment proof bhejna.</Text>
+          </SurfaceCard>
+        )}
 
         {message ? (
           <SurfaceCard style={styles.messageCard}>
@@ -138,17 +165,18 @@ export default function AddFundScreen() {
           <Text style={styles.sectionTitle}>How It Works</Text>
           <View style={styles.steps}>
             <Text style={styles.stepText}>1. Amount enter karo.</Text>
-            <Text style={styles.stepText}>2. QR ka screenshot lo aur UPI app se payment complete karo.</Text>
-            <Text style={styles.stepText}>3. WhatsApp par payment screenshot bhejo.</Text>
-            <Text style={styles.stepText}>4. Admin verify karke wallet balance add karega.</Text>
+            <Text style={styles.stepText}>2. Generate QR dabao.</Text>
+            <Text style={styles.stepText}>3. QR screenshot lo aur UPI app se payment complete karo.</Text>
+            <Text style={styles.stepText}>4. WhatsApp par payment screenshot bhejo.</Text>
+            <Text style={styles.stepText}>5. Admin verify karke wallet balance add karega.</Text>
           </View>
         </SurfaceCard>
 
         <View style={styles.footerActions}>
           <Pressable
-            disabled={!hasValidAmount}
+            disabled={!hasGeneratedQr}
             onPress={() => void sendWhatsAppProof()}
-            style={[styles.whatsappButton, !hasValidAmount && styles.disabledButton]}
+            style={[styles.whatsappButton, !hasGeneratedQr && styles.disabledButton]}
           >
             <Ionicons color={colors.surface} name="logo-whatsapp" size={19} />
             <Text style={styles.whatsappButtonText}>Send WhatsApp Proof</Text>
@@ -163,8 +191,8 @@ export default function AddFundScreen() {
   );
 
   async function sendWhatsAppProof() {
-    if (!hasValidAmount) {
-      setMessage(`Minimum deposit Rs ${MIN_DEPOSIT_AMOUNT} hai.`);
+    if (!generatedAmount) {
+      setMessage("Pehle amount enter karke QR generate karo.");
       return;
     }
 
@@ -173,7 +201,7 @@ export default function AddFundScreen() {
       : "User: App user";
     const text = [
       "Wallet deposit payment proof",
-      `Amount: Rs ${numericAmount}`,
+      `Amount: Rs ${generatedAmount}`,
       `UPI ID: ${MANUAL_UPI_ID}`,
       userLine,
       "",
@@ -248,6 +276,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900"
   },
+  generateButton: {
+    minHeight: 50,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    marginTop: 12
+  },
+  generateButtonText: {
+    color: colors.surface,
+    fontSize: 14,
+    fontWeight: "900"
+  },
   qrCard: {
     alignItems: "stretch"
   },
@@ -272,6 +316,25 @@ const styles = StyleSheet.create({
   manualBadgeText: {
     color: colors.accentDark,
     fontSize: 11,
+    fontWeight: "900"
+  },
+  amountPill: {
+    alignSelf: "center",
+    alignItems: "center",
+    borderRadius: 18,
+    backgroundColor: colors.primarySoft,
+    paddingHorizontal: 22,
+    paddingVertical: 10
+  },
+  amountPillLabel: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  amountPillValue: {
+    color: colors.primaryDark,
+    fontSize: 24,
     fontWeight: "900"
   },
   qrFrame: {
@@ -307,6 +370,21 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   qrHint: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: "center"
+  },
+  placeholderCard: {
+    alignItems: "center",
+    paddingVertical: 26
+  },
+  placeholderTitle: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  placeholderText: {
     color: colors.textSecondary,
     fontSize: 13,
     lineHeight: 20,

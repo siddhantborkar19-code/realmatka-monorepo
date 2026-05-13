@@ -1,164 +1,60 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, AppState, AppStateStatus, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import QRCode from "qrcode-terminal/vendor/QRCode";
+import QRErrorCorrectLevel from "qrcode-terminal/vendor/QRCode/QRErrorCorrectLevel";
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
-import { api, formatApiError, type WalletEntry } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
-import { getAddFundUnsupportedMessage, isSupportedAddFundPlatform } from "@/lib/payment-platform";
-import { buildReferenceId, createDepositSession, type PreferredUpiTarget } from "@/lib/payment-processor";
 import { colors } from "@/theme/colors";
 
 const MIN_DEPOSIT_AMOUNT = 100;
-const PAYMENT_STATUS_REFRESH_MS = 10_000;
-const DIRECT_UPI_ID = (process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "9309782081@okbizaxis").trim();
-const DIRECT_UPI_NAME = (process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "Real Matka").trim();
+const MANUAL_UPI_ID = (process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "s7568539842258141@slc").trim();
+const MANUAL_UPI_NAME = (process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "slice").trim();
+const PAYMENT_WHATSAPP_PHONE = (process.env.EXPO_PUBLIC_PAYMENT_WHATSAPP_PHONE || "9309782081").replace(/\D/g, "");
 
-const UPI_TARGETS: Array<{ label: string; appName: string; target: PreferredUpiTarget }> = [
-  { label: "Google Pay", appName: "GOOGLE_PAY", target: "googlePay" },
-  { label: "PhonePe", appName: "PHONEPE", target: "phonePe" },
-  { label: "Paytm", appName: "PAYTM", target: "paytm" },
-  { label: "Other UPI", appName: "UPI", target: "generic" }
-];
+function buildUpiUrl(amount: number | null) {
+  const params = new URLSearchParams({
+    pa: MANUAL_UPI_ID,
+    pn: MANUAL_UPI_NAME,
+    cu: "INR",
+    tn: "Wallet Deposit"
+  });
 
-function statusTone(status: string) {
-  const normalized = status.trim().toUpperCase();
-  if (normalized === "SUCCESS" || normalized === "PAID") {
-    return styles.statusSuccess;
+  if (amount && Number.isFinite(amount) && amount >= MIN_DEPOSIT_AMOUNT) {
+    params.set("am", amount.toFixed(2));
   }
-  if (normalized === "FAILED" || normalized === "CANCELLED" || normalized === "EXPIRED") {
-    return styles.statusDanger;
-  }
-  return styles.statusPending;
+
+  return `upi://pay?${params.toString()}`;
+}
+
+function buildQrMatrix(value: string) {
+  const qr = new QRCode(-1, QRErrorCorrectLevel.M);
+  qr.addData(value);
+  qr.make();
+
+  const count = qr.getModuleCount();
+  return Array.from({ length: count }, (_, row) =>
+    Array.from({ length: count }, (_, col) => qr.isDark(row, col))
+  );
 }
 
 export default function AddFundScreen() {
-  const { currentUser, sessionToken, walletBalance, reloadSessionData, loadWalletHistory, loadBidHistory } = useAppState();
-  const addFundSupported = isSupportedAddFundPlatform();
+  const { currentUser, walletBalance } = useAppState();
   const [amount, setAmount] = useState("");
-  const [utr, setUtr] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [checkingStatus, setCheckingStatus] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [pendingDeposit, setPendingDeposit] = useState<WalletEntry | null>(null);
-  const activeUpiAppRef = useRef("UPI");
+  const [message, setMessage] = useState("");
 
   const numericAmount = Number(amount || 0);
   const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= MIN_DEPOSIT_AMOUNT;
-  const displayStatus = useMemo(() => pendingDeposit?.status || "", [pendingDeposit]);
-
-  const pollDepositStatus = useCallback(
-    async (referenceId: string, { silent = false } = {}) => {
-      if (!sessionToken) {
-        return null;
-      }
-
-      try {
-        if (!silent) {
-          setCheckingStatus(true);
-        }
-        const next = await api.getUpiDepositStatus(sessionToken, referenceId);
-        setPendingDeposit(next);
-
-        const normalized = String(next.status || "")
-          .trim()
-          .toUpperCase();
-
-        if (normalized === "SUCCESS" || normalized === "PAID") {
-          await reloadSessionData({ force: true });
-          await Promise.allSettled([
-            loadWalletHistory({ force: true }),
-            loadBidHistory({ force: true })
-          ]);
-          setSuccessMessage(`Deposit approved. Reference ${next.referenceId || referenceId} wallet history me aa gaya hai.`);
-          router.replace({
-            pathname: "/wallet/history",
-            params: { payment: "success", reference: next.referenceId || referenceId }
-          } as never);
-        } else if (normalized === "FAILED" || normalized === "CANCELLED" || normalized === "REJECTED") {
-          setError(`Deposit ${normalized.toLowerCase()} ho gaya. Zarurat ho to dobara try karo.`);
-          router.replace({
-            pathname: "/wallet/history",
-            params: {
-              payment: "failed",
-              reference: next.referenceId || referenceId,
-              status: normalized.toLowerCase(),
-              amount: String(next.amount ?? "")
-            }
-          } as never);
-        }
-
-        return next;
-      } catch (statusError) {
-        setError(formatApiError(statusError, "Deposit status check nahi hua."));
-        return null;
-      } finally {
-        if (!silent) {
-          setCheckingStatus(false);
-        }
-      }
-    },
-    [loadBidHistory, loadWalletHistory, reloadSessionData, sessionToken]
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!pendingDeposit?.referenceId || submitting) {
-        return;
-      }
-
-      let active = true;
-      void pollDepositStatus(pendingDeposit.referenceId, { silent: true });
-
-      const interval = setInterval(() => {
-        if (active) {
-          void pollDepositStatus(pendingDeposit.referenceId ?? "", { silent: true });
-        }
-      }, PAYMENT_STATUS_REFRESH_MS);
-
-      return () => {
-        active = false;
-        clearInterval(interval);
-      };
-    }, [pendingDeposit?.referenceId, pollDepositStatus, submitting])
-  );
-
-  useEffect(() => {
-    if (!pendingDeposit?.referenceId) {
-      return;
-    }
-
-    const handleAppState = (nextState: AppStateStatus) => {
-      if (submitting) {
-        return;
-      }
-      if (nextState === "active") {
-        void pollDepositStatus(pendingDeposit.referenceId ?? "", { silent: true });
-      }
-    };
-
-    const subscription = AppState.addEventListener("change", handleAppState);
-    return () => {
-      subscription.remove();
-    };
-  }, [pendingDeposit?.referenceId, pollDepositStatus, submitting]);
+  const upiUrl = useMemo(() => buildUpiUrl(hasValidAmount ? numericAmount : null), [hasValidAmount, numericAmount]);
+  const qrMatrix = useMemo(() => buildQrMatrix(upiUrl), [upiUrl]);
+  const moduleSize = Math.max(3, Math.floor(232 / qrMatrix.length));
+  const qrSize = qrMatrix.length * moduleSize;
 
   return (
     <View style={styles.page}>
       <BackHeader title="Add Fund" subtitle={undefined} />
       <AppScreen showPromo={false}>
-        {!addFundSupported ? (
-          <SurfaceCard style={styles.unsupportedCard}>
-            <Ionicons color={colors.warning} name="alert-circle-outline" size={22} />
-            <Text style={styles.unsupportedTitle}>Add Fund unavailable</Text>
-            <Text style={styles.unsupportedText}>{getAddFundUnsupportedMessage()}</Text>
-            <Pressable onPress={() => router.replace("/(tabs)/wallet" as never)} style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Back to Wallet</Text>
-            </Pressable>
-          </SurfaceCard>
-        ) : (
-          <>
         <SurfaceCard style={styles.heroCard}>
           <View style={styles.heroIcon}>
             <Ionicons color={colors.surface} name="wallet-outline" size={22} />
@@ -177,8 +73,7 @@ export default function AddFundScreen() {
               keyboardType="numeric"
               onChangeText={(value) => {
                 setAmount(value.replace(/[^0-9]/g, ""));
-                setError("");
-                setSuccessMessage("");
+                setMessage("");
               }}
               placeholder="Enter amount min 100"
               placeholderTextColor={colors.textMuted}
@@ -186,173 +81,114 @@ export default function AddFundScreen() {
               value={amount}
             />
           </View>
-
+          {!hasValidAmount && amount ? <Text style={styles.errorText}>Minimum deposit Rs {MIN_DEPOSIT_AMOUNT} hai.</Text> : null}
         </SurfaceCard>
 
-        {pendingDeposit ? (
-            <SurfaceCard style={styles.statusCard}>
-              <View style={styles.statusHeader}>
-                <Text style={styles.sectionTitle}>Pending UPI Deposit</Text>
-                <Text style={[styles.statusBadge, statusTone(displayStatus)]}>{displayStatus || "PENDING"}</Text>
-              </View>
-              <View style={styles.statusMeta}>
-                <Text style={styles.statusLine}>Reference: {pendingDeposit.referenceId}</Text>
-                <Text style={styles.statusLine}>UPI ID: {DIRECT_UPI_ID}</Text>
-                <Text style={styles.statusLine}>Amount: Rs {pendingDeposit.amount.toFixed(2)}</Text>
-                <Text style={styles.statusHint}>Payment ke baad UTR submit karo. Admin verify karke wallet credit karega.</Text>
-              </View>
+        <SurfaceCard style={styles.qrCard}>
+          <View style={styles.qrHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>Scan QR & Pay</Text>
+              <Text style={styles.qrSubText}>Screenshot lo, kisi bhi UPI app se payment karo.</Text>
+            </View>
+            <View style={styles.manualBadge}>
+              <Text style={styles.manualBadgeText}>Manual</Text>
+            </View>
+          </View>
 
-              <View style={styles.statusActions}>
-                {UPI_TARGETS.map((item) => (
-                  <Pressable key={item.appName} onPress={() => void openUpiApp(item.target, item.appName)} style={styles.upiButton}>
-                    <Text style={styles.upiButtonText}>{item.label}</Text>
-                  </Pressable>
-                ))}
-              </View>
+          <View style={styles.qrFrame}>
+            <View style={[styles.qrGrid, { height: qrSize, width: qrSize }]}>
+              {qrMatrix.map((row, rowIndex) => (
+                <View key={`row-${rowIndex}`} style={styles.qrRow}>
+                  {row.map((dark, colIndex) => (
+                    <View
+                      key={`cell-${rowIndex}-${colIndex}`}
+                      style={[
+                        styles.qrCell,
+                        {
+                          backgroundColor: dark ? "#000000" : "#ffffff",
+                          height: moduleSize,
+                          width: moduleSize
+                        }
+                      ]}
+                    />
+                  ))}
+                </View>
+              ))}
+            </View>
+          </View>
 
-              <View style={styles.inputRow}>
-                <Ionicons color={colors.textMuted} name="receipt-outline" size={18} />
-                <TextInput
-                  autoCapitalize="characters"
-                  onChangeText={(value) => {
-                    setUtr(value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
-                    setError("");
-                    setSuccessMessage("");
-                  }}
-                  placeholder="Enter UTR / transaction ID"
-                  placeholderTextColor={colors.textMuted}
-                  style={styles.amountInput}
-                  value={utr}
-                />
-              </View>
+          <View style={styles.upiInfo}>
+            <Text style={styles.upiLabel}>UPI ID</Text>
+            <Text selectable style={styles.upiValue}>
+              {MANUAL_UPI_ID}
+            </Text>
+          </View>
+          <Text style={styles.qrHint}>
+            Payment ke baad WhatsApp button dabao aur payment screenshot attach karke bhejo. Admin verify karke wallet credit karega.
+          </Text>
+        </SurfaceCard>
 
-              <Pressable
-                disabled={!utr.trim() || submitting || !sessionToken}
-                onPress={() => void submitUtr()}
-                style={[styles.primaryButton, (!utr.trim() || submitting || !sessionToken) && styles.disabledButton]}
-              >
-                {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Submit UTR</Text>}
-              </Pressable>
-          </SurfaceCard>
-        ) : null}
-
-        {successMessage ? (
+        {message ? (
           <SurfaceCard style={styles.messageCard}>
-            <Text style={styles.successText}>{successMessage}</Text>
-          </SurfaceCard>
-        ) : null}
-
-        {error ? (
-          <SurfaceCard style={styles.messageCard}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.successText}>{message}</Text>
           </SurfaceCard>
         ) : null}
 
         <SurfaceCard>
           <Text style={styles.sectionTitle}>How It Works</Text>
           <View style={styles.steps}>
-            <Text style={styles.stepText}>1. Amount enter karo aur UPI request start karo.</Text>
-            <Text style={styles.stepText}>2. Google Pay, PhonePe, Paytm ya kisi bhi UPI app se payment complete karo.</Text>
-            <Text style={styles.stepText}>3. UTR submit karo. Verification ke baad wallet credit hoga.</Text>
+            <Text style={styles.stepText}>1. Amount enter karo.</Text>
+            <Text style={styles.stepText}>2. QR ka screenshot lo aur UPI app se payment complete karo.</Text>
+            <Text style={styles.stepText}>3. WhatsApp par payment screenshot bhejo.</Text>
+            <Text style={styles.stepText}>4. Admin verify karke wallet balance add karega.</Text>
           </View>
         </SurfaceCard>
 
         <View style={styles.footerActions}>
           <Pressable
-            disabled={!hasValidAmount || submitting || !sessionToken}
-            onPress={() => void startDeposit()}
-            style={[styles.primaryButton, (!hasValidAmount || submitting || !sessionToken) && styles.disabledButton]}
+            disabled={!hasValidAmount}
+            onPress={() => void sendWhatsAppProof()}
+            style={[styles.whatsappButton, !hasValidAmount && styles.disabledButton]}
           >
-            {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Text style={styles.primaryButtonText}>Start UPI Deposit</Text>}
+            <Ionicons color={colors.surface} name="logo-whatsapp" size={19} />
+            <Text style={styles.whatsappButtonText}>Send WhatsApp Proof</Text>
           </Pressable>
 
           <Pressable onPress={() => router.push("/wallet/history")} style={styles.historyButton}>
             <Text style={styles.historyButtonText}>View Wallet History</Text>
           </Pressable>
         </View>
-          </>
-        )}
       </AppScreen>
     </View>
   );
 
-  async function startDeposit() {
-    if (!sessionToken) {
-      setError("Login required");
+  async function sendWhatsAppProof() {
+    if (!hasValidAmount) {
+      setMessage(`Minimum deposit Rs ${MIN_DEPOSIT_AMOUNT} hai.`);
       return;
     }
 
-    if (!Number.isFinite(numericAmount) || numericAmount < MIN_DEPOSIT_AMOUNT) {
-      setError(`Minimum deposit is Rs ${MIN_DEPOSIT_AMOUNT}.`);
-      return;
-    }
-      try {
-        setSubmitting(true);
-      setError("");
-      setSuccessMessage("");
+    const userLine = currentUser
+      ? `User: ${currentUser.name || "User"}${currentUser.phone ? ` (${currentUser.phone})` : ""}`
+      : "User: App user";
+    const text = [
+      "Wallet deposit payment proof",
+      `Amount: Rs ${numericAmount}`,
+      `UPI ID: ${MANUAL_UPI_ID}`,
+      userLine,
+      "",
+      "Payment screenshot attached. Please verify and credit my wallet."
+    ].join("\n");
+    const phone = PAYMENT_WHATSAPP_PHONE.startsWith("91") ? PAYMENT_WHATSAPP_PHONE : `91${PAYMENT_WHATSAPP_PHONE}`;
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 
-      const referenceId = pendingDeposit?.referenceId || buildReferenceId();
-      const deposit = await api.startUpiDeposit(sessionToken, numericAmount, "UPI", referenceId);
-      setPendingDeposit(deposit);
-      setSuccessMessage("UPI request ready hai. Payment app choose karke pay karo, phir UTR submit karo.");
-    } catch (startError) {
-      setError(formatApiError(startError, "Payment start nahi hua."));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function openUpiApp(target: PreferredUpiTarget, appName: string) {
-    if (!pendingDeposit?.referenceId) {
-      setError("Pehle UPI deposit request start karo.");
-      return;
-    }
     try {
-      activeUpiAppRef.current = appName;
-      const session = createDepositSession({
-        amount: pendingDeposit.amount,
-        upiId: DIRECT_UPI_ID,
-        referenceId: pendingDeposit.referenceId,
-        payerLabel: DIRECT_UPI_NAME,
-        note: pendingDeposit.referenceId,
-        preferredTarget: target
-      });
-      await Linking.openURL(session.launchUrl);
+      await Linking.openURL(whatsappUrl);
+      setMessage("WhatsApp open ho gaya. Ab payment screenshot attach karke send karo.");
     } catch {
-      setError("UPI app open nahi hua. Other UPI option try karo.");
+      setMessage("WhatsApp open nahi hua. Screenshot manually WhatsApp par bhejo.");
     }
   }
-
-  async function submitUtr() {
-    if (!sessionToken || !pendingDeposit?.referenceId) {
-      setError("Deposit request missing hai. Dobara start karo.");
-      return;
-    }
-    const cleanUtr = utr.trim().toUpperCase();
-    if (!cleanUtr) {
-      setError("UTR / transaction ID required hai.");
-      return;
-    }
-    try {
-      setSubmitting(true);
-      setError("");
-      const updated = await api.reportUpiDeposit(sessionToken, {
-        referenceId: pendingDeposit.referenceId,
-        appName: activeUpiAppRef.current || "UPI",
-        utr: cleanUtr,
-        appReportedStatus: "SUBMITTED",
-        rawResponse: "user_submitted_utr"
-      });
-      setPendingDeposit(updated);
-      setSuccessMessage("UTR submit ho gaya. Admin verify karte hi wallet credit ho jayega.");
-      await loadWalletHistory({ force: true });
-    } catch (submitError) {
-      setError(formatApiError(submitError, "UTR submit nahi hua."));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
 }
 
 const styles = StyleSheet.create({
@@ -364,21 +200,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12
-  },
-  unsupportedCard: {
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 28
-  },
-  unsupportedTitle: {
-    color: colors.textPrimary,
-    fontSize: 20,
-    fontWeight: "900"
-  },
-  unsupportedText: {
-    color: colors.textSecondary,
-    textAlign: "center",
-    lineHeight: 21
   },
   heroIcon: {
     width: 48,
@@ -427,105 +248,69 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900"
   },
-  helperText: {
-    color: colors.textMuted,
-    fontSize: 12,
-    lineHeight: 18
+  qrCard: {
+    alignItems: "stretch"
   },
-  statusCard: {
-    gap: 14
-  },
-  statusHeader: {
+  qrHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 12
   },
-  statusBadge: {
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    fontSize: 11,
-    fontWeight: "900",
-    overflow: "hidden"
-  },
-  statusPending: {
-    backgroundColor: colors.warningSoft,
-    color: colors.warning
-  },
-  statusSuccess: {
-    backgroundColor: colors.successSoft,
-    color: colors.success
-  },
-  statusDanger: {
-    backgroundColor: colors.dangerSoft,
-    color: colors.danger
-  },
-  statusMeta: {
-    gap: 5
-  },
-  statusLine: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: "600"
-  },
-  statusHint: {
+  qrSubText: {
     color: colors.textMuted,
     fontSize: 12,
-    lineHeight: 18,
-    fontWeight: "600"
+    fontWeight: "700",
+    marginTop: 4
   },
-  statusActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  upiButton: {
-    minHeight: 42,
+  manualBadge: {
     borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: colors.accentSoft,
+    paddingHorizontal: 12,
+    paddingVertical: 6
+  },
+  manualBadgeText: {
+    color: colors.accentDark,
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  qrFrame: {
+    alignSelf: "center",
+    borderRadius: 28,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.borderStrong,
-    paddingHorizontal: 14
+    padding: 18,
+    marginTop: 4
   },
-  upiButtonText: {
-    color: colors.primaryDark,
+  qrGrid: {
+    backgroundColor: "#ffffff"
+  },
+  qrRow: {
+    flexDirection: "row"
+  },
+  qrCell: {
+    flexShrink: 0
+  },
+  upiInfo: {
+    alignItems: "center",
+    gap: 4
+  },
+  upiLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  upiValue: {
+    color: colors.textPrimary,
+    fontSize: 17,
+    fontWeight: "900"
+  },
+  qrHint: {
+    color: colors.textSecondary,
     fontSize: 13,
-    fontWeight: "800"
-  },
-  primaryButton: {
-    flex: 1,
-    minHeight: 50,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16
-  },
-  primaryButtonText: {
-    color: colors.surface,
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  secondaryButton: {
-    flex: 1,
-    minHeight: 50,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface
-  },
-  secondaryButtonText: {
-    color: colors.primaryDark,
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  disabledButton: {
-    opacity: 0.6
+    lineHeight: 20,
+    textAlign: "center"
   },
   messageCard: {
     gap: 0
@@ -540,7 +325,8 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 13,
     fontWeight: "800",
-    lineHeight: 19
+    lineHeight: 19,
+    marginTop: 6
   },
   steps: {
     gap: 8
@@ -552,6 +338,24 @@ const styles = StyleSheet.create({
   },
   footerActions: {
     gap: 10
+  },
+  whatsappButton: {
+    minHeight: 52,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    backgroundColor: "#16a34a",
+    paddingHorizontal: 16
+  },
+  whatsappButtonText: {
+    color: colors.surface,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  disabledButton: {
+    opacity: 0.6
   },
   historyButton: {
     minHeight: 48,

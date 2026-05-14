@@ -49,8 +49,8 @@ export function getDepositConfigSnapshot() {
   const configuredMode = String(process.env.DEPOSIT_MODE || "manual_qr").trim().toLowerCase();
   const mode = allowedModes.has(configuredMode) ? configuredMode : "manual_qr";
   const minAmount = getConfiguredDepositMinAmount();
-  const upiId = String(process.env.DEPOSIT_UPI_ID || process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "s7568539842258141@slc").trim();
-  const upiName = String(process.env.DEPOSIT_UPI_NAME || process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "slice").trim();
+  const upiId = String(process.env.DEPOSIT_UPI_ID || process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "9309782081@okbizaxis").trim();
+  const upiName = String(process.env.DEPOSIT_UPI_NAME || process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "SDT WEDDING").trim();
   const whatsappNumber = String(process.env.DEPOSIT_WHATSAPP_PHONE || process.env.EXPO_PUBLIC_PAYMENT_WHATSAPP_PHONE || "8446012081").replace(/\D/g, "");
 
   return {

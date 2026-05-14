@@ -93,8 +93,11 @@ export async function getWalletBalance(userId) {
   return getUserBalance(userId);
 }
 
-export async function createDepositRequest(userId, amountInput) {
+export async function createDepositRequest(userId, amountInput, payload = {}) {
   const amount = normalizeAmount(amountInput);
+  const referenceId = String(payload.referenceId ?? "").trim();
+  const proofUrl = String(payload.proofUrl ?? "").trim();
+  const note = String(payload.note ?? "").trim();
   if (amount <= 0) {
     return { ok: false, status: 400, error: "Amount must be greater than 0" };
   }
@@ -106,7 +109,10 @@ export async function createDepositRequest(userId, amountInput) {
     status: "INITIATED",
     amount,
     beforeBalance,
-    afterBalance: beforeBalance
+    afterBalance: beforeBalance,
+    referenceId,
+    proofUrl,
+    note
   });
 
   return { ok: true, data: entry };

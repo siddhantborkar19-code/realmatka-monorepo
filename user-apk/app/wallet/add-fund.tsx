@@ -376,7 +376,12 @@ export default function AddFundScreen() {
       setMessage("");
       setPendingManualDeposit(null);
       const referenceId = createManualDepositReference();
-      const entry = await api.startUpiDeposit(sessionToken, numericAmount, "Manual QR", referenceId);
+      let entry: WalletEntry;
+      try {
+        entry = await api.startUpiDeposit(sessionToken, numericAmount, "Manual QR", referenceId);
+      } catch {
+        entry = await api.deposit(sessionToken, numericAmount, referenceId, "", "Manual QR deposit request");
+      }
       setPendingManualDeposit(entry);
       setGeneratedAmount(numericAmount);
       setMessage(`Rs ${numericAmount} ka deposit initiate ho gaya. Reference ${entry.referenceId || referenceId}. Ab QR scan karke payment karo.`);

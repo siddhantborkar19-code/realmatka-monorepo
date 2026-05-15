@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CashfreePayButton } from "./cashfree-pay-button";
 import { businessContact, PageHero, SiteFooter, SiteHeader } from "../site-shell";
 
 export const metadata: Metadata = {
@@ -32,6 +33,8 @@ export default async function CheckoutPage({
   const params = searchParams ? await searchParams : {};
   const amount = firstQueryValue(params.amount);
   const reference = firstQueryValue(params.reference);
+  const paymentSessionId = firstQueryValue(params.session);
+  const mode = firstQueryValue(params.mode) || "production";
 
   return (
     <>
@@ -90,15 +93,21 @@ export default async function CheckoutPage({
               </form>
 
               <div className="checkoutNotice">
-                Payment gateway integration will be enabled after live Cashfree keys and webhook verification are connected.
+                {paymentSessionId
+                  ? "Secure Cashfree checkout ready hai. Amount aur reference verify karke Pay Now dabao."
+                  : "Secure payment link ya approved account credit request milne ke baad hi payment karein."}
               </div>
 
-              <a
-                className="button buttonPrimary fullButton"
-                href={`mailto:${businessContact.email}?subject=Checkout%20Payment%20Request%20-%20NovaByte%20Technologies`}
-              >
-                Request Secure Payment Link
-              </a>
+              {paymentSessionId ? (
+                <CashfreePayButton mode={mode} paymentSessionId={paymentSessionId} />
+              ) : (
+                <a
+                  className="button buttonPrimary fullButton"
+                  href={`mailto:${businessContact.email}?subject=Checkout%20Payment%20Request%20-%20NovaByte%20Technologies`}
+                >
+                  Request Secure Payment Link
+                </a>
+              )}
             </article>
 
             <aside className="panel invoiceCard">

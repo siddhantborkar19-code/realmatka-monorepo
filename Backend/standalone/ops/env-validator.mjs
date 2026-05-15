@@ -23,8 +23,12 @@ export function validateEnvironment() {
     apiUrl: maskUrl(standaloneConfig.apiUrl),
     adminDomain: maskUrl(standaloneConfig.adminDomain),
     otpProvider: String(process.env.OTP_PROVIDER || "local").trim().toLowerCase(),
-    paymentsEnabled: Boolean(process.env.RAZORPAY_KEY_ID?.trim() && process.env.RAZORPAY_KEY_SECRET?.trim()),
-    paymentWebhooksEnabled: Boolean(process.env.RAZORPAY_WEBHOOK_SECRET?.trim())
+    paymentsEnabled: Boolean(
+      (process.env.RAZORPAY_KEY_ID?.trim() && process.env.RAZORPAY_KEY_SECRET?.trim()) ||
+        ((process.env.CASHFREE_APP_ID?.trim() || process.env.CASHFREE_CLIENT_ID?.trim()) &&
+          (process.env.CASHFREE_SECRET_KEY?.trim() || process.env.CASHFREE_CLIENT_SECRET?.trim()))
+    ),
+    paymentWebhooksEnabled: Boolean(process.env.RAZORPAY_WEBHOOK_SECRET?.trim() || process.env.CASHFREE_SECRET_KEY?.trim() || process.env.CASHFREE_CLIENT_SECRET?.trim())
   };
   const hasEnvAdminPhone = Boolean(standaloneConfig.envAdminPhone);
   const hasEnvAdminPassword = Boolean(standaloneConfig.envAdminPassword);
@@ -108,6 +112,18 @@ export function validateEnvironment() {
 
   if ((hasRazorpayId || hasRazorpaySecret) && !hasRazorpayWebhook) {
     warnings.push("RAZORPAY_WEBHOOK_SECRET missing, webhook verification route will stay disabled");
+  }
+
+  const depositMode = String(process.env.DEPOSIT_MODE || "").trim().toLowerCase();
+  const hasCashfreeId = Boolean(process.env.CASHFREE_APP_ID?.trim() || process.env.CASHFREE_CLIENT_ID?.trim());
+  const hasCashfreeSecret = Boolean(process.env.CASHFREE_SECRET_KEY?.trim() || process.env.CASHFREE_CLIENT_SECRET?.trim());
+  if (depositMode === "cashfree" && !(hasCashfreeId && hasCashfreeSecret)) {
+    const message = "Cashfree key env is missing while DEPOSIT_MODE=cashfree";
+    if (isProduction) {
+      errors.push(message);
+    } else {
+      warnings.push(message);
+    }
   }
 
   if (!/^https?:\/\//i.test(standaloneConfig.apiUrl || "")) {

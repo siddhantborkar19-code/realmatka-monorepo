@@ -3,6 +3,7 @@ import { corsPreflight, fail, getJsonBody, ok } from "../http.mjs";
 import { standaloneConfig } from "../config.mjs";
 import {
   completeCheckoutSession,
+  createCashfreePaymentOrder,
   createHostedPaymentOrder,
   createNativePaymentOrder,
   confirmNativePaymentOrder,
@@ -26,6 +27,13 @@ import {
   verifyRazorpaySignature,
   verifyRazorpayWebhookSignature
 } from "../services/payment-providers/razorpay-adapter.mjs";
+import {
+  createCashfreeOrder,
+  fetchCashfreeOrderStatus,
+  getCashfreeMode,
+  isCashfreeEnabled,
+  verifyCashfreeWebhookSignature
+} from "../services/payment-providers/cashfree-adapter.mjs";
 
 function getServerOrigin(request) {
   const requestUrl = new URL(request.url);
@@ -194,6 +202,21 @@ function isExternalCheckoutEnabled() {
   return ["external_checkout", "novabyte_checkout"].includes(platform) || ["external_checkout", "novabyte_checkout"].includes(checkoutFlow);
 }
 
+function isCashfreeDepositMode() {
+  return String(process.env.DEPOSIT_MODE || "").trim().toLowerCase() === "cashfree";
+}
+
+function buildCashfreeCheckoutRedirectUrl({ referenceId, amount, paymentSessionId }) {
+  const checkoutBase = String(process.env.DEPOSIT_EXTERNAL_CHECKOUT_URL || "https://www.novabytetech.in/checkout").trim();
+  const url = new URL(checkoutBase);
+  url.searchParams.set("reference", referenceId);
+  url.searchParams.set("amount", Number(amount || 0).toFixed(2));
+  url.searchParams.set("currency", "INR");
+  url.searchParams.set("session", paymentSessionId);
+  url.searchParams.set("mode", getCashfreeMode());
+  return url.toString();
+}
+
 function buildExternalCheckoutRedirectUrl({ referenceId, amount }) {
   const checkoutBase = String(process.env.DEPOSIT_EXTERNAL_CHECKOUT_URL || "https://www.novabytetech.in/checkout").trim();
   const url = new URL(checkoutBase);
@@ -360,6 +383,33 @@ export async function createOrder(request) {
   const amount = Number(body.amount ?? 0);
   const platform = String(body.platform ?? "web").trim().toLowerCase();
 
+  if (isCashfreeDepositMode()) {
+    if (!isCashfreeEnabled()) {
+      return fail("Cashfree keys are not configured", 503, request);
+    }
+    const result = await createCashfreePaymentOrder({
+      user,
+      amount,
+      createOrder: ({ amount: orderAmount, receipt, paymentOrderId, user: paymentUser }) =>
+        createCashfreeOrder({
+          amount: orderAmount,
+          receipt,
+          paymentOrderId,
+          user: paymentUser
+        }),
+      getCheckoutUrl: ({ reference, amount: checkoutAmount, paymentSessionId }) =>
+        buildCashfreeCheckoutRedirectUrl({
+          referenceId: reference,
+          amount: checkoutAmount,
+          paymentSessionId
+        })
+    });
+    if (!result.ok) {
+      return fail(result.error, result.status, request);
+    }
+    return ok(result.data, request);
+  }
+
   if (isExternalCheckoutEnabled()) {
     const referenceId = buildManualQrReference();
     const result = await startUpiDepositEntry({
@@ -499,9 +549,10 @@ export async function getPaymentOrderStatus(request) {
     const result = await getPaymentOrderStatusSnapshot({
       userId: user.id,
       referenceId,
-      isProviderEnabled: isRazorpayEnabled(),
+      isProviderEnabled: isRazorpayEnabled() || isCashfreeEnabled(),
       fetchPaymentLinkStatus: fetchRazorpayPaymentLinkStatus,
-      fetchOrderPayments: fetchRazorpayOrderPayments
+      fetchOrderPayments: fetchRazorpayOrderPayments,
+      fetchCashfreeOrderStatus
     });
     if (!result.ok) {
       return fail(result.error, result.status, request);
@@ -705,7 +756,62 @@ export async function callbackPage(request) {
 
 export async function webhook(request) {
   const rawBody = await request.text();
+  const cashfreeSignature = request.headers.get("x-webhook-signature")?.trim() || "";
+  const cashfreeTimestamp = request.headers.get("x-webhook-timestamp")?.trim() || "";
   const signature = request.headers.get("x-razorpay-signature")?.trim() || "";
+
+  if (cashfreeSignature || cashfreeTimestamp) {
+    if (!isCashfreeEnabled()) {
+      return fail("Cashfree keys are not configured", 503, request);
+    }
+    if (!verifyCashfreeWebhookSignature(rawBody, cashfreeSignature, cashfreeTimestamp)) {
+      return fail("Invalid Cashfree webhook signature", 400, request);
+    }
+
+    let body = {};
+    try {
+      body = rawBody ? JSON.parse(rawBody) : {};
+    } catch {
+      return fail("Invalid Cashfree webhook payload", 400, request);
+    }
+
+    const eventType = String(body?.type || body?.event || "").trim().toUpperCase();
+    const orderEntity = body?.data?.order || body?.order || {};
+    const paymentEntity = body?.data?.payment || body?.payment || {};
+    const reference = String(orderEntity?.order_id || body?.order_id || "").trim();
+    const paymentStatus = String(paymentEntity?.payment_status || orderEntity?.order_status || "").trim().toUpperCase();
+    const paymentOrderId = String(orderEntity?.order_tags?.paymentOrderId || body?.paymentOrderId || "").trim();
+    const gatewayPaymentId = String(
+      paymentEntity?.cf_payment_id ||
+        paymentEntity?.payment_id ||
+        orderEntity?.cf_order_id ||
+        reference
+    ).trim();
+    const gatewayOrderId = reference;
+    const event =
+      paymentStatus === "SUCCESS" || paymentStatus === "PAID" || eventType === "PAYMENT_SUCCESS_WEBHOOK"
+        ? "payment_link.paid"
+        : paymentStatus === "FAILED" || eventType === "PAYMENT_FAILED_WEBHOOK"
+          ? "payment.failed"
+          : ["EXPIRED", "TERMINATED", "TERMINATION_REQUESTED", "CANCELLED"].includes(paymentStatus)
+            ? paymentStatus === "EXPIRED"
+              ? "payment_link.expired"
+              : "payment_link.cancelled"
+            : eventType || "cashfree.ignored";
+
+    const result = await processPaymentWebhook({
+      event,
+      paymentOrderId,
+      reference,
+      gatewayOrderId,
+      gatewayPaymentId,
+      gatewaySignature: "cashfree_webhook"
+    });
+    if (!result.ok) {
+      return fail(result.error, result.status, request);
+    }
+    return ok(result.data, request);
+  }
 
   if (!getRazorpayWebhookSecret()) {
     return fail("Razorpay webhook secret is not configured", 503, request);

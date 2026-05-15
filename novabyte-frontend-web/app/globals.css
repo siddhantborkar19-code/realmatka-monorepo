@@ -170,6 +170,12 @@ h1 {
   box-shadow: 0 20px 42px -22px rgba(15, 118, 110, 0.9);
 }
 
+.button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  opacity: 0.62;
+}
+
 .buttonSecondary {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.7);
@@ -408,6 +414,14 @@ h1 {
   line-height: 1.55;
   margin-top: 18px;
   padding: 13px 14px;
+}
+
+.checkoutError {
+  color: #b91c1c !important;
+  font-size: 13px;
+  font-weight: 800;
+  margin: 12px 0 0;
+  text-align: center;
 }
 
 .checkoutPolicyLinks {

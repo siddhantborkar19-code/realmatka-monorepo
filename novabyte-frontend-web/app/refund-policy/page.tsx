@@ -3,7 +3,7 @@ import { PageHero, SiteFooter, SiteHeader } from "../site-shell";
 
 export const metadata: Metadata = {
   title: "Refund And Cancellation Policy",
-  description: "Refund and cancellation policy for NovaByte Technologies digital services, invoices, maintenance, support, and development work."
+  description: "Refund and cancellation policy for NovaByte Technologies account credit, digital services, invoices, maintenance, support, and development work."
 };
 
 export default function RefundPolicyPage() {
@@ -11,11 +11,13 @@ export default function RefundPolicyPage() {
     <>
       <SiteHeader />
       <main>
-        <PageHero eyebrow="Policy" title="Refund And Cancellation Policy" description="This policy explains cancellation and refund handling for approved digital service work, software development, maintenance, and support billing." />
+        <PageHero eyebrow="Policy" title="Refund And Cancellation Policy" description="This policy explains cancellation and refund handling for approved account credit, digital service work, software development, maintenance, and support billing." />
         <section className="shell section">
           <article className="panel policyPanel">
             <h2>Policy Scope</h2>
-            <p>This policy applies to NovaByte Technologies services including website development, software development, mobile app UI work, admin dashboards, cloud support, maintenance retainers, consultation, and digital operations support.</p>
+            <p>This policy applies to NovaByte Technologies services including account credit, wallet top-up, website development, software development, mobile app UI work, admin dashboards, cloud support, maintenance retainers, consultation, and digital operations support.</p>
+            <h2>Account Credit Refunds</h2>
+            <p>Account credit or wallet top-up payments may be refunded only if the credit has not been used, transferred, consumed, disputed, or adjusted against any service. Refund requests must include payment reference, amount, customer details, and reason for refund.</p>
             <h2>Cancellation Before Work Starts</h2>
             <p>If a customer cancels before work has started, the paid amount may be refunded after deducting payment gateway fees, transaction charges, or administrative charges where applicable. Cancellation requests must be sent by email with the payment reference and service details.</p>
             <h2>After Work Has Started</h2>

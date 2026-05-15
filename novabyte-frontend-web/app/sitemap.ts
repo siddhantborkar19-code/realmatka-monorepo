@@ -9,6 +9,7 @@ const routes = [
   "/products/picstur",
   "/pricing",
   "/billing",
+  "/checkout",
   "/pay",
   "/contact",
   "/industries",

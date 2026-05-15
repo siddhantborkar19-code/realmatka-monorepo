@@ -346,9 +346,89 @@ h1 {
   align-items: stretch;
 }
 
+.checkoutLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.checkoutPanel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.checkoutForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.checkoutForm label {
+  display: grid;
+  gap: 8px;
+}
+
+.checkoutForm label:last-child {
+  grid-column: 1 / -1;
+}
+
+.checkoutForm span {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.checkoutForm input,
+.checkoutForm select,
+.checkoutForm textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  font: inherit;
+  outline: none;
+  padding: 13px 14px;
+}
+
+.checkoutForm textarea {
+  resize: vertical;
+}
+
+.checkoutNotice {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 18px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+  margin-top: 18px;
+  padding: 13px 14px;
+}
+
+.checkoutPolicyLinks {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.checkoutPolicyLinks a {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: #0f766e;
+  font-weight: 900;
+  padding: 11px 12px;
+  text-decoration: none;
+}
+
 .billingPanel,
 .invoiceCard,
-.infoPanel {
+.infoPanel,
+.checkoutPanel {
   padding: 26px;
 }
 
@@ -978,6 +1058,7 @@ h1 {
   .heroGrid,
   .processGrid,
   .billingLayout,
+  .checkoutLayout,
   .picsturHero {
     grid-template-columns: 1fr;
   }
@@ -1015,7 +1096,8 @@ h1 {
   .grid3,
   .heroStats,
   .demoGrid,
-  .metricGrid {
+  .metricGrid,
+  .checkoutForm {
     grid-template-columns: 1fr;
   }
 

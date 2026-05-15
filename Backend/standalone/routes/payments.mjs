@@ -188,6 +188,21 @@ function isManualQrWebCheckoutEnabled() {
   return platform === "manual_qr_web" || checkoutFlow === "manual_qr_web";
 }
 
+function isExternalCheckoutEnabled() {
+  const platform = String(process.env.DEPOSIT_RAZORPAY_PLATFORM || "").trim().toLowerCase();
+  const checkoutFlow = String(process.env.DEPOSIT_CHECKOUT_FLOW || "").trim().toLowerCase();
+  return ["external_checkout", "novabyte_checkout"].includes(platform) || ["external_checkout", "novabyte_checkout"].includes(checkoutFlow);
+}
+
+function buildExternalCheckoutRedirectUrl({ referenceId, amount }) {
+  const checkoutBase = String(process.env.DEPOSIT_EXTERNAL_CHECKOUT_URL || "https://www.novabytetech.in/checkout").trim();
+  const url = new URL(checkoutBase);
+  url.searchParams.set("reference", referenceId);
+  url.searchParams.set("amount", Number(amount || 0).toFixed(2));
+  url.searchParams.set("currency", "INR");
+  return url.toString();
+}
+
 function buildUpiPaymentUri({ upiId, upiName, amount }) {
   const params = new URLSearchParams({
     pa: upiId,
@@ -221,6 +236,26 @@ function buildManualQrOrderResponse({ entry, redirectUrl, amount, referenceId })
     keyId: null,
     displayName: "SDT WEDDING",
     description: "Manual UPI QR Deposit",
+    customerName: null,
+    customerContact: null,
+    customerEmail: null
+  };
+}
+
+function buildExternalCheckoutOrderResponse({ entry, redirectUrl, amount, referenceId }) {
+  return {
+    id: entry?.id || referenceId,
+    amount,
+    provider: "external_checkout",
+    reference: referenceId,
+    redirectUrl,
+    status: "INITIATED",
+    remoteStatus: "INITIATED",
+    checkoutMode: "link",
+    gatewayOrderId: null,
+    keyId: null,
+    displayName: "NovaByte Technologies",
+    description: "External checkout deposit request",
     customerName: null,
     customerContact: null,
     customerEmail: null
@@ -324,6 +359,21 @@ export async function createOrder(request) {
   const body = await getJsonBody(request);
   const amount = Number(body.amount ?? 0);
   const platform = String(body.platform ?? "web").trim().toLowerCase();
+
+  if (isExternalCheckoutEnabled()) {
+    const referenceId = buildManualQrReference();
+    const result = await startUpiDepositEntry({
+      userId: user.id,
+      amount,
+      appName: "External Checkout",
+      referenceId
+    });
+    if (!result.ok) {
+      return fail(result.error, result.status, request);
+    }
+    const redirectUrl = buildExternalCheckoutRedirectUrl({ referenceId, amount });
+    return ok(buildExternalCheckoutOrderResponse({ entry: result.data, redirectUrl, amount, referenceId }), request);
+  }
 
   if (isManualQrWebCheckoutEnabled()) {
     const referenceId = buildManualQrReference();

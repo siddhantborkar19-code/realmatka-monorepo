@@ -10,7 +10,17 @@ const plans = [
   {
     name: "Account Credit / Wallet Top-up",
     price: "INR 100 onwards",
-    details: ["Customer-requested account credit", "Payment reference generated for tracking", "Credit confirmation after successful payment verification", "Used only for approved account balance or service balance requests"]
+    details: ["Customer-requested account credit", "Payment reference generated for tracking", "Credit confirmation after successful payment verification", "Used for approved account balance, support balance, or service balance requests"]
+  },
+  {
+    name: "Daily Digital Support Balance",
+    price: "INR 500 onwards",
+    details: ["Balance for day-to-day technical support", "Small content updates or troubleshooting", "Support ticket/account usage tracking", "Useful for recurring online service customers"]
+  },
+  {
+    name: "Service Usage Credit",
+    price: "INR 1,000 onwards",
+    details: ["Credit for approved recurring digital operations", "Can be adjusted against support, maintenance, or account services", "Payment verification before account update", "Usage history maintained for customer reference"]
   },
   {
     name: "Starter Website",

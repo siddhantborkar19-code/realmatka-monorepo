@@ -7,6 +7,7 @@ const navItems = [
   { href: "/products/picstur", label: "Products" },
   { href: "/pricing", label: "Pricing" },
   { href: "/billing", label: "Billing" },
+  { href: "/login", label: "Login" },
   { href: "/contact", label: "Contact" }
 ];
 
@@ -15,6 +16,8 @@ const resourceItems = [
   { href: "/tech-stack", label: "Tech Stack" },
   { href: "/case-studies", label: "Case Studies" },
   { href: "/support-plans", label: "Support Plans" },
+  { href: "/account", label: "Customer Account" },
+  { href: "/account/add-fund", label: "Add Account Credit" },
   { href: "/faq", label: "FAQ" },
   { href: "/careers", label: "Careers" },
   { href: "/company-registration", label: "Company Details" }

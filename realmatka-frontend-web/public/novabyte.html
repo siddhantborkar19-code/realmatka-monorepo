@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NovaByte Technologies | Software, Web, App & Digital Services</title>
+    <meta
+      name="description"
+      content="NovaByte Technologies provides software development, website development, mobile app development, cloud support, digital operations, and IT enabled services."
+    />
+    <meta
+      name="keywords"
+      content="NovaByte Technologies, software development India, website development, mobile app development, digital services, IT services, cloud support"
+    />
+    <style>
+      :root {
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: rgba(15, 23, 42, 0.1);
+        --card: rgba(255, 255, 255, 0.78);
+        --brand: #0f766e;
+        --brand-dark: #115e59;
+        --accent: #f59e0b;
+        --soft: #ecfeff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background:
+          radial-gradient(circle at 8% 0%, rgba(20, 184, 166, 0.22), transparent 34rem),
+          radial-gradient(circle at 88% 10%, rgba(245, 158, 11, 0.18), transparent 30rem),
+          linear-gradient(180deg, #f8fafc 0%, #eefdfd 48%, #f8fafc 100%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(248, 250, 252, 0.86);
+        backdrop-filter: blur(18px);
+      }
+
+      .nav {
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        color: white;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--brand), #0891b2);
+        box-shadow: 0 18px 36px -18px rgba(15, 118, 110, 0.8);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+      }
+
+      .hero {
+        padding: 70px 0 34px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+        gap: 28px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(15, 118, 110, 0.18);
+        border-radius: 999px;
+        background: rgba(240, 253, 250, 0.78);
+        color: var(--brand-dark);
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 20px 0 16px;
+        max-width: 820px;
+        font-size: clamp(42px, 7vw, 82px);
+        line-height: 0.92;
+        letter-spacing: -0.08em;
+      }
+
+      .lead {
+        margin: 0;
+        max-width: 720px;
+        color: #475569;
+        font-size: clamp(17px, 2vw, 21px);
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 50px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0 20px;
+        text-decoration: none;
+        font-weight: 900;
+      }
+
+      .button-primary {
+        color: white;
+        background: linear-gradient(135deg, var(--brand), #0891b2);
+        box-shadow: 0 20px 42px -22px rgba(15, 118, 110, 0.9);
+      }
+
+      .button-secondary {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 34px;
+        background: var(--card);
+        box-shadow: 0 28px 80px -54px rgba(15, 23, 42, 0.42);
+        backdrop-filter: blur(18px);
+      }
+
+      .payment-card {
+        padding: 24px;
+      }
+
+      .payment-card h2,
+      .section-title {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: -0.04em;
+      }
+
+      .payment-card p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .invoice-box {
+        margin-top: 18px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .invoice-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        border-radius: 18px;
+        background: rgba(15, 118, 110, 0.07);
+        padding: 14px 16px;
+      }
+
+      .invoice-row span {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .invoice-row strong {
+        text-align: right;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.66);
+        padding: 8px 11px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .section {
+        padding: 42px 0;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .service-card {
+        padding: 22px;
+      }
+
+      .service-card strong {
+        display: block;
+        font-size: 18px;
+        letter-spacing: -0.03em;
+      }
+
+      .service-card p {
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .compliance {
+        display: grid;
+        grid-template-columns: 0.85fr 1.15fr;
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .compliance .panel {
+        padding: 24px;
+      }
+
+      .list {
+        margin: 18px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 12px;
+        color: #475569;
+        line-height: 1.55;
+      }
+
+      .list li {
+        position: relative;
+        padding-left: 24px;
+      }
+
+      .list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .footer {
+        padding: 34px 0 44px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 14px;
+        border-top: 1px solid var(--line);
+        padding-top: 20px;
+      }
+
+      @media (max-width: 820px) {
+        .nav {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 16px 0;
+        }
+
+        .nav-links {
+          flex-wrap: wrap;
+        }
+
+        .hero-grid,
+        .compliance {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 42px;
+        }
+
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <nav class="shell nav" aria-label="Primary">
+        <a class="brand" href="#top">
+          <span class="brand-mark">NB</span>
+          <span>NovaByte Technologies</span>
+        </a>
+        <div class="nav-links">
+          <a href="#services">Services</a>
+          <a href="#payment">Payments</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="shell hero">
+        <div class="hero-grid">
+          <div>
+            <span class="eyebrow">Software • Web • Cloud • Support</span>
+            <h1>Digital products and operations support for growing businesses.</h1>
+            <p class="lead">
+              NovaByte Technologies builds websites, mobile-ready applications, cloud workflows, internal dashboards, digital content systems, and support operations for service-led businesses.
+            </p>
+            <div class="actions">
+              <a class="button button-primary" href="#payment">Request Payment Link</a>
+              <a class="button button-secondary" href="mailto:novabytetechnoai@gmail.com">Email NovaByte</a>
+            </div>
+            <div class="badge-row" aria-label="Capabilities">
+              <span class="badge">Website Development</span>
+              <span class="badge">Mobile App Support</span>
+              <span class="badge">Cloud Operations</span>
+              <span class="badge">Digital Service Billing</span>
+            </div>
+          </div>
+
+          <aside class="panel payment-card" id="payment">
+            <h2>Service Payment Desk</h2>
+            <p>
+              For approved invoices, software service balance, development work, maintenance, hosting support, or digital operations billing, request a secure payment link from NovaByte Technologies.
+            </p>
+            <div class="invoice-box">
+              <div class="invoice-row">
+                <span>Business</span>
+                <strong>NovaByte Technologies</strong>
+              </div>
+              <div class="invoice-row">
+                <span>Payment Purpose</span>
+                <strong>Software / Digital Service</strong>
+              </div>
+              <div class="invoice-row">
+                <span>Email</span>
+                <strong>novabytetechnoai@gmail.com</strong>
+              </div>
+            </div>
+            <a class="button button-primary" style="width: 100%; margin-top: 18px" href="mailto:novabytetechnoai@gmail.com?subject=Payment%20Link%20Request%20-%20NovaByte%20Technologies">
+              Request Invoice / Payment Link
+            </a>
+          </aside>
+        </div>
+      </section>
+
+      <section class="shell section" id="services">
+        <h2 class="section-title">Services</h2>
+        <div class="grid-3">
+          <article class="panel service-card">
+            <strong>Web & App Development</strong>
+            <p>Responsive websites, landing pages, app interfaces, admin dashboards, and customer-facing digital workflows.</p>
+          </article>
+          <article class="panel service-card">
+            <strong>Digital Operations</strong>
+            <p>Support systems, content publishing, customer communication workflows, reports, and business process automation.</p>
+          </article>
+          <article class="panel service-card">
+            <strong>Cloud & Maintenance</strong>
+            <p>Hosting support, deployment assistance, bug fixing, performance improvements, backups, and ongoing technical care.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell section">
+        <div class="compliance">
+          <div class="panel">
+            <h2 class="section-title">Payment Use</h2>
+            <p style="color: var(--muted); line-height: 1.7">
+              This page is designed for genuine technology service payments, invoices, support retainers, maintenance fees, and software service billing.
+            </p>
+          </div>
+          <div class="panel">
+            <h2 class="section-title">Business Details For Review</h2>
+            <ul class="list">
+              <li>Business name: NovaByte Technologies</li>
+              <li>Primary objective: software products, websites, mobile applications, IT enabled services, cloud support, digital marketing, and online support systems.</li>
+              <li>Payment descriptor: software service, digital service balance, maintenance, hosting, or development invoice.</li>
+              <li>Customer support email: novabytetechnoai@gmail.com</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="shell footer" id="contact">
+      <div class="footer-inner">
+        <span>© 2026 NovaByte Technologies. All rights reserved.</span>
+        <span>Contact: novabytetechnoai@gmail.com</span>
+      </div>
+    </footer>
+  </body>
+</html>

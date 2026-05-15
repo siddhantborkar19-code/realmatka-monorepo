@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="NovaByte Technologies">
+  <defs>
+    <linearGradient id="g" x1="12" y1="14" x2="168" y2="166" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0f766e"/>
+      <stop offset="0.48" stop-color="#155e75"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="42" fill="url(#g)"/>
+  <path d="M36 130V50h22l42 47V50h26v80h-22L62 83v47H36Z" fill="#f8fafc"/>
+  <circle cx="137" cy="48" r="13" fill="#f59e0b"/>
+</svg>

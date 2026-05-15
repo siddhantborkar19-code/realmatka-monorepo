@@ -258,26 +258,9 @@ export default function AddFundScreen() {
           </SurfaceCard>
         ) : null}
 
-        {message ? (
+        {message && !isRazorpayMode ? (
           <SurfaceCard style={styles.messageCard}>
             <Text style={styles.successText}>{message}</Text>
-          </SurfaceCard>
-        ) : null}
-
-        {isRazorpayMode && pendingGatewayOrder ? (
-          <SurfaceCard style={styles.gatewayStatusCard}>
-            <Text style={styles.sectionTitle}>Payment Verification</Text>
-            <Text style={styles.statusLine}>Reference: {pendingGatewayOrder.reference}</Text>
-            <Text style={styles.statusLine}>Amount: Rs {pendingGatewayOrder.amount}</Text>
-            <Text style={styles.qrHint}>Payment complete karne ke baad app me wapas aakar status check karo. Agar webhook miss hua to ye button backend se status fetch karke wallet credit karega.</Text>
-            <Pressable
-              disabled={checkingPayment}
-              onPress={() => void checkGatewayPaymentStatus(true)}
-              style={[styles.secondaryActionButton, checkingPayment && styles.disabledButton]}
-            >
-              {checkingPayment ? <ActivityIndicator color={colors.primaryDark} size="small" /> : <Ionicons color={colors.primaryDark} name="refresh-outline" size={18} />}
-              <Text style={styles.secondaryActionText}>Check Payment Status</Text>
-            </Pressable>
           </SurfaceCard>
         ) : null}
 
@@ -287,26 +270,16 @@ export default function AddFundScreen() {
           </SurfaceCard>
         ) : null}
 
-        <SurfaceCard>
+        {!isRazorpayMode ? <SurfaceCard>
           <Text style={styles.sectionTitle}>How It Works</Text>
           <View style={styles.steps}>
-            {isRazorpayMode ? (
-              <>
-                <Text style={styles.stepText}>1. Amount enter karo.</Text>
-                <Text style={styles.stepText}>2. Pay Now dabao.</Text>
-                <Text style={styles.stepText}>3. Payment complete hone ke baad wallet history check karo.</Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.stepText}>1. Amount enter karo.</Text>
-                <Text style={styles.stepText}>2. Generate QR dabao.</Text>
-                <Text style={styles.stepText}>3. QR screenshot lo aur UPI app se payment complete karo.</Text>
-                <Text style={styles.stepText}>4. WhatsApp par payment screenshot bhejo.</Text>
-                <Text style={styles.stepText}>5. Admin verify karke wallet balance add karega.</Text>
-              </>
-            )}
+            <Text style={styles.stepText}>1. Amount enter karo.</Text>
+            <Text style={styles.stepText}>2. Generate QR dabao.</Text>
+            <Text style={styles.stepText}>3. QR screenshot lo aur UPI app se payment complete karo.</Text>
+            <Text style={styles.stepText}>4. WhatsApp par payment screenshot bhejo.</Text>
+            <Text style={styles.stepText}>5. Admin verify karke wallet balance add karega.</Text>
           </View>
-        </SurfaceCard>
+        </SurfaceCard> : null}
 
         <View style={styles.footerActions}>
           {isManualMode ? (

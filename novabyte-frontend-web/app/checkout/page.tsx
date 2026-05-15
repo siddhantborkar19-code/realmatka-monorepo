@@ -35,6 +35,7 @@ export default async function CheckoutPage({
   const reference = firstQueryValue(params.reference);
   const paymentSessionId = firstQueryValue(params.session);
   const mode = firstQueryValue(params.mode) || "production";
+  const hasPaymentSession = Boolean(paymentSessionId);
 
   return (
     <>
@@ -42,63 +43,85 @@ export default async function CheckoutPage({
       <main>
         <PageHero
           eyebrow="Secure Checkout"
-          title="Pay for approved NovaByte services and account credit."
-          description="Use this checkout only after receiving a service quote, invoice, account credit request, or payment confirmation from NovaByte Technologies."
+          title={hasPaymentSession ? "Complete your secure payment." : "Pay for approved NovaByte services and account credit."}
+          description={
+            hasPaymentSession
+              ? "NovaByte Technologies secure checkout ready hai. Payment app open karke payment complete karein."
+              : "Use this checkout only after receiving a service quote, invoice, account credit request, or payment confirmation from NovaByte Technologies."
+          }
         />
 
         <section className="shell section">
           <div className="checkoutLayout">
-            <article className="panel checkoutPanel">
+            <article className={`panel checkoutPanel ${hasPaymentSession ? "compactCheckoutPanel" : ""}`}>
               <span className="eyebrow">Payment Details</span>
-              <h2 className="sectionTitle">Service checkout</h2>
+              <h2 className="sectionTitle">{hasPaymentSession ? "Payment ready" : "Service checkout"}</h2>
               <p>
-                Payments collected here are for NovaByte Technologies services such as websites, mobile app interfaces,
-                admin dashboards, cloud support, maintenance, hosting support, digital service consultation, and approved account credit / wallet top-up.
+                {hasPaymentSession
+                  ? "Amount aur reference verify karein. Cashfree checkout automatically open hoga; agar open na ho to button dabayein."
+                  : "Payments collected here are for NovaByte Technologies services such as websites, mobile app interfaces, admin dashboards, cloud support, maintenance, hosting support, digital service consultation, and approved account credit / wallet top-up."}
               </p>
 
-              <form className="checkoutForm">
-                <label>
-                  <span>Customer Name</span>
-                  <input name="name" placeholder="Enter full name" type="text" />
-                </label>
-                <label>
-                  <span>Email Address</span>
-                  <input name="email" placeholder="Enter email address" type="email" />
-                </label>
-                <label>
-                  <span>Mobile Number</span>
-                  <input name="phone" placeholder="Enter mobile number" type="tel" />
-                </label>
-                <label>
-                  <span>Service Category</span>
-                  <select name="service" defaultValue="">
-                    <option value="" disabled>Select service</option>
-                    {checkoutServices.map((service) => (
-                      <option key={service} value={service}>{service}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Amount In INR</span>
-                  <input defaultValue={amount} min="1" name="amount" placeholder="Enter approved amount" readOnly={Boolean(amount)} type="number" />
-                </label>
-                <label>
-                  <span>Invoice / Quote Reference</span>
-                  <input defaultValue={reference} name="reference" placeholder="Optional reference number" readOnly={Boolean(reference)} type="text" />
-                </label>
-                <label>
-                  <span>Service Notes</span>
-                  <textarea name="notes" placeholder="Briefly mention the approved service or invoice details" rows={4} />
-                </label>
-              </form>
+              {hasPaymentSession ? (
+                <div className="paymentSummaryCard">
+                  <div>
+                    <span>Payable Amount</span>
+                    <strong>INR {amount || "0.00"}</strong>
+                  </div>
+                  <div>
+                    <span>Payment Reference</span>
+                    <strong>{reference || "NovaByte Checkout"}</strong>
+                  </div>
+                  <div>
+                    <span>Payment Purpose</span>
+                    <strong>Account Credit / Wallet Top-up</strong>
+                  </div>
+                </div>
+              ) : (
+                <form className="checkoutForm">
+                  <label>
+                    <span>Customer Name</span>
+                    <input name="name" placeholder="Enter full name" type="text" />
+                  </label>
+                  <label>
+                    <span>Email Address</span>
+                    <input name="email" placeholder="Enter email address" type="email" />
+                  </label>
+                  <label>
+                    <span>Mobile Number</span>
+                    <input name="phone" placeholder="Enter mobile number" type="tel" />
+                  </label>
+                  <label>
+                    <span>Service Category</span>
+                    <select name="service" defaultValue="">
+                      <option value="" disabled>Select service</option>
+                      {checkoutServices.map((service) => (
+                        <option key={service} value={service}>{service}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>Amount In INR</span>
+                    <input defaultValue={amount} min="1" name="amount" placeholder="Enter approved amount" readOnly={Boolean(amount)} type="number" />
+                  </label>
+                  <label>
+                    <span>Invoice / Quote Reference</span>
+                    <input defaultValue={reference} name="reference" placeholder="Optional reference number" readOnly={Boolean(reference)} type="text" />
+                  </label>
+                  <label>
+                    <span>Service Notes</span>
+                    <textarea name="notes" placeholder="Briefly mention the approved service or invoice details" rows={4} />
+                  </label>
+                </form>
+              )}
 
               <div className="checkoutNotice">
-                {paymentSessionId
+                {hasPaymentSession
                   ? "Secure Cashfree checkout automatically open ho raha hai. Agar open na ho to niche button dabao."
                   : "Secure payment link ya approved account credit request milne ke baad hi payment karein."}
               </div>
 
-              {paymentSessionId ? (
+              {hasPaymentSession ? (
                 <CashfreePayButton autoOpen mode={mode} paymentSessionId={paymentSessionId} />
               ) : (
                 <a

@@ -439,6 +439,45 @@ h1 {
   text-decoration: none;
 }
 
+.compactCheckoutPanel {
+  max-width: 620px;
+}
+
+.paymentSummaryCard {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(245, 158, 11, 0.15), transparent 12rem),
+    rgba(240, 253, 250, 0.78);
+  margin-top: 22px;
+  padding: 16px;
+}
+
+.paymentSummaryCard div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 13px 14px;
+}
+
+.paymentSummaryCard span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.paymentSummaryCard strong {
+  color: var(--ink);
+  text-align: right;
+  word-break: break-word;
+}
+
 .billingPanel,
 .invoiceCard,
 .infoPanel,
@@ -1107,6 +1146,18 @@ h1 {
     padding-top: 42px;
   }
 
+  .pageHero {
+    padding: 42px 0 10px;
+  }
+
+  h1 {
+    font-size: clamp(36px, 13vw, 54px);
+  }
+
+  .section {
+    padding: 26px 0;
+  }
+
   .grid3,
   .heroStats,
   .demoGrid,
@@ -1122,6 +1173,27 @@ h1 {
   .invoiceRow {
     flex-direction: column;
     gap: 4px;
+  }
+
+  .checkoutPanel,
+  .invoiceCard {
+    border-radius: 26px;
+    padding: 20px;
+  }
+
+  .paymentSummaryCard {
+    border-radius: 20px;
+    padding: 12px;
+  }
+
+  .paymentSummaryCard div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .paymentSummaryCard strong {
+    text-align: left;
   }
 
   .screenTop {

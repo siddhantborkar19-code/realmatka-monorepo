@@ -113,7 +113,7 @@ export type PaymentOrder = {
 export type DepositConfig = {
   version: number;
   enabled: boolean;
-  mode: "manual_qr" | "maintenance" | "razorpay" | "upi_intent";
+  mode: "manual_qr" | "maintenance" | "razorpay" | "cashfree" | "upi_intent";
   minAmount: number;
   upiId: string;
   upiName: string;

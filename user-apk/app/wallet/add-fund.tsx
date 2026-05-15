@@ -75,7 +75,7 @@ export default function AddFundScreen() {
   const hasValidAmount = Number.isFinite(numericAmount) && numericAmount >= minAmount;
   const hasGeneratedQr = generatedAmount !== null;
   const isManualMode = depositConfig.enabled && (depositConfig.mode === "manual_qr" || depositConfig.mode === "upi_intent");
-  const isRazorpayMode = depositConfig.enabled && depositConfig.mode === "razorpay";
+  const isRazorpayMode = depositConfig.enabled && (depositConfig.mode === "razorpay" || depositConfig.mode === "cashfree");
   const isMaintenanceMode = !depositConfig.enabled || depositConfig.mode === "maintenance";
   const upiUrl = useMemo(() => buildUpiUrl(generatedAmount, depositConfig), [depositConfig, generatedAmount]);
   const qrMatrix = useMemo(() => buildQrMatrix(upiUrl), [upiUrl]);

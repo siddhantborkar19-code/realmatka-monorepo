@@ -203,7 +203,10 @@ function isExternalCheckoutEnabled() {
 }
 
 function isCashfreeDepositMode() {
-  return String(process.env.DEPOSIT_MODE || "").trim().toLowerCase() === "cashfree";
+  const mode = String(process.env.DEPOSIT_MODE || "").trim().toLowerCase();
+  const checkoutFlow = String(process.env.DEPOSIT_CHECKOUT_FLOW || "").trim().toLowerCase();
+  const platform = String(process.env.DEPOSIT_RAZORPAY_PLATFORM || "").trim().toLowerCase();
+  return mode === "cashfree" || checkoutFlow === "cashfree" || platform === "cashfree_checkout";
 }
 
 function buildCashfreeCheckoutRedirectUrl({ referenceId, amount, paymentSessionId }) {

@@ -153,33 +153,12 @@ export default function OtpLoginScreen() {
                     await Linking.openURL(response.widgetUrl);
                     return;
                   }
-                  if (response.mode === "widget" && isMsg91NativeOtpAvailable()) {
-                    try {
-                      const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
-                      if (sdkResponse.accessToken) {
-                        setSdkAccessToken(sdkResponse.accessToken);
-                        setMessage("Mobile verified. Login continue karo.");
-                      } else {
-                        setSdkReqId(sdkResponse.reqId);
-                        setMessage("OTP SMS successfully sent.");
-                      }
-                      setCooldownSeconds(OTP_RESEND_SECONDS);
-                      return;
-                    } catch {
-                      if (Platform.OS !== "web" && response.widgetUrl) {
-                        setMessage("Verification window open ho rahi hai...");
-                        setCooldownSeconds(OTP_RESEND_SECONDS);
-                        await Linking.openURL(response.widgetUrl);
-                        return;
-                      }
-                      throw new Error("MSG91 OTP method available nahi hai.");
-                    }
+                  if (response.mode === "widget") {
+                    throw new Error("OTP verification link nahi mila. Backend widget env check karo.");
                   }
-                  if (response.mode !== "widget") {
-                    setMessage(response.provider === "local" ? "OTP generated successfully." : "OTP SMS successfully sent.");
-                    setOtpSent(true);
-                    setCooldownSeconds(OTP_RESEND_SECONDS);
-                  }
+                  setMessage(response.provider === "local" ? "OTP generated successfully." : "OTP SMS successfully sent.");
+                  setOtpSent(true);
+                  setCooldownSeconds(OTP_RESEND_SECONDS);
                 } catch (otpError) {
                   setError(formatApiError(otpError, "Unable to send OTP"));
                 } finally {

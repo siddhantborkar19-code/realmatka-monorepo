@@ -569,6 +569,21 @@ export async function msg91Widget(request) {
     return new Response("Missing phone or returnUrl", { status: 400 });
   }
 
+  const isRegisterPurpose = purpose === "register";
+  const pageTitle = isRegisterPurpose ? "Create Account" : purpose === "password_reset" ? "Forgot Password" : "OTP Login";
+  const heroText = isRegisterPurpose
+    ? "Mobile OTP verify karo, phir account details complete karo."
+    : purpose === "password_reset"
+      ? "Mobile verify karke password reset continue karo."
+      : "Phone number verify hone ke baad direct login continue ho jayega.";
+  const cardTitle = isRegisterPurpose ? "Verify Mobile" : purpose === "password_reset" ? "Verify Mobile" : "OTP Login";
+  const cardHint = isRegisterPurpose
+    ? "SMS me aaye 6 digit OTP ko verify karo. Uske baad register form open hoga."
+    : purpose === "password_reset"
+      ? "SMS me aaye 6 digit OTP ko verify karo. Uske baad password reset continue hoga."
+      : "SMS me aaye 6 digit OTP ko verify karo.";
+  const verifyButtonText = isRegisterPurpose ? "Verify OTP" : purpose === "password_reset" ? "Verify OTP" : "Login with OTP";
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -579,7 +594,7 @@ export async function msg91Widget(request) {
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #fff7ed; color: #111827; min-height: 100vh; }
     .hero { min-height: 210px; padding: 52px 22px 48px; background: linear-gradient(135deg, #ff7a18, #ff314f); color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .logo { width: min(78%, 280px); height: 110px; background: url('/assets/assets/images/adaptive-icon.b9a301a63caf25a13fb79f1d5f767b26.png') center/contain no-repeat; margin: 20px auto -2px; }
+    .logo { width: min(78%, 280px); height: 110px; background: url('https://play.realmatka.in/assets/assets/images/adaptive-icon.b9a301a63caf25a13fb79f1d5f767b26.png'), url('https://play.realmatka.in/assets/images/adaptive-icon.png'); background-position: center; background-size: contain; background-repeat: no-repeat; margin: 20px auto -2px; }
     .logoText { display: none; }
     .hero h1 { display: none; }
     .hero p { margin: -14px auto 0; max-width: 320px; color: rgba(255,255,255,0.9); line-height: 1.45; font-size: 14px; }
@@ -604,20 +619,20 @@ export async function msg91Widget(request) {
 <body>
   <div class="hero">
     <div class="logo"><span class="logoText">RM</span></div>
-    <h1>OTP Login</h1>
-    <p>Phone number verify hone ke baad direct login continue ho jayega.</p>
+    <h1>${pageTitle}</h1>
+    <p>${heroText}</p>
   </div>
   <div class="content">
     <div class="wrap">
       <div>
-        <h2>OTP Login</h2>
-        <p class="hint">SMS me aaye 6 digit OTP ko verify karo.</p>
+        <h2>${cardTitle}</h2>
+        <p class="hint">${cardHint}</p>
         <label class="hiddenPhoneLabel">Phone Number</label>
         <div class="phoneBox">+91 ${phone}</div>
         <button id="sendBtn" class="primary hiddenSend">Send OTP</button>
         <label for="otp">OTP</label>
         <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" />
-        <button id="verifyBtn" class="primary" disabled>Verify OTP</button>
+        <button id="verifyBtn" class="primary" disabled>${verifyButtonText}</button>
         <button id="resendBtn" class="secondary" disabled>Resend in 30s</button>
       </div>
       <div id="status" class="status"></div>

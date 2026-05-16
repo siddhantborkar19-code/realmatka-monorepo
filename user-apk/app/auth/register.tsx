@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Image, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppScreen, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { api, formatApiError } from "@/lib/api";
-import { isMsg91NativeOtpAvailable, sendMsg91NativeOtp, verifyMsg91NativeOtp } from "@/lib/msg91-otp";
+import { verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { clearStoredReferralCode, normalizeReferralCode, readStoredReferralCode, writeStoredReferralCode } from "@/lib/referral-storage";
 import { colors } from "@/theme/colors";
 
@@ -115,34 +115,12 @@ export default function RegisterScreen() {
       const response = await api.requestOtp(normalizedPhone, "register");
       setOtpMode(response.mode === "widget" ? "widget" : "otp");
       if (response.mode === "widget" && response.widgetUrl) {
-        if (isMsg91NativeOtpAvailable()) {
-          try {
-            const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
-            if (sdkResponse.accessToken) {
-              setVerifiedAccessToken(sdkResponse.accessToken);
-              setOtpSent(true);
-              setSuccess("Mobile verification complete. Ab account details fill karke Create Account dabao.");
-              return;
-            }
-            setSdkReqId(sdkResponse.reqId);
-            setOtpSent(true);
-            setSuccess("OTP sent. Code enter karke Verify OTP dabao.");
-            return;
-          } catch {
-            if (Platform.OS === "web") {
-              throw new Error("MSG91 OTP method available nahi hai.");
-            }
-            setSuccess("Verification page open ho raha hai. OTP verify karke wapas aao.");
-            await Linking.openURL(response.widgetUrl);
-            return;
-          }
-        }
-        if (Platform.OS === "web") {
-          throw new Error("MSG91 OTP method available nahi hai.");
-        }
         setSuccess("Verification page open ho raha hai. OTP verify karke wapas aao.");
         await Linking.openURL(response.widgetUrl);
         return;
+      }
+      if (response.mode === "widget") {
+        throw new Error("OTP verification link nahi mila. Backend widget env check karo.");
       }
       setOtpSent(true);
       setSuccess("OTP sent. 6 digit OTP enter karo.");

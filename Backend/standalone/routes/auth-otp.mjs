@@ -236,7 +236,16 @@ function getMsg91VerifiedIdentifier(payload) {
     payload?.data?.phone,
     payload?.data?.phone_number,
     payload?.data?.mobileNumber,
-    payload?.data?.mobile_number
+    payload?.data?.mobile_number,
+    payload?.data?.user?.identifier,
+    payload?.data?.user?.mobile,
+    payload?.data?.user?.phone,
+    payload?.response?.identifier,
+    payload?.response?.mobile,
+    payload?.response?.phone,
+    payload?.response?.phone_number,
+    payload?.response?.mobileNumber,
+    payload?.response?.mobile_number
   ];
 
   for (const value of candidates) {
@@ -253,9 +262,15 @@ function getMsg91VerificationStatus(payload) {
     payload?.status,
     payload?.type,
     payload?.message,
+    payload?.success,
     payload?.data?.status,
     payload?.data?.type,
-    payload?.data?.message
+    payload?.data?.message,
+    payload?.data?.success,
+    payload?.response?.status,
+    payload?.response?.type,
+    payload?.response?.message,
+    payload?.response?.success
   ];
 
   return candidates
@@ -269,7 +284,11 @@ function isMsg91VerificationApproved(payload) {
     return true;
   }
 
-  return !["error", "failed", "failure", "unauthorized", "invalid"].includes(status);
+  if (["true", "success", "verified", "approved", "valid"].includes(status)) {
+    return true;
+  }
+
+  return !["false", "error", "failed", "failure", "unauthorized", "invalid", "expired"].includes(status);
 }
 
 function getMsg91CallbackPath(purpose) {

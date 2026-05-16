@@ -56,7 +56,13 @@ const sdkDisabled = String(process.env.EXPO_PUBLIC_MSG91_NATIVE_SDK_DISABLED || 
 let initialized = false;
 
 export function isMsg91NativeOtpAvailable() {
-  return !sdkDisabled && Boolean(widgetId && tokenAuth) && (Platform.OS !== "web" || typeof window !== "undefined");
+  if (!widgetId || !tokenAuth) {
+    return false;
+  }
+  if (Platform.OS === "web") {
+    return typeof window !== "undefined";
+  }
+  return !sdkDisabled;
 }
 
 async function getOtpWidget() {

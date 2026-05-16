@@ -182,17 +182,24 @@ function extractAccessToken(payload: Record<string, unknown>) {
     payload["access-token"],
     payload.accessToken,
     payload.access_token,
+    payload.jwt,
+    payload.jwtToken,
+    payload.jwt_token,
+    payload["jwt-token"],
     payload.token,
-    payload.message,
     readNested(payload, "access-token"),
     readNested(payload, "accessToken"),
     readNested(payload, "access_token"),
+    readNested(payload, "jwt"),
+    readNested(payload, "jwtToken"),
+    readNested(payload, "jwt_token"),
+    readNested(payload, "jwt-token"),
     readNested(payload, "token")
   ];
 
   for (const value of candidates) {
     const text = getString(value);
-    if (text && (text.includes(".") || text.length > 32)) {
+    if (text && text.split(".").length >= 3 && text.length > 32) {
       return text;
     }
   }

@@ -97,6 +97,28 @@ function loadMsg91WebScript() {
   return browserWindow.__realMatkaMsg91ScriptPromise;
 }
 
+function waitForMsg91WebMethods(timeoutMs = 6000) {
+  const browserWindow = getBrowserWindow();
+  if (typeof browserWindow.sendOtp === "function" && typeof browserWindow.verifyOtp === "function") {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      if (typeof browserWindow.sendOtp === "function" && typeof browserWindow.verifyOtp === "function") {
+        window.clearInterval(timer);
+        resolve();
+        return;
+      }
+      if (Date.now() - startedAt >= timeoutMs) {
+        window.clearInterval(timer);
+        reject(new Error("MSG91 OTP method available nahi hai."));
+      }
+    }, 150);
+  });
+}
+
 async function initializeMsg91WebWidget() {
   const browserWindow = getBrowserWindow();
   await loadMsg91WebScript();
@@ -114,6 +136,7 @@ async function initializeMsg91WebWidget() {
     });
     browserWindow.__realMatkaMsg91Initialized = true;
   }
+  await waitForMsg91WebMethods();
 }
 
 function getString(value: unknown) {

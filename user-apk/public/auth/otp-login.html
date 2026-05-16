@@ -13,12 +13,8 @@
     .hero p { margin: 8px auto 0; max-width: 340px; color: rgba(255,255,255,0.9); line-height: 1.45; font-size: 14px; }
     .content { width: min(100%, 480px); margin: -18px auto 0; padding: 0 16px 34px; }
     .card { background: #fffaf5; border: 1px solid rgba(194,65,12,0.15); border-radius: 24px; padding: 22px; box-shadow: 0 18px 42px rgba(124,45,18,0.15); }
-    .step { border: 1px solid #fed7aa; background: #fff; border-radius: 20px; padding: 16px; margin-top: 14px; }
-    .step:first-child { margin-top: 0; }
-    .stepHeader { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .badge { width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; color: #fff; font-weight: 900; background: linear-gradient(135deg, #fb923c, #ef4444); }
-    h2 { margin: 0; font-size: 18px; line-height: 1.2; }
-    .hint { margin: 4px 0 0; color: #64748b; line-height: 1.45; font-size: 13px; }
+    h2 { margin: 0 0 6px; font-size: 24px; line-height: 1.2; }
+    .hint { margin: 0 0 16px; color: #64748b; line-height: 1.45; font-size: 14px; }
     label { display: block; font-weight: 800; margin: 12px 0 8px; }
     input { width: 100%; min-height: 54px; border-radius: 16px; border: 1px solid #fed7aa; background: #fff; color: #111827; font-size: 18px; font-weight: 800; padding: 0 14px; outline: none; }
     input:focus { border-color: #fb923c; box-shadow: 0 0 0 4px rgba(251,146,60,0.16); }
@@ -41,31 +37,12 @@
 
   <div class="content">
     <div class="card">
-      <div class="step">
-        <div class="stepHeader">
-          <div class="badge">1</div>
-          <div>
-            <h2>Mobile Number</h2>
-            <p class="hint">10 digit phone number dalo.</p>
-          </div>
-        </div>
+      <div>
+        <h2>OTP Login</h2>
+        <p class="hint">Phone number dalo, OTP lo, phir login karo.</p>
         <label for="phone">Phone Number</label>
         <input id="phone" inputmode="numeric" maxlength="10" placeholder="Enter phone number" />
         <button id="sendBtn" class="primary" disabled>Send OTP</button>
-      </div>
-
-      <div class="step">
-        <div class="stepHeader">
-          <div class="badge">2</div>
-          <div>
-            <h2>Verify OTP</h2>
-            <p class="hint">SMS me aaye 6 digit code ko enter karo.</p>
-          </div>
-        </div>
-        <label for="otp">OTP</label>
-        <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" disabled />
-        <button id="verifyBtn" class="primary" disabled>Login with OTP</button>
-        <button id="resendBtn" class="secondary" disabled>Resend OTP</button>
       </div>
 
       <div id="status" class="status"></div>
@@ -76,80 +53,25 @@
 
   <script>
     const API_BASE = "https://api.realmatka.in";
-    const WIDGET_ID = "366570677169313137313933";
-    const TOKEN_AUTH = "515019TX2NYO2A6a081380P1";
-    const SESSION_KEY = "realmatka.session-token";
-    const SESSION_SNAPSHOT_KEY = "realmatka.session-snapshot";
-    let currentReqId = "";
-    let lastAccessToken = "";
-    let resendTimer = null;
-
     const phoneEl = document.getElementById("phone");
-    const otpEl = document.getElementById("otp");
     const sendBtn = document.getElementById("sendBtn");
-    const verifyBtn = document.getElementById("verifyBtn");
-    const resendBtn = document.getElementById("resendBtn");
     const statusEl = document.getElementById("status");
     const errorEl = document.getElementById("error");
 
     function setStatus(message) { statusEl.textContent = message || ""; }
     function setError(message) { errorEl.textContent = message || ""; }
     function phone() { return phoneEl.value.replace(/[^0-9]/g, "").slice(0, 10); }
-    function identifier() { return "91" + phone(); }
-    function otp() { return otpEl.value.replace(/[^0-9]/g, "").slice(0, 6); }
-    function getErrorMessage(error, fallback) {
-      if (typeof error === "string" && error.trim()) return error.trim();
-      if (error && typeof error === "object") return error.message || error.error || error.description || (error.data && error.data.message) || fallback;
-      return fallback;
-    }
-    function getWidgetDataSafe() {
-      try { return typeof window.getWidgetData === "function" ? window.getWidgetData() : {}; } catch { return {}; }
-    }
-    function readReqId(payload) {
-      const data = (payload && payload.data) || {};
-      const response = (payload && payload.response) || {};
-      const widget = getWidgetDataSafe();
-      const widgetData = widget.data || {};
-      const widgetResponse = widget.response || {};
-      const sources = [payload || {}, data, response, widget || {}, widgetData, widgetResponse];
-      for (const item of sources) {
-        const value = item.reqId || item.req_id || item.requestId || item.request_id || item.requestID || item.request_id_string || item.messageId || item.message_id || item.id;
-        if (value) return String(value).trim();
-      }
-      return "";
-    }
-    function readToken(payload) {
-      if (typeof payload === "string" && payload.trim().length > 32) return payload.trim();
-      if (!payload || typeof payload !== "object") return "";
-      const direct = payload.token || payload.accessToken || payload.access_token || payload["access-token"] || payload.jwtToken || payload.jwt_token || payload["jwt-token"];
-      if (typeof direct === "string" && direct.trim()) return direct.trim();
-      const nested = readToken(payload.data) || readToken(payload.response);
-      if (nested) return nested;
-      for (const key of Object.keys(payload)) {
-        if (/token|access/i.test(key) && typeof payload[key] === "string" && payload[key].trim()) return payload[key].trim();
-      }
-      return "";
-    }
-    function startResendTimer() {
-      let seconds = 30;
-      resendBtn.disabled = true;
-      resendBtn.textContent = "Resend in 30s";
-      if (resendTimer) clearInterval(resendTimer);
-      resendTimer = setInterval(() => {
-        seconds -= 1;
-        if (seconds <= 0) {
-          clearInterval(resendTimer);
-          resendTimer = null;
-          resendBtn.disabled = false;
-          resendBtn.textContent = "Resend OTP";
-        } else {
-          resendBtn.textContent = "Resend in " + seconds + "s";
-        }
-      }, 1000);
+    function sendOtp() {
+      setError("");
+      setStatus("OTP verification page open ho raha hai...");
+      sendBtn.disabled = true;
+      const returnUrl = window.location.origin + "/auth/otp-login";
+      const widgetUrl = API_BASE + "/api/auth/msg91/widget?phone=" + encodeURIComponent(phone()) + "&purpose=login&returnUrl=" + encodeURIComponent(returnUrl);
+      window.location.href = widgetUrl;
     }
     function saveSession(token, user) {
-      localStorage.setItem(SESSION_KEY, token);
-      localStorage.setItem(SESSION_SNAPSHOT_KEY, JSON.stringify({
+      localStorage.setItem("realmatka.session-token", token);
+      localStorage.setItem("realmatka.session-snapshot", JSON.stringify({
         user: {
           id: user.id,
           phone: user.phone,
@@ -164,128 +86,37 @@
         savedAt: new Date().toISOString()
       }));
     }
-    async function loginWithAccessToken(accessToken) {
-      const response = await fetch(API_BASE + "/api/auth/otp-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ phone: phone(), otp: "", accessToken })
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.token || !data.user) throw new Error(data.error || data.message || "OTP login failed");
-      saveSession(data.token, data.user);
-      window.location.href = "/";
-    }
-    function sendOtp() {
-      setError("");
-      setStatus("OTP SMS bheja ja raha hai...");
+    async function completeLoginFromToken() {
+      const params = new URLSearchParams(window.location.search);
+      const token = String(params.get("msg91Token") || "").trim();
+      const callbackPhone = String(params.get("phone") || "").replace(/[^0-9]/g, "").slice(-10);
+      if (!token || callbackPhone.length !== 10) return;
+      phoneEl.value = callbackPhone;
       sendBtn.disabled = true;
-      window.sendOtp(identifier(), (data) => {
-        currentReqId = readReqId(data) || currentReqId;
-        setStatus("OTP SMS sent. Code enter karo.");
-        otpEl.disabled = false;
-        otpEl.focus();
-        verifyBtn.disabled = otp().length !== 6;
-        startResendTimer();
-      }, (error) => {
+      setStatus("Mobile verified. Login ho raha hai...");
+      try {
+        const response = await fetch(API_BASE + "/api/auth/otp-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ phone: callbackPhone, otp: "", accessToken: token })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.token || !data.user) throw new Error(data.error || data.message || "OTP login failed");
+        saveSession(data.token, data.user);
+        window.location.href = "/";
+      } catch (error) {
         setStatus("");
-        setError(getErrorMessage(error, "OTP send nahi hua. Dobara try karo."));
+        setError(error && error.message ? error.message : "OTP login failed");
         sendBtn.disabled = false;
-      });
-    }
-    function verifyOtp() {
-      if (otp().length !== 6) {
-        setError("Valid 6 digit OTP dalo.");
-        return;
       }
-      setError("");
-      setStatus("OTP verify ho raha hai...");
-      verifyBtn.disabled = true;
-      window.verifyOtp(otp(), async (data) => {
-        currentReqId = readReqId(data) || currentReqId;
-        const token = readToken(data) || lastAccessToken;
-        if (!token) {
-          setStatus("");
-          setError("Verified token receive nahi hua. Dobara try karo.");
-          verifyBtn.disabled = false;
-          return;
-        }
-        try {
-          setStatus("Verified. Login ho raha hai...");
-          await loginWithAccessToken(token);
-        } catch (error) {
-          setStatus("");
-          setError(getErrorMessage(error, "OTP login failed"));
-          verifyBtn.disabled = false;
-        }
-      }, (error) => {
-        setStatus("");
-        setError(getErrorMessage(error, "Invalid OTP. Dobara try karo."));
-        verifyBtn.disabled = false;
-      }, currentReqId || undefined);
     }
-
-    const configuration = {
-      widgetId: WIDGET_ID,
-      tokenAuth: TOKEN_AUTH,
-      exposeMethods: true,
-      captchaRenderId: "",
-      success: (data) => {
-        currentReqId = readReqId(data) || currentReqId;
-        lastAccessToken = readToken(data) || lastAccessToken;
-      },
-      failure: (error) => setError(getErrorMessage(error, "OTP verify nahi ho paya."))
-    };
     phoneEl.addEventListener("input", () => {
       phoneEl.value = phone();
-      sendBtn.disabled = phone().length !== 10 || typeof window.sendOtp !== "function";
-      setError("");
-    });
-    otpEl.addEventListener("input", () => {
-      otpEl.value = otp();
-      verifyBtn.disabled = otp().length !== 6;
+      sendBtn.disabled = phone().length !== 10;
       setError("");
     });
     sendBtn.addEventListener("click", sendOtp);
-    verifyBtn.addEventListener("click", verifyOtp);
-    resendBtn.addEventListener("click", () => {
-      if (typeof window.retryOtp === "function" && currentReqId) {
-        setStatus("OTP resend ho raha hai...");
-        resendBtn.disabled = true;
-        window.retryOtp(null, (data) => {
-          currentReqId = readReqId(data) || currentReqId;
-          setStatus("OTP SMS resent. Code enter karo.");
-          startResendTimer();
-        }, (error) => {
-          setStatus("");
-          setError(getErrorMessage(error, "OTP resend nahi hua."));
-          resendBtn.disabled = false;
-        }, currentReqId);
-      } else {
-        sendOtp();
-      }
-    });
-    (function loadOtpScript(urls) {
-      let index = 0;
-      function attempt() {
-        const script = document.createElement("script");
-        script.src = urls[index];
-        script.async = true;
-        script.onload = () => {
-          if (typeof window.initSendOTP === "function") {
-            window.initSendOTP(configuration);
-            setStatus("OTP service ready hai.");
-            sendBtn.disabled = phone().length !== 10;
-          }
-        };
-        script.onerror = () => {
-          index += 1;
-          if (index < urls.length) attempt();
-          else setError("OTP widget load nahi hua. Dobara try karo.");
-        };
-        document.head.appendChild(script);
-      }
-      attempt();
-    })(["https://verify.msg91.com/otp-provider.js", "https://verify.phone91.com/otp-provider.js"]);
+    completeLoginFromToken();
   </script>
 </body>
 </html>

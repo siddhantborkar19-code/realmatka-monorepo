@@ -118,7 +118,7 @@ export default function OtpLoginScreen() {
                   setSdkAccessToken("");
                   setSdkReqId("");
                   const response = await api.requestOtp(normalizedPhone, "login");
-                  if (Platform.OS !== "web" && response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
+                  if (response.mode === "widget" && isMsg91NativeOtpAvailable()) {
                     try {
                       const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
                       if (sdkResponse.accessToken) {
@@ -131,10 +131,13 @@ export default function OtpLoginScreen() {
                       setCooldownSeconds(OTP_RESEND_SECONDS);
                       return;
                     } catch {
-                      setMessage("Verification window open ho rahi hai...");
-                      setCooldownSeconds(OTP_RESEND_SECONDS);
-                      await Linking.openURL(response.widgetUrl);
-                      return;
+                      if (Platform.OS !== "web" && response.widgetUrl) {
+                        setMessage("Verification window open ho rahi hai...");
+                        setCooldownSeconds(OTP_RESEND_SECONDS);
+                        await Linking.openURL(response.widgetUrl);
+                        return;
+                      }
+                      throw new Error("MSG91 OTP method available nahi hai.");
                     }
                   }
                   if (response.mode === "widget" && response.widgetUrl) {

@@ -110,7 +110,7 @@ export default function RegisterScreen() {
       const response = await api.requestOtp(normalizedPhone, "register");
       setOtpMode(response.mode === "widget" ? "widget" : "otp");
       if (response.mode === "widget" && response.widgetUrl) {
-        if (Platform.OS === "web" && isMsg91NativeOtpAvailable()) {
+        if (isMsg91NativeOtpAvailable()) {
           try {
             const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
             if (sdkResponse.accessToken) {
@@ -124,6 +124,9 @@ export default function RegisterScreen() {
             setSuccess("OTP sent. Code enter karke Verify OTP dabao.");
             return;
           } catch {
+            if (Platform.OS === "web") {
+              throw new Error("MSG91 OTP method available nahi hai.");
+            }
             setSuccess("Verification page open ho raha hai. OTP verify karke wapas aao.");
             await Linking.openURL(response.widgetUrl);
             return;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Image, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -35,6 +35,7 @@ export default function RegisterScreen() {
   const [otpMode, setOtpMode] = useState<"otp" | "widget">("otp");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const sendingOtpRef = useRef(false);
   const incomingReferralCode = normalizeReferralCode(params.ref ?? params.referenceCode ?? params.referralCode);
   const normalizedPhone = phone.replace(/[^0-9]/g, "").slice(-10);
   const normalizedFirstName = firstName.trim();
@@ -94,12 +95,16 @@ export default function RegisterScreen() {
   }, [params.msg91Token, params.phone, params.purpose]);
 
   async function sendRegisterOtp() {
+    if (sendingOtpRef.current) {
+      return;
+    }
     if (!hasValidPhone) {
       setError("Valid 10 digit phone number dalo.");
       return;
     }
 
     try {
+      sendingOtpRef.current = true;
       setOtpSubmitting(true);
       setError("");
       setSuccess("");
@@ -141,6 +146,7 @@ export default function RegisterScreen() {
     } catch (otpError) {
       setError(formatApiError(otpError, "Unable to send OTP"));
     } finally {
+      sendingOtpRef.current = false;
       setOtpSubmitting(false);
     }
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -22,6 +22,7 @@ export default function ForgotPasswordScreen() {
   const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
   const [sdkReqId, setSdkReqId] = useState("");
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const sendingOtpRef = useRef(false);
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const normalizedOtp = otp.replace(/[^0-9]/g, "");
   const hasValidPhone = normalizedPhone.length === 10;
@@ -82,11 +83,15 @@ export default function ForgotPasswordScreen() {
               disabled={sendingOtp || cooldownSeconds > 0 || !hasValidPhone}
               style={[styles.secondaryButton, (sendingOtp || cooldownSeconds > 0 || !hasValidPhone) && styles.disabled]}
               onPress={async () => {
+                if (sendingOtpRef.current) {
+                  return;
+                }
                 if (!hasValidPhone) {
                   setError("Valid 10 digit phone number dalo.");
                   return;
                 }
                 try {
+                  sendingOtpRef.current = true;
                   setSendingOtp(true);
                   setError("");
                   setMessage("");
@@ -126,6 +131,7 @@ export default function ForgotPasswordScreen() {
                 } catch (otpError) {
                   setError(formatApiError(otpError, "Unable to send OTP"));
                 } finally {
+                  sendingOtpRef.current = false;
                   setSendingOtp(false);
                 }
               }}
@@ -192,7 +198,7 @@ export default function ForgotPasswordScreen() {
                   setError("");
                   setMessage("");
                   let accessToken = verifiedAccessToken;
-                  if (!accessToken && sdkReqId) {
+                  if (!accessToken && (sdkReqId || Platform.OS === "web")) {
                     setMessage("OTP verify ho raha hai...");
                     const verified = await verifyMsg91NativeOtp(sdkReqId, normalizedOtp);
                     accessToken = verified.accessToken;

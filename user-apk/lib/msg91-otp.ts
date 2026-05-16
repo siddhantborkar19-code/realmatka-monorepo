@@ -16,13 +16,30 @@ type Msg91BrowserWindow = Window & {
     success?: (data: Record<string, unknown>) => void,
     failure?: (error: unknown) => void
   ) => void;
+  sendOTP?: (
+    identifier: string,
+    success?: (data: Record<string, unknown>) => void,
+    failure?: (error: unknown) => void
+  ) => void;
   retryOtp?: (
     channel: string | null,
     success?: (data: Record<string, unknown>) => void,
     failure?: (error: unknown) => void,
     reqId?: string
   ) => void;
+  retryOTP?: (
+    channel: string | null,
+    success?: (data: Record<string, unknown>) => void,
+    failure?: (error: unknown) => void,
+    reqId?: string
+  ) => void;
   verifyOtp?: (
+    otp: string,
+    success?: (data: Record<string, unknown>) => void,
+    failure?: (error: unknown) => void,
+    reqId?: string
+  ) => void;
+  verifyOTP?: (
     otp: string,
     success?: (data: Record<string, unknown>) => void,
     failure?: (error: unknown) => void,
@@ -64,7 +81,10 @@ function getBrowserWindow() {
 
 function loadMsg91WebScript() {
   const browserWindow = getBrowserWindow();
-  if (typeof browserWindow.sendOtp === "function" && typeof browserWindow.verifyOtp === "function") {
+  if (
+    (typeof browserWindow.sendOtp === "function" || typeof browserWindow.sendOTP === "function") &&
+    (typeof browserWindow.verifyOtp === "function" || typeof browserWindow.verifyOTP === "function")
+  ) {
     return Promise.resolve();
   }
   if (browserWindow.__realMatkaMsg91ScriptPromise) {
@@ -99,14 +119,20 @@ function loadMsg91WebScript() {
 
 function waitForMsg91WebMethods(timeoutMs = 6000) {
   const browserWindow = getBrowserWindow();
-  if (typeof browserWindow.sendOtp === "function" && typeof browserWindow.verifyOtp === "function") {
+  if (
+    (typeof browserWindow.sendOtp === "function" || typeof browserWindow.sendOTP === "function") &&
+    (typeof browserWindow.verifyOtp === "function" || typeof browserWindow.verifyOTP === "function")
+  ) {
     return Promise.resolve();
   }
 
   return new Promise<void>((resolve, reject) => {
     const startedAt = Date.now();
     const timer = window.setInterval(() => {
-      if (typeof browserWindow.sendOtp === "function" && typeof browserWindow.verifyOtp === "function") {
+      if (
+        (typeof browserWindow.sendOtp === "function" || typeof browserWindow.sendOTP === "function") &&
+        (typeof browserWindow.verifyOtp === "function" || typeof browserWindow.verifyOTP === "function")
+      ) {
         window.clearInterval(timer);
         resolve();
         return;
@@ -225,11 +251,12 @@ export async function sendMsg91NativeOtp(phone: string) {
   if (Platform.OS === "web") {
     await initializeMsg91WebWidget();
     const browserWindow = getBrowserWindow();
-    if (typeof browserWindow.sendOtp !== "function") {
+    const sendOtpMethod = browserWindow.sendOtp || browserWindow.sendOTP;
+    if (typeof sendOtpMethod !== "function") {
       throw new Error("MSG91 send OTP method available nahi hai.");
     }
     const response = await new Promise<Record<string, unknown>>((resolve, reject) => {
-      browserWindow.sendOtp?.(`91${phone.replace(/[^0-9]/g, "")}`, resolve, reject);
+      sendOtpMethod(`91${phone.replace(/[^0-9]/g, "")}`, resolve, reject);
     });
     return normalizeSendResponse(response);
   }
@@ -243,11 +270,12 @@ export async function retryMsg91NativeOtp(reqId: string) {
   if (Platform.OS === "web") {
     await initializeMsg91WebWidget();
     const browserWindow = getBrowserWindow();
-    if (typeof browserWindow.retryOtp !== "function") {
+    const retryOtpMethod = browserWindow.retryOtp || browserWindow.retryOTP;
+    if (typeof retryOtpMethod !== "function") {
       throw new Error("MSG91 resend OTP method available nahi hai.");
     }
     const response = await new Promise<Record<string, unknown>>((resolve, reject) => {
-      browserWindow.retryOtp?.(null, resolve, reject, reqId);
+      retryOtpMethod(null, resolve, reject, reqId);
     });
     assertSdkSuccess(response, "OTP resend nahi hua. Dobara try karo.");
     const nextReqId = extractReqId(response) || reqId;
@@ -281,11 +309,12 @@ export async function verifyMsg91NativeOtp(reqId: string, otp: string) {
   if (Platform.OS === "web") {
     await initializeMsg91WebWidget();
     const browserWindow = getBrowserWindow();
-    if (typeof browserWindow.verifyOtp !== "function") {
+    const verifyOtpMethod = browserWindow.verifyOtp || browserWindow.verifyOTP;
+    if (typeof verifyOtpMethod !== "function") {
       throw new Error("MSG91 verify OTP method available nahi hai.");
     }
     const response = await new Promise<Record<string, unknown>>((resolve, reject) => {
-      browserWindow.verifyOtp?.(otp, resolve, reject, reqId);
+      verifyOtpMethod(otp, resolve, reject, reqId);
     });
     assertSdkSuccess(response, "Invalid OTP. Dobara try karo.");
     const accessToken = extractAccessToken(response);

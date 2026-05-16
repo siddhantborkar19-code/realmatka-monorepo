@@ -577,13 +577,20 @@ export async function msg91Widget(request) {
   <title>Real Matka OTP Verification</title>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #fff7ed, #ffe4d6 45%, #fef3c7); color: #111827; display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 18px; }
-    .wrap { width: min(92vw, 420px); background: #fffaf5; border: 1px solid rgba(194, 65, 12, 0.16); border-radius: 24px; padding: 24px; box-shadow: 0 22px 55px rgba(124, 45, 18, 0.18); }
-    .brand { display: inline-flex; align-items: center; gap: 8px; color: #c2410c; font-size: 12px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; }
-    .dot { width: 9px; height: 9px; border-radius: 999px; background: #f97316; box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.12); }
-    h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.1; }
-    p { margin: 0 0 16px; color: #64748b; line-height: 1.5; }
-    .meta { font-size: 13px; color: #7c2d12; margin-bottom: 18px; background: #ffedd5; border-radius: 14px; padding: 11px 12px; font-weight: 700; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fff7ed; color: #111827; min-height: 100vh; }
+    .hero { min-height: 178px; padding: 42px 22px 30px; background: linear-gradient(135deg, #ff7a18, #ff314f); color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .logo { width: 76px; height: 76px; border-radius: 24px; background: rgba(255,255,255,0.18); display: grid; place-items: center; font-size: 34px; font-weight: 900; box-shadow: 0 18px 34px rgba(127, 29, 29, 0.2); margin-bottom: 12px; }
+    .hero h1 { margin: 0; font-size: 26px; line-height: 1.1; }
+    .hero p { margin: 8px auto 0; max-width: 340px; color: rgba(255,255,255,0.88); line-height: 1.45; font-size: 14px; }
+    .content { width: min(100%, 480px); margin: -18px auto 0; padding: 0 16px 32px; }
+    .wrap { background: #fffaf5; border: 1px solid rgba(194, 65, 12, 0.15); border-radius: 24px; padding: 22px; box-shadow: 0 18px 42px rgba(124, 45, 18, 0.15); }
+    .step { border: 1px solid #fed7aa; background: #fff; border-radius: 20px; padding: 16px; margin-top: 14px; }
+    .step:first-child { margin-top: 0; }
+    .stepHeader { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .badge { width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; color: #fff; font-weight: 900; background: linear-gradient(135deg, #fb923c, #ef4444); }
+    h2 { margin: 0; font-size: 18px; line-height: 1.2; }
+    .hint { margin: 4px 0 0; color: #64748b; line-height: 1.45; font-size: 13px; }
+    .phoneBox { min-height: 54px; border-radius: 16px; border: 1px solid #fed7aa; background: #fff7ed; color: #111827; font-size: 19px; font-weight: 900; display: flex; align-items: center; padding: 0 16px; }
     label { display: block; font-weight: 800; margin-bottom: 8px; }
     input { width: 100%; min-height: 54px; border-radius: 16px; border: 1px solid #fed7aa; background: #ffffff; color: #111827; font-size: 22px; font-weight: 900; letter-spacing: 0.22em; text-align: center; padding: 0 14px; outline: none; }
     input:focus { border-color: #fb923c; box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.16); }
@@ -591,23 +598,45 @@ export async function msg91Widget(request) {
     button:disabled { opacity: 0.6; cursor: not-allowed; }
     .primary { background: linear-gradient(135deg, #fb923c, #ef4444); color: #fff; box-shadow: 0 14px 24px rgba(239, 68, 68, 0.18); }
     .secondary { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .status { color: #15803d; font-size: 14px; margin-top: 14px; font-weight: 700; min-height: 20px; }
-    .error { color: #dc2626; font-size: 14px; margin-top: 10px; font-weight: 700; min-height: 20px; }
+    .status { color: #15803d; font-size: 14px; margin-top: 14px; font-weight: 700; min-height: 20px; text-align: center; }
+    .error { color: #dc2626; font-size: 14px; margin-top: 10px; font-weight: 700; min-height: 20px; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="brand"><span class="dot"></span>Real Matka</div>
-    <h1>Verify Mobile</h1>
-    <p>Phone number confirm karo, OTP lo, phir code verify karo.</p>
-    <div class="meta">Mobile: +91 ${phone}</div>
-    <button id="sendBtn" class="secondary">Send OTP</button>
-    <label for="otp">Enter OTP</label>
-    <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" />
-    <button id="verifyBtn" class="primary" disabled>Verify OTP</button>
-    <button id="resendBtn" class="secondary" disabled>Resend in 30s</button>
-    <div id="status" class="status"></div>
-    <div id="error" class="error"></div>
+  <div class="hero">
+    <div class="logo">RM</div>
+    <h1>OTP Login</h1>
+    <p>Phone number verify hone ke baad direct login continue ho jayega.</p>
+  </div>
+  <div class="content">
+    <div class="wrap">
+      <div class="step">
+        <div class="stepHeader">
+          <div class="badge">1</div>
+          <div>
+            <h2>Mobile Number</h2>
+            <p class="hint">Is number par OTP send hoga.</p>
+          </div>
+        </div>
+        <div class="phoneBox">+91 ${phone}</div>
+        <button id="sendBtn" class="primary">Send OTP</button>
+      </div>
+      <div class="step">
+        <div class="stepHeader">
+          <div class="badge">2</div>
+          <div>
+            <h2>Verify OTP</h2>
+            <p class="hint">SMS me aaye 6 digit code ko enter karo.</p>
+          </div>
+        </div>
+        <label for="otp">OTP</label>
+        <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" />
+        <button id="verifyBtn" class="primary" disabled>Verify OTP</button>
+        <button id="resendBtn" class="secondary" disabled>Resend in 30s</button>
+      </div>
+      <div id="status" class="status"></div>
+      <div id="error" class="error"></div>
+    </div>
   </div>
   <script>
     var currentReqId = '';

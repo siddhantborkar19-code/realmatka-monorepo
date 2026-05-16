@@ -1,10 +1,18 @@
 {
-  "buildCommand": "npx expo export --platform web",
+  "buildCommand": "npx expo export --platform web && mkdir -p dist/auth && cp -R public/* dist/",
   "outputDirectory": "dist",
   "devCommand": "npx expo start --web",
   "framework": null,
   "cleanUrls": true,
   "rewrites": [
+    {
+      "source": "/auth/otp-login",
+      "destination": "/auth/otp-login.html"
+    },
+    {
+      "source": "/auth/register",
+      "destination": "/auth/register.html"
+    },
     {
       "source": "/:path*",
       "destination": "/"

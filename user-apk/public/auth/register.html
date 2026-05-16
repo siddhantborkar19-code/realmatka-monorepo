@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Register - Real Matka</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; font-family: Arial, sans-serif; background: #fff7ed; color: #111827; }
+    .hero { min-height: 170px; padding: 38px 22px 30px; background: linear-gradient(135deg, #ff7a18, #ff314f); color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .logo { width: 72px; height: 72px; border-radius: 24px; background: rgba(255,255,255,0.18); display: grid; place-items: center; font-size: 32px; font-weight: 900; box-shadow: 0 18px 34px rgba(127,29,29,0.2); margin-bottom: 12px; }
+    .hero h1 { margin: 0; font-size: 26px; line-height: 1.1; }
+    .hero p { margin: 8px auto 0; max-width: 360px; color: rgba(255,255,255,0.9); line-height: 1.45; font-size: 14px; }
+    .content { width: min(100%, 520px); margin: -18px auto 0; padding: 0 16px 34px; }
+    .card { background: #fffaf5; border: 1px solid rgba(194,65,12,0.15); border-radius: 24px; padding: 22px; box-shadow: 0 18px 42px rgba(124,45,18,0.15); }
+    .step { border: 1px solid #fed7aa; background: #fff; border-radius: 20px; padding: 16px; margin-top: 14px; }
+    .step:first-child { margin-top: 0; }
+    .stepHeader { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .badge { width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; color: #fff; font-weight: 900; background: linear-gradient(135deg, #fb923c, #ef4444); }
+    h2 { margin: 0; font-size: 18px; line-height: 1.2; }
+    .hint { margin: 4px 0 0; color: #64748b; line-height: 1.45; font-size: 13px; }
+    label { display: block; font-weight: 800; margin: 12px 0 8px; }
+    input { width: 100%; min-height: 52px; border-radius: 16px; border: 1px solid #fed7aa; background: #fff; color: #111827; font-size: 16px; font-weight: 800; padding: 0 14px; outline: none; }
+    input:focus { border-color: #fb923c; box-shadow: 0 0 0 4px rgba(251,146,60,0.16); }
+    #otp { text-align: center; letter-spacing: 0.22em; font-size: 22px; }
+    button { width: 100%; border: 0; border-radius: 999px; min-height: 52px; font-weight: 900; font-size: 15px; cursor: pointer; margin-top: 14px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .primary { background: linear-gradient(135deg, #fb923c, #ef4444); color: #fff; box-shadow: 0 14px 24px rgba(239,68,68,0.18); }
+    .secondary { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .details[hidden] { display: none; }
+    .status { color: #15803d; font-size: 14px; margin-top: 14px; font-weight: 700; min-height: 20px; text-align: center; }
+    .error { color: #dc2626; font-size: 14px; margin-top: 10px; font-weight: 700; min-height: 20px; text-align: center; }
+    .link { display: block; text-align: center; color: #9a3412; text-decoration: none; font-weight: 800; margin-top: 16px; }
+    @media (max-width: 460px) { .grid { grid-template-columns: 1fr; gap: 0; } }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">RM</div>
+    <h1>Create Account</h1>
+    <p>Pehle mobile verify karo, phir details add karke account create karo.</p>
+  </div>
+
+  <div class="content">
+    <div class="card">
+      <div class="step">
+        <div class="stepHeader">
+          <div class="badge">1</div>
+          <div>
+            <h2>Verify Mobile</h2>
+            <p class="hint">10 digit phone number par OTP send hoga.</p>
+          </div>
+        </div>
+        <label for="phone">Phone Number</label>
+        <input id="phone" inputmode="numeric" maxlength="10" placeholder="Enter phone number" />
+        <button id="sendBtn" class="primary" disabled>Send OTP</button>
+        <label for="otp">OTP</label>
+        <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" disabled />
+        <button id="verifyBtn" class="primary" disabled>Verify OTP</button>
+        <button id="resendBtn" class="secondary" disabled>Resend OTP</button>
+      </div>
+
+      <div id="details" class="step details" hidden>
+        <div class="stepHeader">
+          <div class="badge">2</div>
+          <div>
+            <h2>Account Details</h2>
+            <p class="hint">Sabhi fields mandatory hain. Bank details abhi required nahi.</p>
+          </div>
+        </div>
+        <div class="grid">
+          <div><label for="firstName">First Name</label><input id="firstName" placeholder="Enter first name" /></div>
+          <div><label for="lastName">Last Name</label><input id="lastName" placeholder="Enter last name" /></div>
+        </div>
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Minimum 8 characters" />
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword" type="password" placeholder="Confirm password" />
+        <label for="referenceCode">Reference Code (Optional)</label>
+        <input id="referenceCode" placeholder="Enter reference code if you have one" />
+        <button id="createBtn" class="primary">Create Account</button>
+      </div>
+
+      <div id="status" class="status"></div>
+      <div id="error" class="error"></div>
+      <a class="link" href="/auth/login">Already have an account? Login</a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://api.realmatka.in";
+    const WIDGET_ID = "366570677169313137313933";
+    const TOKEN_AUTH = "515019TX2NYO2A6a081380P1";
+    let currentReqId = "";
+    let verifiedAccessToken = "";
+    let resendTimer = null;
+    const els = {
+      phone: document.getElementById("phone"),
+      otp: document.getElementById("otp"),
+      send: document.getElementById("sendBtn"),
+      verify: document.getElementById("verifyBtn"),
+      resend: document.getElementById("resendBtn"),
+      details: document.getElementById("details"),
+      firstName: document.getElementById("firstName"),
+      lastName: document.getElementById("lastName"),
+      password: document.getElementById("password"),
+      confirmPassword: document.getElementById("confirmPassword"),
+      referenceCode: document.getElementById("referenceCode"),
+      create: document.getElementById("createBtn"),
+      status: document.getElementById("status"),
+      error: document.getElementById("error")
+    };
+    function setStatus(message) { els.status.textContent = message || ""; }
+    function setError(message) { els.error.textContent = message || ""; }
+    function phone() { return els.phone.value.replace(/[^0-9]/g, "").slice(0, 10); }
+    function otp() { return els.otp.value.replace(/[^0-9]/g, "").slice(0, 6); }
+    function identifier() { return "91" + phone(); }
+    function err(error, fallback) {
+      if (typeof error === "string" && error.trim()) return error.trim();
+      if (error && typeof error === "object") return error.message || error.error || error.description || (error.data && error.data.message) || fallback;
+      return fallback;
+    }
+    function widgetData() { try { return typeof window.getWidgetData === "function" ? window.getWidgetData() : {}; } catch { return {}; } }
+    function readReqId(payload) {
+      const sources = [payload || {}, (payload && payload.data) || {}, (payload && payload.response) || {}, widgetData(), widgetData().data || {}, widgetData().response || {}];
+      for (const item of sources) {
+        const value = item.reqId || item.req_id || item.requestId || item.request_id || item.requestID || item.request_id_string || item.messageId || item.message_id || item.id;
+        if (value) return String(value).trim();
+      }
+      return "";
+    }
+    function readToken(payload) {
+      if (typeof payload === "string" && payload.trim().length > 32) return payload.trim();
+      if (!payload || typeof payload !== "object") return "";
+      const direct = payload.token || payload.accessToken || payload.access_token || payload["access-token"] || payload.jwtToken || payload.jwt_token || payload["jwt-token"];
+      if (typeof direct === "string" && direct.trim()) return direct.trim();
+      return readToken(payload.data) || readToken(payload.response);
+    }
+    function timer() {
+      let seconds = 30;
+      els.resend.disabled = true;
+      els.resend.textContent = "Resend in 30s";
+      if (resendTimer) clearInterval(resendTimer);
+      resendTimer = setInterval(() => {
+        seconds -= 1;
+        if (seconds <= 0) {
+          clearInterval(resendTimer);
+          resendTimer = null;
+          els.resend.disabled = false;
+          els.resend.textContent = "Resend OTP";
+        } else {
+          els.resend.textContent = "Resend in " + seconds + "s";
+        }
+      }, 1000);
+    }
+    function sendOtp() {
+      setError("");
+      setStatus("OTP SMS bheja ja raha hai...");
+      els.send.disabled = true;
+      window.sendOtp(identifier(), (data) => {
+        currentReqId = readReqId(data) || currentReqId;
+        setStatus("OTP SMS sent. Code enter karo.");
+        els.otp.disabled = false;
+        els.otp.focus();
+        timer();
+      }, (error) => {
+        setStatus("");
+        setError(err(error, "OTP send nahi hua. Dobara try karo."));
+        els.send.disabled = false;
+      });
+    }
+    function verifyOtp() {
+      setError("");
+      setStatus("OTP verify ho raha hai...");
+      els.verify.disabled = true;
+      window.verifyOtp(otp(), (data) => {
+        currentReqId = readReqId(data) || currentReqId;
+        verifiedAccessToken = readToken(data) || verifiedAccessToken;
+        if (!verifiedAccessToken) {
+          setStatus("");
+          setError("Verified token receive nahi hua. Dobara try karo.");
+          els.verify.disabled = false;
+          return;
+        }
+        setStatus("Mobile verified. Details fill karo.");
+        els.details.hidden = false;
+        els.phone.disabled = true;
+        els.otp.disabled = true;
+      }, (error) => {
+        setStatus("");
+        setError(err(error, "Invalid OTP. Dobara try karo."));
+        els.verify.disabled = false;
+      }, currentReqId || undefined);
+    }
+    async function createAccount() {
+      const body = {
+        firstName: els.firstName.value.trim(),
+        lastName: els.lastName.value.trim(),
+        phone: phone(),
+        otp: "",
+        password: els.password.value,
+        confirmPassword: els.confirmPassword.value,
+        referenceCode: els.referenceCode.value.trim(),
+        accessToken: verifiedAccessToken
+      };
+      if (!body.firstName || !body.lastName || !body.phone || !body.password || !body.confirmPassword || !verifiedAccessToken) {
+        setError("Sabhi required details fill karo.");
+        return;
+      }
+      setError("");
+      setStatus("Account create ho raha hai...");
+      els.create.disabled = true;
+      try {
+        const response = await fetch(API_BASE + "/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || data.message || "Unable to create account");
+        setStatus("Account created. Approval ke baad login kar sakte ho.");
+        window.setTimeout(() => { window.location.href = "/auth/login"; }, 1800);
+      } catch (error) {
+        setStatus("");
+        setError(err(error, "Unable to create account"));
+        els.create.disabled = false;
+      }
+    }
+    const configuration = {
+      widgetId: WIDGET_ID,
+      tokenAuth: TOKEN_AUTH,
+      exposeMethods: true,
+      captchaRenderId: "",
+      success: (data) => { currentReqId = readReqId(data) || currentReqId; verifiedAccessToken = readToken(data) || verifiedAccessToken; },
+      failure: (error) => setError(err(error, "OTP verify nahi ho paya."))
+    };
+    els.phone.addEventListener("input", () => { els.phone.value = phone(); els.send.disabled = phone().length !== 10 || typeof window.sendOtp !== "function"; setError(""); });
+    els.otp.addEventListener("input", () => { els.otp.value = otp(); els.verify.disabled = otp().length !== 6; setError(""); });
+    els.send.addEventListener("click", sendOtp);
+    els.verify.addEventListener("click", verifyOtp);
+    els.resend.addEventListener("click", () => currentReqId && typeof window.retryOtp === "function"
+      ? window.retryOtp(null, (data) => { currentReqId = readReqId(data) || currentReqId; setStatus("OTP SMS resent. Code enter karo."); timer(); }, (error) => setError(err(error, "OTP resend nahi hua.")), currentReqId)
+      : sendOtp());
+    els.create.addEventListener("click", createAccount);
+    (function loadOtpScript(urls) {
+      let index = 0;
+      function attempt() {
+        const script = document.createElement("script");
+        script.src = urls[index];
+        script.async = true;
+        script.onload = () => {
+          if (typeof window.initSendOTP === "function") {
+            window.initSendOTP(configuration);
+            setStatus("OTP service ready hai.");
+            els.send.disabled = phone().length !== 10;
+          }
+        };
+        script.onerror = () => {
+          index += 1;
+          if (index < urls.length) attempt();
+          else setError("OTP widget load nahi hua. Dobara try karo.");
+        };
+        document.head.appendChild(script);
+      }
+      attempt();
+    })(["https://verify.msg91.com/otp-provider.js", "https://verify.phone91.com/otp-provider.js"]);
+  </script>
+</body>
+</html>

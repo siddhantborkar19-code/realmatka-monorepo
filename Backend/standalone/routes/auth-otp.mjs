@@ -819,7 +819,7 @@ export async function msg91Widget(request) {
     var configuration = {
       widgetId: ${JSON.stringify(msg91WidgetId)},
       tokenAuth: ${JSON.stringify(msg91WidgetTokenAuth)},
-      identifier: identifier,
+      identifier: '',
       exposeMethods: true,
       success: function (data) {
         setReqId(data);
@@ -841,19 +841,28 @@ export async function msg91Widget(request) {
       redirect.searchParams.set('purpose', ${JSON.stringify(purpose)});
       window.location.replace(redirect.toString());
     }
-    function sendOtpNow() {
+    var sendInFlight = false;
+    var otpSentOnce = false;
+    function sendOtpNow(force) {
+      if (sendInFlight || (otpSentOnce && !force)) {
+        return;
+      }
+      sendInFlight = true;
       setError('');
       setStatus('OTP SMS bheja ja raha hai...');
       sendBtn.disabled = true;
       if (typeof window.sendOtp !== 'function') {
         setError('OTP service load nahi hua. Dobara try karo.');
         sendBtn.disabled = false;
+        sendInFlight = false;
         return;
       }
       window.sendOtp(
         identifier,
         function(data) {
           setReqId(data);
+          otpSentOnce = true;
+          sendInFlight = false;
           setStatus('OTP SMS sent. Code enter karo.');
           otpEl.focus();
           startResendTimer();
@@ -864,6 +873,7 @@ export async function msg91Widget(request) {
           sendBtn.disabled = false;
           resendBtn.disabled = false;
           resendBtn.textContent = 'Resend OTP';
+          sendInFlight = false;
         }
       );
     }
@@ -926,7 +936,7 @@ export async function msg91Widget(request) {
         }, currentReqId || undefined);
         return;
       }
-      sendOtpNow();
+      sendOtpNow(true);
     });
     (function loadOtpScript(urls) {
       var index = 0;
@@ -937,7 +947,7 @@ export async function msg91Widget(request) {
         s.onload = function() {
           if (typeof window.initSendOTP === 'function') {
             window.initSendOTP(configuration);
-            window.setTimeout(sendOtpNow, 300);
+            window.setTimeout(function() { sendOtpNow(false); }, 300);
           }
         };
         s.onerror = function() {

@@ -387,14 +387,15 @@ async function sendOtp(phone, purpose) {
   if (otpProvider === "msg91" && isMsg91ApiMode()) {
     const code = createOtpCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    await msg91SendOtp(phone, code);
+    const msg91Payload = await msg91SendOtp(phone, code);
     challenges.set(`${phone}:${purpose}`, { code, expiresAt });
     return {
       sent: true,
       expiresAt,
       provider: "msg91",
       devCode: null,
-      mode: "otp"
+      mode: "otp",
+      requestId: msg91Payload.request_id || null
     };
   }
 
@@ -535,6 +536,7 @@ export async function requestOtp(request) {
         provider: otpState.provider,
         devCode: otpState.devCode,
         mode: otpState.mode ?? "otp",
+        requestId: otpState.requestId ?? null,
         widgetUrl: otpState.provider === "msg91" && otpState.mode === "widget" ? buildMsg91WidgetUrl(request, phone, purpose) : null
       },
       request
@@ -631,8 +633,16 @@ export async function msg91Widget(request) {
       return fallback;
     }
     function setReqId(data) {
+      var widgetData = {};
+      try {
+        widgetData = typeof window.getWidgetData === 'function' ? window.getWidgetData() : {};
+      } catch (error) {
+        widgetData = {};
+      }
       var nestedData = data && data.data;
       var nestedResponse = data && data.response;
+      var widgetNestedData = widgetData && widgetData.data;
+      var widgetNestedResponse = widgetData && widgetData.response;
       currentReqId =
         (data && (
           data.reqId ||
@@ -665,6 +675,39 @@ export async function msg91Widget(request) {
             nestedResponse.messageId ||
             nestedResponse.message_id ||
             nestedResponse.id
+          )
+        )) ||
+        (widgetData && (
+          widgetData.reqId ||
+          widgetData.req_id ||
+          widgetData.requestId ||
+          widgetData.request_id ||
+          widgetData.requestID ||
+          widgetData.request_id_string ||
+          widgetData.messageId ||
+          widgetData.message_id ||
+          widgetData.id ||
+          widgetNestedData && (
+            widgetNestedData.reqId ||
+            widgetNestedData.req_id ||
+            widgetNestedData.requestId ||
+            widgetNestedData.request_id ||
+            widgetNestedData.requestID ||
+            widgetNestedData.request_id_string ||
+            widgetNestedData.messageId ||
+            widgetNestedData.message_id ||
+            widgetNestedData.id
+          ) ||
+          widgetNestedResponse && (
+            widgetNestedResponse.reqId ||
+            widgetNestedResponse.req_id ||
+            widgetNestedResponse.requestId ||
+            widgetNestedResponse.request_id ||
+            widgetNestedResponse.requestID ||
+            widgetNestedResponse.request_id_string ||
+            widgetNestedResponse.messageId ||
+            widgetNestedResponse.message_id ||
+            widgetNestedResponse.id
           )
         )) ||
         currentReqId ||

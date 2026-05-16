@@ -101,6 +101,12 @@ export default function ForgotPasswordScreen() {
                   setOtpMode("otp");
                   const response = await api.requestOtp(normalizedPhone, "password_reset");
                   setOtpMode(response.mode === "widget" ? "widget" : "otp");
+                  if (response.mode === "widget" && response.widgetUrl) {
+                    setMessage("OTP verification page open ho raha hai...");
+                    setCooldownSeconds(OTP_RESEND_SECONDS);
+                    await Linking.openURL(response.widgetUrl);
+                    return;
+                  }
                   if (response.mode === "widget" && isMsg91NativeOtpAvailable()) {
                     try {
                       const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
@@ -123,14 +129,7 @@ export default function ForgotPasswordScreen() {
                       throw new Error("MSG91 OTP method available nahi hai.");
                     }
                   }
-                  if (response.mode === "widget" && response.widgetUrl) {
-                    if (Platform.OS === "web") {
-                      throw new Error("MSG91 OTP method available nahi hai.");
-                    }
-                    setMessage("Verification window open ho rahi hai...");
-                    setCooldownSeconds(OTP_RESEND_SECONDS);
-                    await Linking.openURL(response.widgetUrl);
-                  } else {
+                  if (response.mode !== "widget") {
                     setMessage(response.provider === "local" ? "Password reset OTP generated." : "Password reset OTP SMS successfully sent.");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
                   }

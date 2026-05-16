@@ -584,12 +584,8 @@ export async function msg91Widget(request) {
     .hero p { margin: 8px auto 0; max-width: 340px; color: rgba(255,255,255,0.88); line-height: 1.45; font-size: 14px; }
     .content { width: min(100%, 480px); margin: -18px auto 0; padding: 0 16px 32px; }
     .wrap { background: #fffaf5; border: 1px solid rgba(194, 65, 12, 0.15); border-radius: 24px; padding: 22px; box-shadow: 0 18px 42px rgba(124, 45, 18, 0.15); }
-    .step { border: 1px solid #fed7aa; background: #fff; border-radius: 20px; padding: 16px; margin-top: 14px; }
-    .step:first-child { margin-top: 0; }
-    .stepHeader { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .badge { width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; color: #fff; font-weight: 900; background: linear-gradient(135deg, #fb923c, #ef4444); }
-    h2 { margin: 0; font-size: 18px; line-height: 1.2; }
-    .hint { margin: 4px 0 0; color: #64748b; line-height: 1.45; font-size: 13px; }
+    h2 { margin: 0 0 6px; font-size: 24px; line-height: 1.2; }
+    .hint { margin: 0 0 16px; color: #64748b; line-height: 1.45; font-size: 14px; }
     .phoneBox { min-height: 54px; border-radius: 16px; border: 1px solid #fed7aa; background: #fff7ed; color: #111827; font-size: 19px; font-weight: 900; display: flex; align-items: center; padding: 0 16px; }
     label { display: block; font-weight: 800; margin-bottom: 8px; }
     input { width: 100%; min-height: 54px; border-radius: 16px; border: 1px solid #fed7aa; background: #ffffff; color: #111827; font-size: 22px; font-weight: 900; letter-spacing: 0.22em; text-align: center; padding: 0 14px; outline: none; }
@@ -610,25 +606,12 @@ export async function msg91Widget(request) {
   </div>
   <div class="content">
     <div class="wrap">
-      <div class="step">
-        <div class="stepHeader">
-          <div class="badge">1</div>
-          <div>
-            <h2>Mobile Number</h2>
-            <p class="hint">Is number par OTP send hoga.</p>
-          </div>
-        </div>
+      <div>
+        <h2>OTP Login</h2>
+        <p class="hint">Phone number verify karo, phir login continue ho jayega.</p>
+        <label>Phone Number</label>
         <div class="phoneBox">+91 ${phone}</div>
         <button id="sendBtn" class="primary">Send OTP</button>
-      </div>
-      <div class="step">
-        <div class="stepHeader">
-          <div class="badge">2</div>
-          <div>
-            <h2>Verify OTP</h2>
-            <p class="hint">SMS me aaye 6 digit code ko enter karo.</p>
-          </div>
-        </div>
         <label for="otp">OTP</label>
         <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" />
         <button id="verifyBtn" class="primary" disabled>Verify OTP</button>

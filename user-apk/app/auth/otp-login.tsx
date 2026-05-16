@@ -32,6 +32,10 @@ export default function OtpLoginScreen() {
   const hasValidOtp = normalizedOtp.length === 6;
   const verifiedAccessToken = sdkAccessToken || String(params.msg91Token || "").trim();
 
+  function isLikelyMsg91AccessToken(token: string) {
+    return token.split(".").length >= 3 && token.length > 32;
+  }
+
   useEffect(() => {
     if (cooldownSeconds <= 0) {
       return;
@@ -61,6 +65,13 @@ export default function OtpLoginScreen() {
     if (!token || !callbackPhone || handledTokenRef.current === token) {
       return;
     }
+    if (!isLikelyMsg91AccessToken(token)) {
+      handledTokenRef.current = token;
+      setError("");
+      setMessage("");
+      router.replace("/auth/otp-login");
+      return;
+    }
 
     handledTokenRef.current = token;
     void (async () => {
@@ -72,7 +83,13 @@ export default function OtpLoginScreen() {
         router.replace("/(tabs)");
       } catch (loginError) {
         handledTokenRef.current = "";
-        setError(formatApiError(loginError, "OTP login failed"));
+        setError("");
+        setMessage("OTP session expire ho gaya. Dobara Send OTP karo.");
+        setSdkAccessToken("");
+        setSdkReqId("");
+        setOtp("");
+        setOtpSent(false);
+        router.replace("/auth/otp-login");
       } finally {
         setLoggingIn(false);
       }

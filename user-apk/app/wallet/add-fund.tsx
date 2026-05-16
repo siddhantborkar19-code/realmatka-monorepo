@@ -7,6 +7,7 @@ import QRErrorCorrectLevel from "qrcode-terminal/vendor/QRCode/QRErrorCorrectLev
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
 import { api, formatApiError, type DepositConfig, type PaymentOrder, type WalletEntry } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
+import { readWalletBoolean, readWalletText, useWalletRemoteSettings } from "@/lib/wallet-remote-config";
 import { colors } from "@/theme/colors";
 
 const MIN_DEPOSIT_AMOUNT = 100;
@@ -58,6 +59,7 @@ function buildQrMatrix(value: string) {
 }
 
 export default function AddFundScreen() {
+  const walletSettings = useWalletRemoteSettings();
   const { currentUser, sessionToken, walletBalance, reloadSessionData, loadWalletHistory } = useAppState();
   const [depositConfig, setDepositConfig] = useState<DepositConfig>(DEFAULT_DEPOSIT_CONFIG);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -77,6 +79,14 @@ export default function AddFundScreen() {
   const isManualMode = depositConfig.enabled && (depositConfig.mode === "manual_qr" || depositConfig.mode === "upi_intent");
   const isRazorpayMode = depositConfig.enabled && (depositConfig.mode === "razorpay" || depositConfig.mode === "cashfree");
   const isMaintenanceMode = !depositConfig.enabled || depositConfig.mode === "maintenance";
+  const addFundTitle = readWalletText(walletSettings, "wallet_add_fund_title", "Add Fund");
+  const amountLabel = readWalletText(walletSettings, "wallet_add_fund_amount_label", "Deposit Amount");
+  const payButtonLabel = readWalletText(walletSettings, "wallet_add_fund_button_label", isManualMode ? "Generate QR" : "Pay Now");
+  const historyVisible = readWalletBoolean(walletSettings, "wallet_add_fund_history_visible", true);
+  const historyLabel = readWalletText(walletSettings, "wallet_add_fund_history_label", "View Wallet History");
+  const howItWorksVisible = readWalletBoolean(walletSettings, "wallet_add_fund_how_it_works_visible", true);
+  const manualQrVisible = readWalletBoolean(walletSettings, "wallet_add_fund_manual_qr_visible", true);
+  const whatsappVisible = readWalletBoolean(walletSettings, "wallet_add_fund_whatsapp_visible", true);
   const upiUrl = useMemo(() => buildUpiUrl(generatedAmount, depositConfig), [depositConfig, generatedAmount]);
   const qrMatrix = useMemo(() => buildQrMatrix(upiUrl), [upiUrl]);
   const moduleSize = Math.max(3, Math.floor(232 / qrMatrix.length));
@@ -128,7 +138,7 @@ export default function AddFundScreen() {
 
   return (
     <View style={styles.page}>
-      <BackHeader title="Add Fund" subtitle={undefined} />
+      <BackHeader title={addFundTitle} subtitle={undefined} />
       <AppScreen showPromo={false}>
         <SurfaceCard style={styles.heroCard}>
           <View style={styles.heroIcon}>
@@ -141,7 +151,7 @@ export default function AddFundScreen() {
         </SurfaceCard>
 
         <SurfaceCard>
-          <Text style={styles.sectionTitle}>Deposit Amount</Text>
+          <Text style={styles.sectionTitle}>{amountLabel}</Text>
           <View style={styles.inputRow}>
             <Text style={styles.currencyPrefix}>Rs</Text>
             <TextInput
@@ -172,7 +182,7 @@ export default function AddFundScreen() {
               style={[styles.generateButton, (!hasValidAmount || submitting || !sessionToken) && styles.disabledButton]}
             >
               {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Ionicons color={colors.surface} name="qr-code-outline" size={18} />}
-              <Text style={styles.generateButtonText}>Generate QR</Text>
+              <Text style={styles.generateButtonText}>{payButtonLabel}</Text>
             </Pressable>
           ) : null}
           {!loadingConfig && isRazorpayMode ? (
@@ -182,7 +192,7 @@ export default function AddFundScreen() {
               style={[styles.generateButton, (!hasValidAmount || submitting || !sessionToken) && styles.disabledButton]}
             >
               {submitting ? <ActivityIndicator color={colors.surface} size="small" /> : <Ionicons color={colors.surface} name="card-outline" size={18} />}
-              <Text style={styles.generateButtonText}>Pay Now</Text>
+              <Text style={styles.generateButtonText}>{payButtonLabel}</Text>
             </Pressable>
           ) : null}
         </SurfaceCard>
@@ -195,7 +205,7 @@ export default function AddFundScreen() {
           </SurfaceCard>
         ) : null}
 
-        {!loadingConfig && isManualMode && hasGeneratedQr ? (
+        {!loadingConfig && isManualMode && manualQrVisible && hasGeneratedQr ? (
           <SurfaceCard style={styles.qrCard}>
             <View style={styles.qrHeader}>
               <View>
@@ -250,7 +260,7 @@ export default function AddFundScreen() {
             </View>
             <Text style={styles.qrHint}>Payment ke baad screenshot lo, phir WhatsApp par proof bhejo. Admin verify karke wallet credit karega.</Text>
           </SurfaceCard>
-        ) : !loadingConfig && isManualMode ? (
+        ) : !loadingConfig && isManualMode && manualQrVisible ? (
           <SurfaceCard style={styles.placeholderCard}>
             <Ionicons color={colors.textMuted} name="qr-code-outline" size={34} />
             <Text style={styles.placeholderTitle}>QR abhi generate nahi hua</Text>
@@ -270,7 +280,7 @@ export default function AddFundScreen() {
           </SurfaceCard>
         ) : null}
 
-        {!isRazorpayMode ? <SurfaceCard>
+        {!isRazorpayMode && howItWorksVisible ? <SurfaceCard>
           <Text style={styles.sectionTitle}>How It Works</Text>
           <View style={styles.steps}>
             <Text style={styles.stepText}>1. Amount enter karo.</Text>
@@ -282,7 +292,7 @@ export default function AddFundScreen() {
         </SurfaceCard> : null}
 
         <View style={styles.footerActions}>
-          {isManualMode ? (
+          {isManualMode && whatsappVisible ? (
             <Pressable
               disabled={!hasGeneratedQr}
               onPress={() => void sendWhatsAppProof()}
@@ -293,9 +303,11 @@ export default function AddFundScreen() {
             </Pressable>
           ) : null}
 
-          <Pressable onPress={() => router.push("/wallet/history")} style={styles.historyButton}>
-            <Text style={styles.historyButtonText}>View Wallet History</Text>
-          </Pressable>
+          {historyVisible ? (
+            <Pressable onPress={() => router.push("/wallet/history")} style={styles.historyButton}>
+              <Text style={styles.historyButtonText}>{historyLabel}</Text>
+            </Pressable>
+          ) : null}
         </View>
       </AppScreen>
     </View>

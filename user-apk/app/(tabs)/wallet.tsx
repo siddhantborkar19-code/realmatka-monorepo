@@ -1,21 +1,38 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AppHeader, AppScreen, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { getAddFundUnsupportedMessage, isSupportedAddFundPlatform } from "@/lib/payment-platform";
+import { readWalletBoolean, readWalletText, useWalletRemoteSettings } from "@/lib/wallet-remote-config";
 import { colors } from "@/theme/colors";
 
 const walletActions = [
-  { title: "Add Fund", href: "/wallet/add-fund", icon: "wallet-outline", tone: "#ec4899" },
-  { title: "Withdraw Fund", href: "/wallet/withdraw", icon: "cash-outline", tone: "#9333ea" },
-  { title: "Deposit & Withdraw History", href: "/wallet/history", icon: "time-outline", tone: "#d97706" },
-  { title: "Add Bank Details", href: "/wallet/add-bank-details", icon: "business-outline", tone: "#22c55e" }
+  { id: "add_fund", title: "Add Fund", href: "/wallet/add-fund", icon: "wallet-outline", tone: "#ec4899" },
+  { id: "withdraw", title: "Withdraw Fund", href: "/wallet/withdraw", icon: "cash-outline", tone: "#9333ea" },
+  { id: "history", title: "Deposit & Withdraw History", href: "/wallet/history", icon: "time-outline", tone: "#d97706" },
+  { id: "add_bank", title: "Add Bank Details", href: "/wallet/add-bank-details", icon: "business-outline", tone: "#22c55e" }
 ] as const;
 
 export default function WalletScreen() {
   const { walletBalance } = useAppState();
   const addFundSupported = isSupportedAddFundPlatform();
+  const walletSettings = useWalletRemoteSettings();
+  const configuredActions = useMemo(
+    () =>
+      walletActions
+        .map((item) => {
+          const prefix = `wallet_${item.id}`;
+          const visible = readWalletBoolean(walletSettings, `${prefix}_visible`, true);
+          const enabled = readWalletBoolean(walletSettings, `${prefix}_enabled`, true);
+          const title = readWalletText(walletSettings, `${prefix}_label`, item.title);
+          const message = readWalletText(walletSettings, `${prefix}_message`, "");
+          return { ...item, title, visible, enabled, message };
+        })
+        .filter((item) => item.visible),
+    [walletSettings]
+  );
 
   return (
     <View style={styles.page}>
@@ -31,13 +48,14 @@ export default function WalletScreen() {
           </View>
         </SurfaceCard>
         <View style={styles.list}>
-          {walletActions.map((item) => {
+          {configuredActions.map((item) => {
             const isAddFund = item.href === "/wallet/add-fund";
-            const disabled = isAddFund && !addFundSupported;
+            const disabled = !item.enabled || (isAddFund && !addFundSupported);
+            const disabledMessage = item.message || (isAddFund && !addFundSupported ? getAddFundUnsupportedMessage() : "");
 
             return (
             <Pressable
-              key={item.title}
+              key={item.id}
               disabled={disabled}
               onPress={() => {
                 if (disabled) {
@@ -55,7 +73,7 @@ export default function WalletScreen() {
                   </View>
                   <View style={styles.actionCopy}>
                     <Text style={styles.actionText}>{item.title}</Text>
-                    {disabled ? <Text style={styles.actionHint}>{getAddFundUnsupportedMessage()}</Text> : null}
+                    {disabled && disabledMessage ? <Text style={styles.actionHint}>{disabledMessage}</Text> : null}
                   </View>
                   <Ionicons color="#98a2b3" name="chevron-forward" size={18} />
                 </View>

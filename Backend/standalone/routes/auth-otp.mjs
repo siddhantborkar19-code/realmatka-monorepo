@@ -766,7 +766,7 @@ export async function msg91Widget(request) {
       if (!text) return false;
       if (text.split('.').length >= 3 && text.length > 24) return true;
       if (/^(success|verified|approved|true|false)$/i.test(text)) return false;
-      return text.length >= 32;
+      return false;
     }
     function findTokenByKey(payload, depth) {
       if (!payload || depth > 4) return '';
@@ -776,7 +776,7 @@ export async function msg91Widget(request) {
       for (var i = 0; i < keys.length; i += 1) {
         var key = keys[i];
         var value = payload[key];
-        if (/token|access/i.test(key) && typeof value === 'string' && value.trim()) {
+        if (/token|access/i.test(key) && looksLikeToken(value)) {
           return value.trim();
         }
       }
@@ -809,7 +809,7 @@ export async function msg91Widget(request) {
         payload && payload.response && payload.response['access-token']
       ];
       for (var i = 0; i < values.length; i += 1) {
-        if (typeof values[i] === 'string' && values[i].trim()) {
+        if (looksLikeToken(values[i])) {
           return values[i].trim();
         }
       }

@@ -107,6 +107,9 @@
       } catch (error) {
         setStatus("");
         setError(error && error.message ? error.message : "OTP login failed");
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, "/auth/otp-login");
+        }
         sendBtn.disabled = false;
       }
     }

@@ -186,6 +186,13 @@ export default function LoginScreen() {
                 </Pressable>
                 <Pressable
                   onPress={() => {
+                    router.push("/auth/otp-login");
+                  }}
+                >
+                  <Text style={styles.link}>Login with OTP</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
                     void openWebAuth("/auth/forgot-password");
                   }}
                 >

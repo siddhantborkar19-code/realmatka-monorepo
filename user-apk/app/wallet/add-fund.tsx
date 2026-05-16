@@ -389,7 +389,6 @@ export default function AddFundScreen() {
       }
       setPendingGatewayOrder(order);
       await Linking.openURL(order.redirectUrl);
-      setMessage("Payment page open ho gaya. Payment complete hone ke baad app me wapas aakar status check karo.");
     } catch (paymentError) {
       setError(formatApiError(paymentError, "Payment start nahi hua."));
     } finally {
@@ -427,7 +426,7 @@ export default function AddFundScreen() {
       }
 
       if (showPendingMessage) {
-        setMessage("Payment abhi pending/processing hai. Kuch seconds baad dobara check karo.");
+        setMessage("");
       }
     } catch (statusError) {
       setError(formatApiError(statusError, "Payment status check nahi hua."));

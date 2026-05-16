@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
 import { AppScreen, SurfaceCard } from "@/components/ui";
@@ -93,17 +93,24 @@ export default function ForgotPasswordScreen() {
                   setVerifiedAccessToken("");
                   setSdkReqId("");
                   const response = await api.requestOtp(normalizedPhone, "password_reset");
-                  if (response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
-                    const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
-                    if (sdkResponse.accessToken) {
-                      setVerifiedAccessToken(sdkResponse.accessToken);
-                      setMessage("Mobile number verified successfully. Ab naya password set karo.");
-                    } else {
-                      setSdkReqId(sdkResponse.reqId);
-                      setMessage("Password reset OTP SMS successfully sent.");
+                  if (Platform.OS !== "web" && response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
+                    try {
+                      const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
+                      if (sdkResponse.accessToken) {
+                        setVerifiedAccessToken(sdkResponse.accessToken);
+                        setMessage("Mobile number verified successfully. Ab naya password set karo.");
+                      } else {
+                        setSdkReqId(sdkResponse.reqId);
+                        setMessage("Password reset OTP SMS successfully sent.");
+                      }
+                      setCooldownSeconds(OTP_RESEND_SECONDS);
+                      return;
+                    } catch {
+                      setMessage("Verification window open ho rahi hai...");
+                      setCooldownSeconds(OTP_RESEND_SECONDS);
+                      await Linking.openURL(response.widgetUrl);
+                      return;
                     }
-                    setCooldownSeconds(OTP_RESEND_SECONDS);
-                    return;
                   }
                   if (response.mode === "widget" && response.widgetUrl) {
                     setMessage("Verification window open ho rahi hai...");

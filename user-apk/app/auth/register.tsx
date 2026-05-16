@@ -137,6 +137,9 @@ export default function RegisterScreen() {
             return;
           }
         }
+        if (Platform.OS === "web") {
+          throw new Error("MSG91 OTP method available nahi hai.");
+        }
         setSuccess("Verification page open ho raha hai. OTP verify karke wapas aao.");
         await Linking.openURL(response.widgetUrl);
         return;

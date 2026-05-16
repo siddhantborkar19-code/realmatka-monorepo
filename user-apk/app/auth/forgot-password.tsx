@@ -121,6 +121,9 @@ export default function ForgotPasswordScreen() {
                     }
                   }
                   if (response.mode === "widget" && response.widgetUrl) {
+                    if (Platform.OS === "web") {
+                      throw new Error("MSG91 OTP method available nahi hai.");
+                    }
                     setMessage("Verification window open ho rahi hai...");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
                     await Linking.openURL(response.widgetUrl);

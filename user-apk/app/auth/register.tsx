@@ -9,7 +9,7 @@ import { verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { clearStoredReferralCode, normalizeReferralCode, readStoredReferralCode, writeStoredReferralCode } from "@/lib/referral-storage";
 import { colors } from "@/theme/colors";
 
-const APK_DOWNLOAD_URL = "https://pub-6623a0d99133406b850cfa8224871d15.r2.dev/app-release.apk";
+const APK_DOWNLOAD_URL = "https://realmatka.in/download";
 
 export default function RegisterScreen() {
   const { register } = useAppState();
@@ -347,7 +347,12 @@ export default function RegisterScreen() {
       <Modal animationType="fade" transparent visible={successModalVisible} onRequestClose={() => setSuccessModalVisible(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.successModal}>
-            <Image source={require("../../assets/images/adaptive-icon.png")} style={styles.modalLogo} resizeMode="contain" />
+            <LinearGradient colors={[colors.gradientStart, colors.gradientEnd]} end={{ x: 1, y: 0 }} start={{ x: 0, y: 0 }} style={styles.modalHeader}>
+              <View style={styles.modalLogoWrap}>
+                <Image source={require("../../assets/images/adaptive-icon.png")} style={styles.modalLogo} resizeMode="contain" />
+              </View>
+              <Text style={styles.modalHeaderText}>Real Matka</Text>
+            </LinearGradient>
             <Text style={styles.modalTitle}>Account Created Successfully</Text>
             <Text style={styles.modalText}>
               Aapka account create ho gaya hai. Ab login page par jaakar login karo, ya latest APK download karke app me continue karo.
@@ -362,7 +367,7 @@ export default function RegisterScreen() {
               <Text style={styles.modalPrimaryText}>Go to Login Page</Text>
             </Pressable>
             <Pressable style={styles.modalSecondaryButton} onPress={() => void Linking.openURL(APK_DOWNLOAD_URL)}>
-              <Text style={styles.modalSecondaryText}>Download APK</Text>
+              <Text style={styles.modalSecondaryText}>Open Download Page</Text>
             </Pressable>
           </View>
         </View>
@@ -519,9 +524,9 @@ const styles = StyleSheet.create({
   successModal: {
     width: "100%",
     maxWidth: 380,
-    borderRadius: 26,
+    borderRadius: 12,
     backgroundColor: "#ffffff",
-    padding: 22,
+    padding: 18,
     alignItems: "center",
     gap: 14,
     shadowColor: "#000000",
@@ -529,9 +534,33 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 8
   },
+  modalHeader: {
+    width: "100%",
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    gap: 8
+  },
+  modalLogoWrap: {
+    width: 78,
+    height: 78,
+    borderRadius: 18,
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.65)"
+  },
   modalLogo: {
-    width: 96,
-    height: 96
+    width: 68,
+    height: 68
+  },
+  modalHeaderText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    letterSpacing: 0.2
   },
   modalTitle: {
     color: "#111827",

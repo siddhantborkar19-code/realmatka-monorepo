@@ -2,6 +2,7 @@ import {
   addWalletEntry,
   clearWalletEntriesForUser,
   completeWalletRequest,
+  deleteUserAccount,
   findUserById,
   findUserByPhone,
   getBankAccountsForUser,
@@ -226,6 +227,10 @@ export async function processWalletRequestAction({ requestId, action, note, refe
 
 export async function updateAdminUserStatus(userId, action, note) {
   return updateUserAccountStatus(userId, action, note);
+}
+
+export async function deleteAdminUserAccount(userId) {
+  return deleteUserAccount(userId);
 }
 
 export async function createWalletAdjustment({ userId, mode, amount, note = "" }) {

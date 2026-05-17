@@ -1,6 +1,7 @@
 export {
   addAuditLog,
   applyReferralLossCommission,
+  deleteUserAccount,
   findUserById,
   findUserByPhone,
   getAppSettings,

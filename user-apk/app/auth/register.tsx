@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Image, Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Linking, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppScreen, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
@@ -8,6 +8,8 @@ import { api, formatApiError } from "@/lib/api";
 import { verifyMsg91NativeOtp } from "@/lib/msg91-otp";
 import { clearStoredReferralCode, normalizeReferralCode, readStoredReferralCode, writeStoredReferralCode } from "@/lib/referral-storage";
 import { colors } from "@/theme/colors";
+
+const APK_DOWNLOAD_URL = "https://pub-6623a0d99133406b850cfa8224871d15.r2.dev/app-release.apk";
 
 export default function RegisterScreen() {
   const { register } = useAppState();
@@ -35,6 +37,7 @@ export default function RegisterScreen() {
   const [otpMode, setOtpMode] = useState<"otp" | "widget">("otp");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
   const sendingOtpRef = useRef(false);
   const incomingReferralCode = normalizeReferralCode(params.ref ?? params.referenceCode ?? params.referralCode);
   const normalizedPhone = phone.replace(/[^0-9]/g, "").slice(-10);
@@ -200,7 +203,7 @@ export default function RegisterScreen() {
       );
       await clearStoredReferralCode();
       setSuccess("Account created successfully. Ab login karo.");
-      router.replace("/auth/login");
+      setSuccessModalVisible(true);
     } catch (registrationError) {
       setError(formatApiError(registrationError, "Registration failed"));
     } finally {
@@ -341,6 +344,29 @@ export default function RegisterScreen() {
           </SurfaceCard>
         </View>
       </AppScreen>
+      <Modal animationType="fade" transparent visible={successModalVisible} onRequestClose={() => setSuccessModalVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.successModal}>
+            <Image source={require("../../assets/images/adaptive-icon.png")} style={styles.modalLogo} resizeMode="contain" />
+            <Text style={styles.modalTitle}>Account Created Successfully</Text>
+            <Text style={styles.modalText}>
+              Aapka account create ho gaya hai. Ab login page par jaakar login karo, ya latest APK download karke app me continue karo.
+            </Text>
+            <Pressable
+              style={styles.modalPrimaryButton}
+              onPress={() => {
+                setSuccessModalVisible(false);
+                router.replace("/auth/login");
+              }}
+            >
+              <Text style={styles.modalPrimaryText}>Go to Login Page</Text>
+            </Pressable>
+            <Pressable style={styles.modalSecondaryButton} onPress={() => void Linking.openURL(APK_DOWNLOAD_URL)}>
+              <Text style={styles.modalSecondaryText}>Download APK</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -482,5 +508,67 @@ const styles = StyleSheet.create({
     color: "#111827",
     fontWeight: "700",
     textAlign: "center"
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.62)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20
+  },
+  successModal: {
+    width: "100%",
+    maxWidth: 380,
+    borderRadius: 26,
+    backgroundColor: "#ffffff",
+    padding: 22,
+    alignItems: "center",
+    gap: 14,
+    shadowColor: "#000000",
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 8
+  },
+  modalLogo: {
+    width: 96,
+    height: 96
+  },
+  modalTitle: {
+    color: "#111827",
+    fontSize: 22,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  modalText: {
+    color: "#475569",
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: "center"
+  },
+  modalPrimaryButton: {
+    width: "100%",
+    minHeight: 48,
+    borderRadius: 999,
+    backgroundColor: "#111827",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  modalPrimaryText: {
+    color: "#ffffff",
+    fontWeight: "900"
+  },
+  modalSecondaryButton: {
+    width: "100%",
+    minHeight: 48,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#fed7aa",
+    backgroundColor: "#fff7ed",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  modalSecondaryText: {
+    color: "#c2410c",
+    fontWeight: "900"
   }
 });

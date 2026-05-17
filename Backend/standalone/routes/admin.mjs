@@ -28,6 +28,7 @@ import {
   adminBidsListController,
   adminCleanupWalletTestDataController,
   adminUserApprovalController,
+  adminUserDeleteController,
   adminUserDetailController,
   adminUsersController,
   adminUserStatusController,
@@ -96,6 +97,10 @@ export async function walletRequestAction(request) {
 
 export async function userStatus(request) {
   return adminUserStatusController(request);
+}
+
+export async function userDelete(request) {
+  return adminUserDeleteController(request);
 }
 
 export async function walletAdjustment(request) {

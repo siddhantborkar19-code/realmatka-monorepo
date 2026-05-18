@@ -170,15 +170,12 @@ h1 {
   box-shadow: 0 20px 42px -22px rgba(15, 118, 110, 0.9);
 }
 
-<<<<<<< HEAD
-=======
 .button:disabled {
   cursor: not-allowed;
   filter: grayscale(0.35);
   opacity: 0.62;
 }
 
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
 .buttonSecondary {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.7);
@@ -355,11 +352,6 @@ h1 {
   align-items: stretch;
 }
 
-<<<<<<< HEAD
-.billingPanel,
-.invoiceCard,
-.infoPanel {
-=======
 .checkoutLayout {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
@@ -490,7 +482,6 @@ h1 {
 .invoiceCard,
 .infoPanel,
 .checkoutPanel {
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   padding: 26px;
 }
 
@@ -1120,10 +1111,7 @@ h1 {
   .heroGrid,
   .processGrid,
   .billingLayout,
-<<<<<<< HEAD
-=======
   .checkoutLayout,
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   .picsturHero {
     grid-template-columns: 1fr;
   }
@@ -1158,12 +1146,6 @@ h1 {
     padding-top: 42px;
   }
 
-<<<<<<< HEAD
-  .grid3,
-  .heroStats,
-  .demoGrid,
-  .metricGrid {
-=======
   .pageHero {
     padding: 42px 0 10px;
   }
@@ -1181,7 +1163,6 @@ h1 {
   .demoGrid,
   .metricGrid,
   .checkoutForm {
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
     grid-template-columns: 1fr;
   }
 
@@ -1194,8 +1175,6 @@ h1 {
     gap: 4px;
   }
 
-<<<<<<< HEAD
-=======
   .checkoutPanel,
   .invoiceCard {
     border-radius: 26px;
@@ -1217,7 +1196,6 @@ h1 {
     text-align: left;
   }
 
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   .screenTop {
     flex-direction: column;
   }

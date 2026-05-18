@@ -3,11 +3,7 @@ import { PageHero, SiteFooter, SiteHeader } from "../site-shell";
 
 export const metadata: Metadata = {
   title: "Terms And Conditions",
-<<<<<<< HEAD
-  description: "Terms and Conditions for NovaByte Technologies software, website, app, cloud, maintenance, and digital services."
-=======
   description: "Terms and Conditions for NovaByte Technologies account credit, software, website, app, cloud, maintenance, and digital services."
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
 };
 
 export default function TermsPage() {
@@ -18,11 +14,7 @@ export default function TermsPage() {
         <PageHero
           eyebrow="Policy"
           title="Terms And Conditions"
-<<<<<<< HEAD
-          description="These terms apply to customers using NovaByte Technologies for software development, websites, mobile interfaces, maintenance, cloud support, and digital operations."
-=======
           description="These terms apply to customers using NovaByte Technologies for account credit, software development, websites, mobile interfaces, maintenance, cloud support, and digital operations."
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
         />
         <section className="shell section">
           <article className="panel policyPanel">
@@ -33,13 +25,9 @@ export default function TermsPage() {
             <h2>Customer Responsibility</h2>
             <p>Customers must provide correct information, content, access details, brand assets, and timely feedback required to complete the service.</p>
             <h2>Payments</h2>
-<<<<<<< HEAD
-            <p>Payments are collected in INR against approved invoices, service estimates, retainers, maintenance fees, consultation fees, or confirmed digital service work. Prices listed on the website are starting prices and final quotes may vary by scope.</p>
-=======
             <p>Payments are collected in INR against approved account credit requests, invoices, service estimates, retainers, maintenance fees, consultation fees, or confirmed digital service work. Prices listed on the website are starting prices and final quotes may vary by scope.</p>
             <h2>Account Credit / Wallet Top-up</h2>
             <p>Account credit or wallet top-up payments are accepted only for customer-requested account balance or service balance updates. The customer must use the correct payment amount and reference. Credit may be delayed or held for review if payment details do not match, if payment verification fails, or if the transaction is disputed.</p>
->>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
             <h2>Changes And Revisions</h2>
             <p>Minor revisions may be included depending on the agreed scope. New features, redesigns, or additional work may require a revised estimate.</p>
             <h2>Delivery</h2>

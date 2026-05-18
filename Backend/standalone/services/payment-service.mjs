@@ -45,12 +45,12 @@ function readNumberEnv(name, fallback) {
 }
 
 export function getDepositConfigSnapshot() {
-  const allowedModes = new Set(["manual_qr", "maintenance", "razorpay", "upi_intent"]);
+  const allowedModes = new Set(["manual_qr", "maintenance", "razorpay", "cashfree", "upi_intent"]);
   const configuredMode = String(process.env.DEPOSIT_MODE || "manual_qr").trim().toLowerCase();
   const mode = allowedModes.has(configuredMode) ? configuredMode : "manual_qr";
   const minAmount = getConfiguredDepositMinAmount();
-  const upiId = String(process.env.DEPOSIT_UPI_ID || process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "s7568539842258141@slc").trim();
-  const upiName = String(process.env.DEPOSIT_UPI_NAME || process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "slice").trim();
+  const upiId = String(process.env.DEPOSIT_UPI_ID || process.env.EXPO_PUBLIC_DIRECT_UPI_ID || "9309782081@okbizaxis").trim();
+  const upiName = String(process.env.DEPOSIT_UPI_NAME || process.env.EXPO_PUBLIC_DIRECT_UPI_NAME || "SDT WEDDING").trim();
   const whatsappNumber = String(process.env.DEPOSIT_WHATSAPP_PHONE || process.env.EXPO_PUBLIC_PAYMENT_WHATSAPP_PHONE || "8446012081").replace(/\D/g, "");
 
   return {
@@ -238,7 +238,68 @@ export async function createNativePaymentOrder({ user, amount, createOrder, getK
   };
 }
 
-export async function getPaymentOrderStatusSnapshot({ userId, referenceId, isProviderEnabled, fetchPaymentLinkStatus, fetchOrderPayments }) {
+export async function createCashfreePaymentOrder({ user, amount, createOrder, getCheckoutUrl }) {
+  const amountPaise = roundToPaise(amount);
+  const validationError = validateDepositAmount(amountPaise);
+  if (validationError) {
+    return { ok: false, status: 400, error: validationError };
+  }
+
+  const paymentOrderId = `payment_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const reference = `NB${Date.now()}${Math.random().toString(36).slice(2, 4).toUpperCase()}`.slice(0, 40);
+  const gatewayOrder = await createOrder({
+    amount,
+    receipt: reference,
+    paymentOrderId,
+    user
+  });
+  const paymentSessionId = String(gatewayOrder?.payment_session_id || "").trim();
+  const gatewayOrderId = String(gatewayOrder?.order_id || reference).trim();
+  if (!paymentSessionId || !gatewayOrderId) {
+    return { ok: false, status: 502, error: "Cashfree checkout session could not be created" };
+  }
+
+  const redirectUrl = getCheckoutUrl({
+    reference,
+    amount,
+    paymentSessionId
+  });
+  const order = await createPaymentOrder({
+    id: paymentOrderId,
+    userId: user.id,
+    amount,
+    provider: "cashfree_checkout",
+    reference,
+    checkoutToken: paymentSessionId,
+    gatewayOrderId,
+    redirectUrl
+  });
+
+  const customer = buildCheckoutCustomer(user);
+  return {
+    ok: true,
+    data: {
+      ...order,
+      checkoutMode: "link",
+      provider: "cashfree_checkout",
+      paymentSessionId,
+      displayName: "NovaByte Technologies",
+      description: "Account Credit / Wallet Top-up",
+      customerName: customer.name,
+      customerContact: customer.contact,
+      customerEmail: String(user?.email || "").trim()
+    }
+  };
+}
+
+export async function getPaymentOrderStatusSnapshot({
+  userId,
+  referenceId,
+  isProviderEnabled,
+  fetchPaymentLinkStatus,
+  fetchOrderPayments,
+  fetchCashfreeOrderStatus
+}) {
   if (!referenceId) {
     return { ok: false, status: 400, error: "referenceId is required" };
   }
@@ -314,6 +375,32 @@ export async function getPaymentOrderStatusSnapshot({ userId, referenceId, isPro
       order = {
         ...order,
         remoteStatus: latestStatus || "created"
+      };
+    }
+  }
+
+  if (order.status === "PENDING" && order.provider === "cashfree_checkout" && order.gatewayOrderId && isProviderEnabled && typeof fetchCashfreeOrderStatus === "function") {
+    const cashfreeOrder = await fetchCashfreeOrderStatus(order.gatewayOrderId);
+    const remoteStatus = String(cashfreeOrder?.order_status || "").trim().toUpperCase();
+
+    if (remoteStatus === "PAID") {
+      order = await completePaymentLinkOrder({
+        reference: order.reference,
+        gatewayOrderId: String(cashfreeOrder?.order_id || order.gatewayOrderId).trim(),
+        gatewayPaymentId: String(cashfreeOrder?.cf_order_id || cashfreeOrder?.order_id || order.reference).trim(),
+        gatewaySignature: "cashfree_status_poll"
+      });
+    } else if (["FAILED", "CANCELLED", "EXPIRED", "TERMINATED", "TERMINATION_REQUESTED"].includes(remoteStatus)) {
+      order = await handlePaymentWebhook({
+        paymentOrderId: order.id,
+        reference: order.reference,
+        gatewayOrderId: String(cashfreeOrder?.order_id || order.gatewayOrderId).trim(),
+        status: remoteStatus === "TERMINATED" || remoteStatus === "TERMINATION_REQUESTED" ? "CANCELLED" : remoteStatus
+      });
+    } else {
+      order = {
+        ...order,
+        remoteStatus: remoteStatus || "created"
       };
     }
   }

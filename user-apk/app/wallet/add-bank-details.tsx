@@ -6,9 +6,11 @@ import { PinVerificationModal } from "@/components/pin-verification-modal";
 import { AppScreen, BackHeader, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
+import { readWalletBoolean, readWalletText, useWalletRemoteSettings } from "@/lib/wallet-remote-config";
 import { colors } from "@/theme/colors";
 
 export default function AddBankDetailsScreen() {
+  const walletSettings = useWalletRemoteSettings();
   const { addBankAccount, bankAccounts, currentUser, loadBankAccounts } = useAppState();
   const latestBank = useMemo(() => bankAccounts[0] ?? null, [bankAccounts]);
   const [accountNumber, setAccountNumber] = useState(latestBank?.accountNumber ?? "");
@@ -18,6 +20,18 @@ export default function AddBankDetailsScreen() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
+  const addBankEnabled = readWalletBoolean(walletSettings, "wallet_add_bank_enabled", true);
+  const addBankDisabledMessage = readWalletText(walletSettings, "wallet_add_bank_message", "Bank details update temporarily unavailable.");
+  const addBankTitle = readWalletText(walletSettings, "wallet_add_bank_title", "Add Bank Details");
+  const addBankSubtitle = readWalletText(walletSettings, "wallet_add_bank_subtitle", "Withdraw ke liye account details yahan safely save karo.");
+  const addBankFormTitle = readWalletText(walletSettings, "wallet_add_bank_form_title", "Bank Account Details");
+  const addBankHelper = readWalletText(walletSettings, "wallet_add_bank_helper", "Naam, account number aur IFSC ko bilkul sahi fill karo.");
+  const accountPlaceholder = readWalletText(walletSettings, "wallet_add_bank_account_placeholder", "Enter account number");
+  const holderPlaceholder = readWalletText(walletSettings, "wallet_add_bank_holder_placeholder", "Enter holder name");
+  const ifscPlaceholder = readWalletText(walletSettings, "wallet_add_bank_ifsc_placeholder", "Enter IFSC code");
+  const addBankButtonLabel = readWalletText(walletSettings, "wallet_add_bank_button_label", "Save Bank Details");
+  const addBankPinMessage = readWalletText(walletSettings, "wallet_add_bank_pin_message", "Bank details save karne ke liye PIN verify karo.");
+  const addBankSuccessMessage = readWalletText(walletSettings, "wallet_add_bank_success_message", "Bank details saved successfully.");
 
   useEffect(() => {
     void loadBankAccounts();
@@ -35,7 +49,7 @@ export default function AddBankDetailsScreen() {
 
   return (
     <View style={styles.page}>
-      <BackHeader title="Add Bank Details" subtitle={undefined} />
+      <BackHeader title={addBankTitle} subtitle={undefined} />
       <AppScreen showPromo={false}>
         <SurfaceCard style={styles.heroCard}>
           <View style={styles.heroIcon}>
@@ -43,28 +57,29 @@ export default function AddBankDetailsScreen() {
           </View>
           <View style={styles.heroCopy}>
             <Text style={styles.heroTitle}>Bank account setup</Text>
-            <Text style={styles.heroSubtitle}>Withdraw ke liye account details yahan safely save karo.</Text>
+            <Text style={styles.heroSubtitle}>{addBankSubtitle}</Text>
           </View>
         </SurfaceCard>
         <SurfaceCard style={styles.formCard}>
-          <Text style={styles.title}>Bank Account Details</Text>
-          <Text style={styles.helper}>Naam, account number aur IFSC ko bilkul sahi fill karo.</Text>
-          <TextInput keyboardType="number-pad" onChangeText={setAccountNumber} placeholder="Enter account number" placeholderTextColor="#98a2b3" style={styles.input} value={accountNumber} />
-          <TextInput autoCapitalize="words" onChangeText={setHolderName} placeholder="Enter holder name" placeholderTextColor="#98a2b3" style={styles.input} value={holderName} />
-          <TextInput autoCapitalize="characters" onChangeText={setIfsc} placeholder="Enter IFSC code" placeholderTextColor="#98a2b3" style={styles.input} value={ifsc} />
+          <Text style={styles.title}>{addBankFormTitle}</Text>
+          <Text style={styles.helper}>{addBankHelper}</Text>
+          <TextInput keyboardType="number-pad" onChangeText={setAccountNumber} placeholder={accountPlaceholder} placeholderTextColor="#98a2b3" style={styles.input} value={accountNumber} />
+          <TextInput autoCapitalize="words" onChangeText={setHolderName} placeholder={holderPlaceholder} placeholderTextColor="#98a2b3" style={styles.input} value={holderName} />
+          <TextInput autoCapitalize="characters" onChangeText={setIfsc} placeholder={ifscPlaceholder} placeholderTextColor="#98a2b3" style={styles.input} value={ifsc} />
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           {message ? <Text style={styles.success}>{message}</Text> : null}
+          {!addBankEnabled ? <Text style={styles.error}>{addBankDisabledMessage}</Text> : null}
 
-          <Pressable onPress={() => requestPinBeforeSubmit()} style={[styles.primary, submitting && styles.disabled]}>
-            {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Save Bank Details</Text>}
+          <Pressable disabled={!addBankEnabled || submitting} onPress={() => requestPinBeforeSubmit()} style={[styles.primary, (!addBankEnabled || submitting) && styles.disabled]}>
+            {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>{addBankButtonLabel}</Text>}
           </Pressable>
         </SurfaceCard>
       </AppScreen>
       <PinVerificationModal
         visible={pinModalVisible}
         title="Verify PIN"
-        message="Bank details save karne ke liye PIN verify karo."
+        message={addBankPinMessage}
         setupRequired
         onCancel={() => setPinModalVisible(false)}
         onVerified={async (pin) => {
@@ -76,6 +91,11 @@ export default function AddBankDetailsScreen() {
   );
 
   function requestPinBeforeSubmit() {
+    if (!addBankEnabled) {
+      setError(addBankDisabledMessage);
+      return;
+    }
+
     if (!currentUser?.hasMpin) {
       setError("Bank details save karne se pehle 4 digit PIN setup karo.");
       router.push("/security/update-pin");
@@ -90,7 +110,7 @@ export default function AddBankDetailsScreen() {
       setError("");
       setMessage("");
       await addBankAccount(accountNumber, holderName, ifsc, pin);
-      setMessage("Bank details saved successfully.");
+      setMessage(addBankSuccessMessage);
     } catch (saveError) {
       setError(formatApiError(saveError, "Unable to save bank details"));
     } finally {

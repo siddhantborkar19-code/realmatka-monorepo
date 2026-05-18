@@ -897,6 +897,9 @@ function UsersPage({ apiBase, token, me }) {
                 ) : (
                   <button className="secondary" disabled={busyId === user.id} onClick={() => void submitLifecycle(user.id, "deactivate")}>Deactivate</button>
                 )}
+                <button className="secondary danger" disabled={busyId === user.id || me?.role !== "admin"} onClick={() => void submitUserDelete(user)}>
+                  Delete User
+                </button>
               </div>
               {adjustmentDraft.userId === user.id ? (
                 <div className="panel" style={{ gridColumn: "1 / -1", marginTop: 12, background: "#fffaf5" }}>
@@ -995,6 +998,28 @@ function UsersPage({ apiBase, token, me }) {
       setMessage(`User ${action} action saved.`);
     } catch (error) {
       setMessage(formatApiError(error, "User lifecycle update failed."));
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function submitUserDelete(user) {
+    const confirmed = window.confirm(
+      `Delete ${user.name} (${user.phone})?\n\nIsse user account, wallet history, bids, bank details, sessions, notifications aur payment records delete ho jayenge. Ye action undo nahi hoga.`
+    );
+    if (!confirmed) return;
+
+    setBusyId(user.id);
+    setMessage("");
+    try {
+      await fetchApi(apiBase, "/api/admin/user-delete", token, {
+        method: "POST",
+        body: { userId: user.id }
+      });
+      await loadUsers();
+      setMessage(`${user.name} deleted successfully.`);
+    } catch (error) {
+      setMessage(formatApiError(error, "User delete failed."));
     } finally {
       setBusyId("");
     }

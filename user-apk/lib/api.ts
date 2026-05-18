@@ -113,7 +113,7 @@ export type PaymentOrder = {
 export type DepositConfig = {
   version: number;
   enabled: boolean;
-  mode: "manual_qr" | "maintenance" | "razorpay" | "upi_intent";
+  mode: "manual_qr" | "maintenance" | "razorpay" | "cashfree" | "upi_intent";
   minAmount: number;
   upiId: string;
   upiName: string;
@@ -556,6 +556,14 @@ export const api = {
 
   walletHistory(token: string, limit = 5000) {
     return request<WalletEntry[]>(`/api/wallet/history${queryString({ limit: String(limit) })}`, { token });
+  },
+
+  deposit(token: string, amount: number, referenceId = "", proofUrl = "", note = "") {
+    return request<WalletEntry>("/api/wallet/deposit", {
+      method: "POST",
+      token,
+      body: { amount, referenceId, proofUrl, note }
+    });
   },
 
   withdraw(token: string, amount: number, referenceId = "", proofUrl = "", note = "") {

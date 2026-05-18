@@ -3,11 +3,33 @@ import { PageHero, SiteFooter, SiteHeader } from "../site-shell";
 
 export const metadata: Metadata = {
   title: "Pricing And Service Plans",
+<<<<<<< HEAD
   description: "NovaByte Technologies pricing plans for websites, app UI, admin dashboards, maintenance, and technical support services."
+=======
+  description: "NovaByte Technologies pricing plans for account credit, websites, app UI, admin dashboards, maintenance, and technical support services."
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
 };
 
 const plans = [
   {
+<<<<<<< HEAD
+=======
+    name: "Account Credit / Wallet Top-up",
+    price: "INR 100 onwards",
+    details: ["Customer-requested account credit", "Payment reference generated for tracking", "Credit confirmation after successful payment verification", "Used for approved account balance, support balance, or service balance requests"]
+  },
+  {
+    name: "Daily Digital Support Balance",
+    price: "INR 500 onwards",
+    details: ["Balance for day-to-day technical support", "Small content updates or troubleshooting", "Support ticket/account usage tracking", "Useful for recurring online service customers"]
+  },
+  {
+    name: "Service Usage Credit",
+    price: "INR 1,000 onwards",
+    details: ["Credit for approved recurring digital operations", "Can be adjusted against support, maintenance, or account services", "Payment verification before account update", "Usage history maintained for customer reference"]
+  },
+  {
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
     name: "Starter Website",
     price: "INR 4,999 onwards",
     details: ["Single landing page or small website", "Mobile responsive layout", "Contact CTA and basic SEO setup", "Delivery estimate: 3 to 7 business days"]
@@ -44,11 +66,19 @@ export default function PricingPage() {
     <>
       <SiteHeader />
       <main>
+<<<<<<< HEAD
         <PageHero eyebrow="Pricing" title="Listed service prices in INR with final quote after scope review." description="Starting prices are listed below. Final amount depends on features, timeline, revisions, integrations, third-party costs, and support needs." />
         <section className="shell section">
           <div className="sectionHead">
             <span className="eyebrow">Service Price List</span>
             <h2 className="sectionTitle">Software, website, app interface, dashboard, and maintenance services.</h2>
+=======
+        <PageHero eyebrow="Pricing" title="Listed service prices in INR with final quote after scope review." description="Starting prices are listed below. Final amount depends on account credit amount, features, timeline, revisions, integrations, third-party costs, and support needs." />
+        <section className="shell section">
+          <div className="sectionHead">
+            <span className="eyebrow">Service Price List</span>
+            <h2 className="sectionTitle">Account credit, software, website, app interface, dashboard, and maintenance services.</h2>
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
             <p>All prices are in Indian Rupees (INR). GST or taxes, if applicable after registration, may be charged separately.</p>
           </div>
           <div className="grid3">
@@ -64,9 +94,15 @@ export default function PricingPage() {
           </div>
           <article className="panel policyPanel priceNote">
             <h2>Payment Terms</h2>
+<<<<<<< HEAD
             <p>For fixed-scope work, payment may be collected as advance, milestone payment, or full payment depending on the approved estimate. Work starts only after scope confirmation and payment confirmation.</p>
             <h2>What Is Included</h2>
             <p>Each service includes agreed design/development work, basic testing, delivery support, and handover of agreed files or deployed pages. Additional features, paid tools, hosting, domains, or third-party services may be billed separately after approval.</p>
+=======
+            <p>For fixed-scope work, payment may be collected as advance, milestone payment, or full payment depending on the approved estimate. Account credit or wallet top-up payments are processed only after the customer confirms the amount and payment reference. Work or credit confirmation starts only after payment verification.</p>
+            <h2>What Is Included</h2>
+            <p>Each service includes agreed design/development work, basic testing, delivery support, and handover of agreed files or deployed pages. Account credit payments include payment verification and account balance update where applicable. Additional features, paid tools, hosting, domains, or third-party services may be billed separately after approval.</p>
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
           </article>
         </section>
       </main>

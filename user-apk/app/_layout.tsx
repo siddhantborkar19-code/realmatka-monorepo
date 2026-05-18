@@ -246,7 +246,7 @@ function RootNavigator() {
   }, [currentUser?.hasMpin, isAuthRoute, isAuthenticated, isPinSetupRoute, pinLockVisible]);
 
   useEffect(() => {
-    if (isExpoGoEnvironment()) {
+    if (Platform.OS === "web" || isExpoGoEnvironment()) {
       return;
     }
 

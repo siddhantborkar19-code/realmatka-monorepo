@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
 import { AppScreen, SurfaceCard } from "@/components/ui";
@@ -21,7 +21,9 @@ export default function ForgotPasswordScreen() {
   const [message, setMessage] = useState("");
   const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
   const [sdkReqId, setSdkReqId] = useState("");
+  const [otpMode, setOtpMode] = useState<"otp" | "widget">("otp");
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const sendingOtpRef = useRef(false);
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const normalizedOtp = otp.replace(/[^0-9]/g, "");
   const hasValidPhone = normalizedPhone.length === 10;
@@ -82,40 +84,59 @@ export default function ForgotPasswordScreen() {
               disabled={sendingOtp || cooldownSeconds > 0 || !hasValidPhone}
               style={[styles.secondaryButton, (sendingOtp || cooldownSeconds > 0 || !hasValidPhone) && styles.disabled]}
               onPress={async () => {
+                if (sendingOtpRef.current) {
+                  return;
+                }
                 if (!hasValidPhone) {
                   setError("Valid 10 digit phone number dalo.");
                   return;
                 }
                 try {
+                  sendingOtpRef.current = true;
                   setSendingOtp(true);
                   setError("");
                   setMessage("");
                   setVerifiedAccessToken("");
                   setSdkReqId("");
+                  setOtpMode("otp");
                   const response = await api.requestOtp(normalizedPhone, "password_reset");
-                  if (response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
-                    const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
-                    if (sdkResponse.accessToken) {
-                      setVerifiedAccessToken(sdkResponse.accessToken);
-                      setMessage("Mobile number verified successfully. Ab naya password set karo.");
-                    } else {
-                      setSdkReqId(sdkResponse.reqId);
-                      setMessage("Password reset OTP SMS successfully sent.");
-                    }
-                    setCooldownSeconds(OTP_RESEND_SECONDS);
-                    return;
-                  }
+                  setOtpMode(response.mode === "widget" ? "widget" : "otp");
                   if (response.mode === "widget" && response.widgetUrl) {
-                    setMessage("Verification window open ho rahi hai...");
+                    setMessage("OTP verification page open ho raha hai...");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
                     await Linking.openURL(response.widgetUrl);
-                  } else {
+                    return;
+                  }
+                  if (response.mode === "widget" && isMsg91NativeOtpAvailable()) {
+                    try {
+                      const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
+                      if (sdkResponse.accessToken) {
+                        setVerifiedAccessToken(sdkResponse.accessToken);
+                        setMessage("Mobile number verified successfully. Ab naya password set karo.");
+                      } else {
+                        setSdkReqId(sdkResponse.reqId);
+                        setMessage("Password reset OTP SMS successfully sent.");
+                      }
+                      setCooldownSeconds(OTP_RESEND_SECONDS);
+                      return;
+                    } catch {
+                      if (Platform.OS !== "web" && response.widgetUrl) {
+                        setMessage("Verification window open ho rahi hai...");
+                        setCooldownSeconds(OTP_RESEND_SECONDS);
+                        await Linking.openURL(response.widgetUrl);
+                        return;
+                      }
+                      throw new Error("MSG91 OTP method available nahi hai.");
+                    }
+                  }
+                  if (response.mode !== "widget") {
                     setMessage(response.provider === "local" ? "Password reset OTP generated." : "Password reset OTP SMS successfully sent.");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
                   }
                 } catch (otpError) {
                   setError(formatApiError(otpError, "Unable to send OTP"));
                 } finally {
+                  sendingOtpRef.current = false;
                   setSendingOtp(false);
                 }
               }}
@@ -182,7 +203,10 @@ export default function ForgotPasswordScreen() {
                   setError("");
                   setMessage("");
                   let accessToken = verifiedAccessToken;
-                  if (!accessToken && sdkReqId) {
+                  if (!accessToken && otpMode === "widget") {
+                    if (!sdkReqId) {
+                      throw new Error("OTP request id missing hai. Dobara Send OTP karo.");
+                    }
                     setMessage("OTP verify ho raha hai...");
                     const verified = await verifyMsg91NativeOtp(sdkReqId, normalizedOtp);
                     accessToken = verified.accessToken;

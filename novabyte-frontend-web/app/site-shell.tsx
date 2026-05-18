@@ -7,6 +7,10 @@ const navItems = [
   { href: "/products/picstur", label: "Products" },
   { href: "/pricing", label: "Pricing" },
   { href: "/billing", label: "Billing" },
+<<<<<<< HEAD
+=======
+  { href: "/login", label: "Login" },
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   { href: "/contact", label: "Contact" }
 ];
 
@@ -15,6 +19,11 @@ const resourceItems = [
   { href: "/tech-stack", label: "Tech Stack" },
   { href: "/case-studies", label: "Case Studies" },
   { href: "/support-plans", label: "Support Plans" },
+<<<<<<< HEAD
+=======
+  { href: "/account", label: "Customer Account" },
+  { href: "/account/add-fund", label: "Add Account Credit" },
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   { href: "/faq", label: "FAQ" },
   { href: "/careers", label: "Careers" },
   { href: "/company-registration", label: "Company Details" }

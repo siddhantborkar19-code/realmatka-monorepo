@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
 import { AppScreen, SurfaceCard } from "@/components/ui";
@@ -22,12 +22,19 @@ export default function OtpLoginScreen() {
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const [sdkReqId, setSdkReqId] = useState("");
   const [sdkAccessToken, setSdkAccessToken] = useState("");
+  const [otpMode, setOtpMode] = useState<"otp" | "widget">("otp");
+  const [otpSent, setOtpSent] = useState(false);
   const handledTokenRef = useRef("");
+  const sendingOtpRef = useRef(false);
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const normalizedOtp = otp.replace(/[^0-9]/g, "");
   const hasValidPhone = normalizedPhone.length === 10;
   const hasValidOtp = normalizedOtp.length === 6;
   const verifiedAccessToken = sdkAccessToken || String(params.msg91Token || "").trim();
+
+  function isLikelyMsg91AccessToken(token: string) {
+    return token.split(".").length >= 3 && token.length > 32;
+  }
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -58,6 +65,13 @@ export default function OtpLoginScreen() {
     if (!token || !callbackPhone || handledTokenRef.current === token) {
       return;
     }
+    if (!isLikelyMsg91AccessToken(token)) {
+      handledTokenRef.current = token;
+      setError("");
+      setMessage("");
+      router.replace("/auth/otp-login");
+      return;
+    }
 
     handledTokenRef.current = token;
     void (async () => {
@@ -69,7 +83,13 @@ export default function OtpLoginScreen() {
         router.replace("/(tabs)");
       } catch (loginError) {
         handledTokenRef.current = "";
-        setError(formatApiError(loginError, "OTP login failed"));
+        setError("");
+        setMessage("OTP session expire ho gaya. Dobara Send OTP karo.");
+        setSdkAccessToken("");
+        setSdkReqId("");
+        setOtp("");
+        setOtpSent(false);
+        router.replace("/auth/otp-login");
       } finally {
         setLoggingIn(false);
       }
@@ -96,6 +116,8 @@ export default function OtpLoginScreen() {
                 setPhone(value.replace(/[^0-9]/g, ""));
                 setError("");
                 setMessage("");
+                setOtpSent(false);
+                setOtp("");
               }}
               style={styles.input}
               value={phone}
@@ -107,40 +129,40 @@ export default function OtpLoginScreen() {
               disabled={sendingOtp || cooldownSeconds > 0 || !hasValidPhone}
               style={[styles.secondaryButton, (sendingOtp || cooldownSeconds > 0 || !hasValidPhone) && styles.disabled]}
               onPress={async () => {
+                if (sendingOtpRef.current) {
+                  return;
+                }
                 if (!hasValidPhone) {
                   setError("Valid 10 digit phone number dalo.");
                   return;
                 }
                 try {
+                  sendingOtpRef.current = true;
                   setSendingOtp(true);
                   setError("");
                   setMessage("");
                   setSdkAccessToken("");
                   setSdkReqId("");
+                  setOtpMode("otp");
+                  setOtpSent(false);
                   const response = await api.requestOtp(normalizedPhone, "login");
-                  if (response.mode === "widget" && response.widgetUrl && isMsg91NativeOtpAvailable()) {
-                    const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
-                    if (sdkResponse.accessToken) {
-                      setSdkAccessToken(sdkResponse.accessToken);
-                      setMessage("Mobile verified. Login continue karo.");
-                    } else {
-                      setSdkReqId(sdkResponse.reqId);
-                      setMessage("OTP SMS successfully sent.");
-                    }
-                    setCooldownSeconds(OTP_RESEND_SECONDS);
-                    return;
-                  }
+                  setOtpMode(response.mode === "widget" ? "widget" : "otp");
                   if (response.mode === "widget" && response.widgetUrl) {
-                    setMessage("Verification window open ho rahi hai...");
+                    setMessage("OTP verification page open ho raha hai...");
                     setCooldownSeconds(OTP_RESEND_SECONDS);
                     await Linking.openURL(response.widgetUrl);
-                  } else {
-                    setMessage(response.provider === "local" ? "OTP generated successfully." : "OTP SMS successfully sent.");
-                    setCooldownSeconds(OTP_RESEND_SECONDS);
+                    return;
                   }
+                  if (response.mode === "widget") {
+                    throw new Error("OTP verification link nahi mila. Backend widget env check karo.");
+                  }
+                  setMessage(response.provider === "local" ? "OTP generated successfully." : "OTP SMS successfully sent.");
+                  setOtpSent(true);
+                  setCooldownSeconds(OTP_RESEND_SECONDS);
                 } catch (otpError) {
                   setError(formatApiError(otpError, "Unable to send OTP"));
                 } finally {
+                  sendingOtpRef.current = false;
                   setSendingOtp(false);
                 }
               }}
@@ -154,7 +176,7 @@ export default function OtpLoginScreen() {
               )}
             </Pressable>
 
-            {!verifiedAccessToken ? (
+            {!verifiedAccessToken && otpSent ? (
               <>
                 <Text style={styles.label}>OTP</Text>
                 <TextInput
@@ -175,6 +197,7 @@ export default function OtpLoginScreen() {
             {message ? <Text style={styles.success}>{message}</Text> : null}
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
+            {verifiedAccessToken || otpSent ? (
             <Pressable
             onPress={async () => {
               if (!hasValidPhone) {
@@ -189,7 +212,10 @@ export default function OtpLoginScreen() {
                 setLoggingIn(true);
                 setError("");
                 let accessToken = verifiedAccessToken;
-                if (!accessToken && sdkReqId) {
+                if (!accessToken && otpMode === "widget") {
+                  if (!sdkReqId) {
+                    throw new Error("OTP request id missing hai. Dobara Send OTP karo.");
+                  }
                   setMessage("OTP verify ho raha hai...");
                   const verified = await verifyMsg91NativeOtp(sdkReqId, normalizedOtp);
                   accessToken = verified.accessToken;
@@ -208,6 +234,7 @@ export default function OtpLoginScreen() {
             >
               {loggingIn ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Login with OTP</Text>}
             </Pressable>
+            ) : null}
 
             <View style={styles.linkGroup}>
               <Link href="/auth/login" style={styles.link}>

@@ -8,7 +8,15 @@ const routes = [
   "/portfolio",
   "/products/picstur",
   "/pricing",
+<<<<<<< HEAD
   "/billing",
+=======
+  "/login",
+  "/account",
+  "/account/add-fund",
+  "/billing",
+  "/checkout",
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   "/pay",
   "/contact",
   "/industries",

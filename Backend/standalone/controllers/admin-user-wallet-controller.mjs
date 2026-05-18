@@ -4,6 +4,7 @@ import { addAuditLog, getAuditLogs } from "../stores/admin-store.mjs";
 import {
   cleanupWalletData,
   createWalletAdjustment,
+  deleteAdminUserAccount,
   getAdminUserDetail,
   listAdminBidsPage,
   listAdminUsers,
@@ -124,6 +125,43 @@ export async function adminUserStatusController(request) {
   });
 
   return ok({ user: updatedUser }, request);
+}
+
+export async function adminUserDeleteController(request) {
+  const admin = await requireAdminUser(request);
+  if (admin.response) return admin.response;
+  if (!hasFullAdminRole(admin.user.role)) {
+    return fail("Only full admin can delete users", 403, request);
+  }
+  const body = await getJsonBody(request);
+  const userId = String(body.userId ?? "");
+  if (!userId) {
+    return fail("userId is required", 400, request);
+  }
+  if (userId === admin.user.id) {
+    return fail("Apna admin account delete nahi kar sakte.", 400, request);
+  }
+
+  try {
+    const deletedUser = await deleteAdminUserAccount(userId);
+    if (!deletedUser) return fail("User not found", 404, request);
+
+    await addAuditLog({
+      actorUserId: admin.user.id,
+      action: "USER_DELETED",
+      entityType: "user",
+      entityId: deletedUser.id,
+      details: JSON.stringify({
+        phone: deletedUser.phone,
+        name: deletedUser.name,
+        approvalStatus: deletedUser.approvalStatus
+      })
+    });
+
+    return ok({ user: deletedUser }, request);
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : "User delete failed", 400, request);
+  }
 }
 
 export async function adminWalletAdjustmentController(request) {

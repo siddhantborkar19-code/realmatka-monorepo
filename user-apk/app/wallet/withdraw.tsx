@@ -6,11 +6,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PinVerificationModal } from "@/components/pin-verification-modal";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
+import { readWalletBoolean, readWalletNumber, readWalletText, useWalletRemoteSettings } from "@/lib/wallet-remote-config";
 import { colors } from "@/theme/colors";
 
 const MIN_WITHDRAW_AMOUNT = 500;
+const MAX_WITHDRAW_AMOUNT = 99999;
 const WITHDRAW_MULTIPLE = 100;
 const WEEKEND_WITHDRAW_CLOSED_MESSAGE = "Saturday aur Sunday ko withdraw service band rahegi.";
+const TIME_WITHDRAW_CLOSED_MESSAGE = "Withdraw request timing 11:00 AM se 11:00 PM tak hi available hai.";
 
 function getIndiaWeekday(date = new Date()) {
   return new Intl.DateTimeFormat("en-US", {
@@ -19,8 +22,37 @@ function getIndiaWeekday(date = new Date()) {
   }).format(date);
 }
 
+function getIndiaMinutes(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).formatToParts(date);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? 0);
+  return hour * 60 + minute;
+}
+
+function parseTimeToMinutes(value: string, fallback: number) {
+  const match = String(value || "").trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+  if (!match) {
+    return fallback;
+  }
+  let hour = Number(match[1]);
+  const minute = Number(match[2] ?? 0);
+  const meridiem = String(match[3] || "").toUpperCase();
+  if (!Number.isFinite(hour) || !Number.isFinite(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+    return fallback;
+  }
+  if (meridiem === "PM" && hour < 12) hour += 12;
+  if (meridiem === "AM" && hour === 12) hour = 0;
+  return hour * 60 + minute;
+}
+
 export default function WithdrawScreen() {
   const insets = useSafeAreaInsets();
+  const walletSettings = useWalletRemoteSettings();
   const { currentUser, walletBalance, confirmWithdraw, bankAccounts, walletEntries, loadBankAccounts, loadWalletHistory } = useAppState();
   const latestBank = useMemo(() => bankAccounts[0] ?? null, [bankAccounts]);
   const pendingWithdraw = useMemo(
@@ -34,14 +66,35 @@ export default function WithdrawScreen() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const withdrawEnabled = readWalletBoolean(walletSettings, "wallet_withdraw_enabled", true);
+  const withdrawTitle = readWalletText(walletSettings, "wallet_withdraw_title", "Withdraw Fund");
+  const withdrawSubtitle = readWalletText(walletSettings, "wallet_withdraw_subtitle", "Secure request flow ke saath bank account par withdraw bhejo.");
+  const withdrawDisabledMessage = readWalletText(walletSettings, "wallet_withdraw_message", "Withdraw service temporarily unavailable.");
+  const minWithdrawAmount = Math.max(1, readWalletNumber(walletSettings, "wallet_withdraw_min_amount", MIN_WITHDRAW_AMOUNT));
+  const maxWithdrawAmount = Math.max(minWithdrawAmount, readWalletNumber(walletSettings, "wallet_withdraw_max_amount", MAX_WITHDRAW_AMOUNT));
+  const withdrawMultiple = Math.max(1, readWalletNumber(walletSettings, "wallet_withdraw_multiple", WITHDRAW_MULTIPLE));
+  const withdrawStartLabel = readWalletText(walletSettings, "wallet_withdraw_start_time", "11:00 AM");
+  const withdrawEndLabel = readWalletText(walletSettings, "wallet_withdraw_end_time", "11:00 PM");
+  const withdrawWeekendClosed = readWalletBoolean(walletSettings, "wallet_withdraw_weekend_closed", true);
+  const withdrawWeekendMessage = readWalletText(walletSettings, "wallet_withdraw_weekend_message", WEEKEND_WITHDRAW_CLOSED_MESSAGE);
+  const withdrawTimeMessage = readWalletText(walletSettings, "wallet_withdraw_time_message", TIME_WITHDRAW_CLOSED_MESSAGE);
+  const withdrawButtonLabel = readWalletText(walletSettings, "wallet_withdraw_button_label", "Verify PIN & Withdraw");
+  const withdrawInfoVisible = readWalletBoolean(walletSettings, "wallet_withdraw_info_visible", true);
+  const withdrawPinMessage = readWalletText(walletSettings, "wallet_withdraw_pin_message", "Withdraw request submit karne ke liye PIN verify karo.");
+  const withdrawStartMinutes = parseTimeToMinutes(withdrawStartLabel, 11 * 60);
+  const withdrawEndMinutes = parseTimeToMinutes(withdrawEndLabel, 23 * 60);
   const isWeekendWithdrawClosed = useMemo(() => {
     const weekday = getIndiaWeekday();
-    return weekday === "Saturday" || weekday === "Sunday";
-  }, []);
+    return withdrawWeekendClosed && (weekday === "Saturday" || weekday === "Sunday");
+  }, [withdrawWeekendClosed]);
+  const isTimeWithdrawClosed = useMemo(() => {
+    const currentMinutes = getIndiaMinutes();
+    return currentMinutes < withdrawStartMinutes || currentMinutes >= withdrawEndMinutes;
+  }, [withdrawStartMinutes, withdrawEndMinutes]);
 
   const withdrawAmount = Number(amount || 0);
-  const hasEnoughWalletBalanceForWithdraw = walletBalance >= MIN_WITHDRAW_AMOUNT;
-  const isMultipleOfHundred = Number.isFinite(withdrawAmount) && withdrawAmount % WITHDRAW_MULTIPLE === 0;
+  const hasEnoughWalletBalanceForWithdraw = walletBalance >= minWithdrawAmount;
+  const isMultipleOfHundred = Number.isFinite(withdrawAmount) && withdrawAmount % withdrawMultiple === 0;
 
   useEffect(() => {
     void Promise.all([loadBankAccounts(), loadWalletHistory()]);
@@ -88,8 +141,8 @@ export default function WithdrawScreen() {
         >
           <ScrollView bounces={false} contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={styles.handle} />
-            <Text style={styles.title}>Withdraw Fund</Text>
-            <Text style={styles.subtitle}>Secure request flow ke saath bank account par withdraw bhejo.</Text>
+            <Text style={styles.title}>{withdrawTitle}</Text>
+            <Text style={styles.subtitle}>{withdrawSubtitle}</Text>
 
             <View style={styles.balanceCard}>
               <View style={styles.balanceIcon}>
@@ -124,15 +177,15 @@ export default function WithdrawScreen() {
             <View style={styles.infoStrip}>
               <View style={styles.infoPill}>
                 <Text style={styles.infoPillLabel}>Minimum</Text>
-                <Text style={styles.infoPillValue}>Rs 500</Text>
+                <Text style={styles.infoPillValue}>Rs {minWithdrawAmount}</Text>
               </View>
               <View style={styles.infoPill}>
                 <Text style={styles.infoPillLabel}>Multiple</Text>
-                <Text style={styles.infoPillValue}>Rs 100</Text>
+                <Text style={styles.infoPillValue}>Rs {withdrawMultiple}</Text>
               </View>
               <View style={styles.infoPillAccent}>
                 <Text style={styles.infoPillLabelAccent}>Timing</Text>
-                <Text style={styles.infoPillValueAccent}>11 AM - 11 PM</Text>
+                <Text style={styles.infoPillValueAccent}>{withdrawStartLabel} - {withdrawEndLabel}</Text>
               </View>
             </View>
 
@@ -143,7 +196,7 @@ export default function WithdrawScreen() {
                   onChangeText={(value) => {
                     setAmount(value.replace(/[^0-9]/g, ""));
                   }}
-                placeholder="Enter amount min 500"
+                placeholder={`Enter amount min ${minWithdrawAmount}`}
                 placeholderTextColor="rgba(100, 116, 139, 0.5)"
                 style={styles.input}
                 value={amount}
@@ -152,15 +205,25 @@ export default function WithdrawScreen() {
             </View>
 
             <Pressable
-              disabled={submitting || isWeekendWithdrawClosed}
+              disabled={submitting || !withdrawEnabled || isWeekendWithdrawClosed || isTimeWithdrawClosed}
               onPress={() => requestPinBeforeWithdraw()}
-              style={[styles.primaryButton, (submitting || isWeekendWithdrawClosed) && styles.disabledButton]}
+              style={[styles.primaryButton, (submitting || !withdrawEnabled || isWeekendWithdrawClosed || isTimeWithdrawClosed) && styles.disabledButton]}
             >
-              {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>Verify PIN & Withdraw</Text>}
+              {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>{withdrawButtonLabel}</Text>}
             </Pressable>
+            {!withdrawEnabled ? (
+              <View style={styles.feedbackCardError}>
+                <Text style={styles.feedbackTextError}>{withdrawDisabledMessage}</Text>
+              </View>
+            ) : null}
             {isWeekendWithdrawClosed ? (
               <View style={styles.feedbackCardError}>
-                <Text style={styles.feedbackTextError}>{WEEKEND_WITHDRAW_CLOSED_MESSAGE}</Text>
+                <Text style={styles.feedbackTextError}>{withdrawWeekendMessage}</Text>
+              </View>
+            ) : null}
+            {isTimeWithdrawClosed ? (
+              <View style={styles.feedbackCardError}>
+                <Text style={styles.feedbackTextError}>{withdrawTimeMessage}</Text>
               </View>
             ) : null}
             {successMessage ? (
@@ -174,15 +237,19 @@ export default function WithdrawScreen() {
               </View>
             ) : null}
 
-            <Text style={styles.simpleInfoText}>Withdrawal limit is 500 to 99999.</Text>
-            <Text style={styles.simpleInfoText}>Withdraw request timing is 11:00 AM to 11:00 PM.</Text>
+            {withdrawInfoVisible ? (
+              <>
+                <Text style={styles.simpleInfoText}>Withdrawal limit is {minWithdrawAmount} to {maxWithdrawAmount}.</Text>
+                <Text style={styles.simpleInfoText}>Withdraw request timing is {withdrawStartLabel} to {withdrawEndLabel}.</Text>
+              </>
+            ) : null}
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
       <PinVerificationModal
         visible={pinModalVisible}
         title="Verify PIN"
-        message="Withdraw request submit karne ke liye PIN verify karo."
+        message={withdrawPinMessage}
         setupRequired
         onCancel={() => setPinModalVisible(false)}
         onVerified={async (pin) => {
@@ -194,8 +261,18 @@ export default function WithdrawScreen() {
   );
 
   function requestPinBeforeWithdraw() {
+    if (!withdrawEnabled) {
+      showTransientMessage("error", withdrawDisabledMessage);
+      return;
+    }
+
     if (isWeekendWithdrawClosed) {
-      showTransientMessage("error", WEEKEND_WITHDRAW_CLOSED_MESSAGE);
+      showTransientMessage("error", withdrawWeekendMessage);
+      return;
+    }
+
+    if (isTimeWithdrawClosed) {
+      showTransientMessage("error", withdrawTimeMessage);
       return;
     }
 
@@ -210,7 +287,7 @@ export default function WithdrawScreen() {
     }
 
     if (!hasEnoughWalletBalanceForWithdraw) {
-      showTransientMessage("error", `Insufficient balance. Minimum withdraw ke liye wallet me kam se kam Rs ${MIN_WITHDRAW_AMOUNT} hona chahiye.`);
+      showTransientMessage("error", `Insufficient balance. Minimum withdraw ke liye wallet me kam se kam Rs ${minWithdrawAmount} hona chahiye.`);
       return;
     }
 
@@ -219,12 +296,16 @@ export default function WithdrawScreen() {
       return;
     }
 
-    if (withdrawAmount < MIN_WITHDRAW_AMOUNT) {
-      showTransientMessage("error", `Minimum withdraw Rs ${MIN_WITHDRAW_AMOUNT} hai.`);
+    if (withdrawAmount < minWithdrawAmount) {
+      showTransientMessage("error", `Minimum withdraw Rs ${minWithdrawAmount} hai.`);
+      return;
+    }
+    if (withdrawAmount > maxWithdrawAmount) {
+      showTransientMessage("error", `Maximum withdraw Rs ${maxWithdrawAmount} hai.`);
       return;
     }
     if (!isMultipleOfHundred) {
-      showTransientMessage("error", `Withdraw amount ${WITHDRAW_MULTIPLE} ke multiple me enter karo.`);
+      showTransientMessage("error", `Withdraw amount ${withdrawMultiple} ke multiple me enter karo.`);
       return;
     }
 
@@ -243,8 +324,18 @@ export default function WithdrawScreen() {
   }
 
   async function submitWithdraw(pin: string) {
+    if (!withdrawEnabled) {
+      showTransientMessage("error", withdrawDisabledMessage);
+      return;
+    }
+
     if (isWeekendWithdrawClosed) {
-      showTransientMessage("error", WEEKEND_WITHDRAW_CLOSED_MESSAGE);
+      showTransientMessage("error", withdrawWeekendMessage);
+      return;
+    }
+
+    if (isTimeWithdrawClosed) {
+      showTransientMessage("error", withdrawTimeMessage);
       return;
     }
 
@@ -258,12 +349,16 @@ export default function WithdrawScreen() {
       return;
     }
 
-    if (!Number.isFinite(withdrawAmount) || withdrawAmount < MIN_WITHDRAW_AMOUNT) {
-      showTransientMessage("error", `Minimum withdraw Rs ${MIN_WITHDRAW_AMOUNT} hai.`);
+    if (!Number.isFinite(withdrawAmount) || withdrawAmount < minWithdrawAmount) {
+      showTransientMessage("error", `Minimum withdraw Rs ${minWithdrawAmount} hai.`);
+      return;
+    }
+    if (withdrawAmount > maxWithdrawAmount) {
+      showTransientMessage("error", `Maximum withdraw Rs ${maxWithdrawAmount} hai.`);
       return;
     }
     if (!isMultipleOfHundred) {
-      showTransientMessage("error", `Withdraw amount ${WITHDRAW_MULTIPLE} ke multiple me enter karo.`);
+      showTransientMessage("error", `Withdraw amount ${withdrawMultiple} ke multiple me enter karo.`);
       return;
     }
 

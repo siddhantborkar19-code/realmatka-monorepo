@@ -236,7 +236,16 @@ function getMsg91VerifiedIdentifier(payload) {
     payload?.data?.phone,
     payload?.data?.phone_number,
     payload?.data?.mobileNumber,
-    payload?.data?.mobile_number
+    payload?.data?.mobile_number,
+    payload?.data?.user?.identifier,
+    payload?.data?.user?.mobile,
+    payload?.data?.user?.phone,
+    payload?.response?.identifier,
+    payload?.response?.mobile,
+    payload?.response?.phone,
+    payload?.response?.phone_number,
+    payload?.response?.mobileNumber,
+    payload?.response?.mobile_number
   ];
 
   for (const value of candidates) {
@@ -253,9 +262,15 @@ function getMsg91VerificationStatus(payload) {
     payload?.status,
     payload?.type,
     payload?.message,
+    payload?.success,
     payload?.data?.status,
     payload?.data?.type,
-    payload?.data?.message
+    payload?.data?.message,
+    payload?.data?.success,
+    payload?.response?.status,
+    payload?.response?.type,
+    payload?.response?.message,
+    payload?.response?.success
   ];
 
   return candidates
@@ -269,7 +284,11 @@ function isMsg91VerificationApproved(payload) {
     return true;
   }
 
-  return !["error", "failed", "failure", "unauthorized", "invalid"].includes(status);
+  if (["true", "success", "verified", "approved", "valid"].includes(status)) {
+    return true;
+  }
+
+  return !["false", "error", "failed", "failure", "unauthorized", "invalid", "expired"].includes(status);
 }
 
 function getMsg91CallbackPath(purpose) {
@@ -368,14 +387,15 @@ async function sendOtp(phone, purpose) {
   if (otpProvider === "msg91" && isMsg91ApiMode()) {
     const code = createOtpCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    await msg91SendOtp(phone, code);
+    const msg91Payload = await msg91SendOtp(phone, code);
     challenges.set(`${phone}:${purpose}`, { code, expiresAt });
     return {
       sent: true,
       expiresAt,
       provider: "msg91",
       devCode: null,
-      mode: "otp"
+      mode: "otp",
+      requestId: msg91Payload.request_id || null
     };
   }
 
@@ -516,6 +536,7 @@ export async function requestOtp(request) {
         provider: otpState.provider,
         devCode: otpState.devCode,
         mode: otpState.mode ?? "otp",
+        requestId: otpState.requestId ?? null,
         widgetUrl: otpState.provider === "msg91" && otpState.mode === "widget" ? buildMsg91WidgetUrl(request, phone, purpose) : null
       },
       request
@@ -548,6 +569,21 @@ export async function msg91Widget(request) {
     return new Response("Missing phone or returnUrl", { status: 400 });
   }
 
+  const isRegisterPurpose = purpose === "register";
+  const pageTitle = isRegisterPurpose ? "Create Account" : purpose === "password_reset" ? "Forgot Password" : "OTP Login";
+  const heroText = isRegisterPurpose
+    ? "Mobile OTP verify karo, phir account details complete karo."
+    : purpose === "password_reset"
+      ? "Mobile verify karke password reset continue karo."
+      : "Phone number verify hone ke baad direct login continue ho jayega.";
+  const cardTitle = isRegisterPurpose ? "Verify Mobile" : purpose === "password_reset" ? "Verify Mobile" : "OTP Login";
+  const cardHint = isRegisterPurpose
+    ? "SMS me aaye 6 digit OTP ko verify karo. Uske baad register form open hoga."
+    : purpose === "password_reset"
+      ? "SMS me aaye 6 digit OTP ko verify karo. Uske baad password reset continue hoga."
+      : "SMS me aaye 6 digit OTP ko verify karo.";
+  const verifyButtonText = isRegisterPurpose ? "Verify OTP" : purpose === "password_reset" ? "Verify OTP" : "Login with OTP";
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -556,13 +592,19 @@ export async function msg91Widget(request) {
   <title>Real Matka OTP Verification</title>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #fff7ed, #ffe4d6 45%, #fef3c7); color: #111827; display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 18px; }
-    .wrap { width: min(92vw, 420px); background: #fffaf5; border: 1px solid rgba(194, 65, 12, 0.16); border-radius: 24px; padding: 24px; box-shadow: 0 22px 55px rgba(124, 45, 18, 0.18); }
-    .brand { display: inline-flex; align-items: center; gap: 8px; color: #c2410c; font-size: 12px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; }
-    .dot { width: 9px; height: 9px; border-radius: 999px; background: #f97316; box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.12); }
-    h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.1; }
-    p { margin: 0 0 16px; color: #64748b; line-height: 1.5; }
-    .meta { font-size: 13px; color: #7c2d12; margin-bottom: 18px; background: #ffedd5; border-radius: 14px; padding: 11px 12px; font-weight: 700; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fff7ed; color: #111827; min-height: 100vh; }
+    .hero { min-height: 210px; padding: 52px 22px 48px; background: linear-gradient(135deg, #ff7a18, #ff314f); color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .logo { width: min(78%, 280px); height: 110px; background: url('https://play.realmatka.in/assets/assets/images/adaptive-icon.b9a301a63caf25a13fb79f1d5f767b26.png'), url('https://play.realmatka.in/assets/images/adaptive-icon.png'); background-position: center; background-size: contain; background-repeat: no-repeat; margin: 20px auto -2px; }
+    .logoText { display: none; }
+    .hero h1 { display: none; }
+    .hero p { margin: -14px auto 0; max-width: 320px; color: rgba(255,255,255,0.9); line-height: 1.45; font-size: 14px; }
+    .content { width: min(100%, 480px); margin: 0 auto; padding: 0 16px 32px; }
+    .wrap { background: #fffaf5; border: 1px solid rgba(194, 65, 12, 0.15); border-radius: 24px; padding: 22px; box-shadow: 0 18px 42px rgba(124, 45, 18, 0.15); }
+    h2 { margin: 0 0 6px; font-size: 24px; line-height: 1.2; }
+    .hint { margin: 0 0 16px; color: #64748b; line-height: 1.45; font-size: 14px; }
+    .phoneBox { display: none; }
+    .hiddenPhoneLabel,
+    .hiddenSend { display: none; }
     label { display: block; font-weight: 800; margin-bottom: 8px; }
     input { width: 100%; min-height: 54px; border-radius: 16px; border: 1px solid #fed7aa; background: #ffffff; color: #111827; font-size: 22px; font-weight: 900; letter-spacing: 0.22em; text-align: center; padding: 0 14px; outline: none; }
     input:focus { border-color: #fb923c; box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.16); }
@@ -570,22 +612,32 @@ export async function msg91Widget(request) {
     button:disabled { opacity: 0.6; cursor: not-allowed; }
     .primary { background: linear-gradient(135deg, #fb923c, #ef4444); color: #fff; box-shadow: 0 14px 24px rgba(239, 68, 68, 0.18); }
     .secondary { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .status { color: #15803d; font-size: 14px; margin-top: 14px; font-weight: 700; min-height: 20px; }
-    .error { color: #dc2626; font-size: 14px; margin-top: 10px; font-weight: 700; min-height: 20px; }
+    .status { color: #15803d; font-size: 14px; margin-top: 14px; font-weight: 700; min-height: 20px; text-align: center; }
+    .error { color: #dc2626; font-size: 14px; margin-top: 10px; font-weight: 700; min-height: 20px; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="brand"><span class="dot"></span>Real Matka</div>
-    <h1>Verify Mobile</h1>
-    <p>OTP SMS bheja ja raha hai. Code enter karte hi login continue ho jayega.</p>
-    <div class="meta">Mobile: +91 ${phone}</div>
-    <label for="otp">Enter OTP</label>
-    <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" />
-    <button id="verifyBtn" class="primary" disabled>Verify OTP</button>
-    <button id="resendBtn" class="secondary" disabled>Resend in 30s</button>
-    <div id="status" class="status"></div>
-    <div id="error" class="error"></div>
+  <div class="hero">
+    <div class="logo"><span class="logoText">RM</span></div>
+    <h1>${pageTitle}</h1>
+    <p>${heroText}</p>
+  </div>
+  <div class="content">
+    <div class="wrap">
+      <div>
+        <h2>${cardTitle}</h2>
+        <p class="hint">${cardHint}</p>
+        <label class="hiddenPhoneLabel">Phone Number</label>
+        <div class="phoneBox">+91 ${phone}</div>
+        <button id="sendBtn" class="primary hiddenSend">Send OTP</button>
+        <label for="otp">OTP</label>
+        <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="______" />
+        <button id="verifyBtn" class="primary" disabled>${verifyButtonText}</button>
+        <button id="resendBtn" class="secondary" disabled>Resend in 30s</button>
+      </div>
+      <div id="status" class="status"></div>
+      <div id="error" class="error"></div>
+    </div>
   </div>
   <script>
     var currentReqId = '';
@@ -595,6 +647,7 @@ export async function msg91Widget(request) {
     var statusEl = document.getElementById('status');
     var errorEl = document.getElementById('error');
     var otpEl = document.getElementById('otp');
+    var sendBtn = document.getElementById('sendBtn');
     var verifyBtn = document.getElementById('verifyBtn');
     var resendBtn = document.getElementById('resendBtn');
 
@@ -612,8 +665,83 @@ export async function msg91Widget(request) {
       return fallback;
     }
     function setReqId(data) {
+      var widgetData = {};
+      try {
+        widgetData = typeof window.getWidgetData === 'function' ? window.getWidgetData() : {};
+      } catch (error) {
+        widgetData = {};
+      }
+      var nestedData = data && data.data;
+      var nestedResponse = data && data.response;
+      var widgetNestedData = widgetData && widgetData.data;
+      var widgetNestedResponse = widgetData && widgetData.response;
       currentReqId =
-        (data && (data.reqId || data.req_id || data.requestId || data.request_id || data.data && (data.data.reqId || data.data.req_id || data.data.requestId || data.data.request_id))) ||
+        (data && (
+          data.reqId ||
+          data.req_id ||
+          data.requestId ||
+          data.request_id ||
+          data.requestID ||
+          data.request_id_string ||
+          data.messageId ||
+          data.message_id ||
+          data.id ||
+          nestedData && (
+            nestedData.reqId ||
+            nestedData.req_id ||
+            nestedData.requestId ||
+            nestedData.request_id ||
+            nestedData.requestID ||
+            nestedData.request_id_string ||
+            nestedData.messageId ||
+            nestedData.message_id ||
+            nestedData.id
+          ) ||
+          nestedResponse && (
+            nestedResponse.reqId ||
+            nestedResponse.req_id ||
+            nestedResponse.requestId ||
+            nestedResponse.request_id ||
+            nestedResponse.requestID ||
+            nestedResponse.request_id_string ||
+            nestedResponse.messageId ||
+            nestedResponse.message_id ||
+            nestedResponse.id
+          )
+        )) ||
+        (widgetData && (
+          widgetData.reqId ||
+          widgetData.req_id ||
+          widgetData.requestId ||
+          widgetData.request_id ||
+          widgetData.requestID ||
+          widgetData.request_id_string ||
+          widgetData.messageId ||
+          widgetData.message_id ||
+          widgetData.id ||
+          widgetNestedData && (
+            widgetNestedData.reqId ||
+            widgetNestedData.req_id ||
+            widgetNestedData.requestId ||
+            widgetNestedData.request_id ||
+            widgetNestedData.requestID ||
+            widgetNestedData.request_id_string ||
+            widgetNestedData.messageId ||
+            widgetNestedData.message_id ||
+            widgetNestedData.id
+          ) ||
+          widgetNestedResponse && (
+            widgetNestedResponse.reqId ||
+            widgetNestedResponse.req_id ||
+            widgetNestedResponse.requestId ||
+            widgetNestedResponse.request_id ||
+            widgetNestedResponse.requestID ||
+            widgetNestedResponse.request_id_string ||
+            widgetNestedResponse.messageId ||
+            widgetNestedResponse.message_id ||
+            widgetNestedResponse.id
+          )
+        )) ||
         currentReqId ||
         '';
     }
@@ -639,7 +767,7 @@ export async function msg91Widget(request) {
       if (!text) return false;
       if (text.split('.').length >= 3 && text.length > 24) return true;
       if (/^(success|verified|approved|true|false)$/i.test(text)) return false;
-      return text.length >= 32;
+      return false;
     }
     function findTokenByKey(payload, depth) {
       if (!payload || depth > 4) return '';
@@ -649,7 +777,7 @@ export async function msg91Widget(request) {
       for (var i = 0; i < keys.length; i += 1) {
         var key = keys[i];
         var value = payload[key];
-        if (/token|access/i.test(key) && typeof value === 'string' && value.trim()) {
+        if (/token|access/i.test(key) && looksLikeToken(value)) {
           return value.trim();
         }
       }
@@ -682,7 +810,7 @@ export async function msg91Widget(request) {
         payload && payload.response && payload.response['access-token']
       ];
       for (var i = 0; i < values.length; i += 1) {
-        if (typeof values[i] === 'string' && values[i].trim()) {
+        if (looksLikeToken(values[i])) {
           return values[i].trim();
         }
       }
@@ -691,7 +819,7 @@ export async function msg91Widget(request) {
     var configuration = {
       widgetId: ${JSON.stringify(msg91WidgetId)},
       tokenAuth: ${JSON.stringify(msg91WidgetTokenAuth)},
-      identifier: identifier,
+      identifier: '',
       exposeMethods: true,
       success: function (data) {
         setReqId(data);
@@ -713,17 +841,28 @@ export async function msg91Widget(request) {
       redirect.searchParams.set('purpose', ${JSON.stringify(purpose)});
       window.location.replace(redirect.toString());
     }
-    function sendOtpNow() {
+    var sendInFlight = false;
+    var otpSentOnce = false;
+    function sendOtpNow(force) {
+      if (sendInFlight || (otpSentOnce && !force)) {
+        return;
+      }
+      sendInFlight = true;
       setError('');
       setStatus('OTP SMS bheja ja raha hai...');
+      sendBtn.disabled = true;
       if (typeof window.sendOtp !== 'function') {
         setError('OTP service load nahi hua. Dobara try karo.');
+        sendBtn.disabled = false;
+        sendInFlight = false;
         return;
       }
       window.sendOtp(
         identifier,
         function(data) {
           setReqId(data);
+          otpSentOnce = true;
+          sendInFlight = false;
           setStatus('OTP SMS sent. Code enter karo.');
           otpEl.focus();
           startResendTimer();
@@ -731,8 +870,10 @@ export async function msg91Widget(request) {
         function(error) {
           setStatus('');
           setError(getErrorMessage(error, 'OTP send nahi hua. Dobara try karo.'));
+          sendBtn.disabled = false;
           resendBtn.disabled = false;
           resendBtn.textContent = 'Resend OTP';
+          sendInFlight = false;
         }
       );
     }
@@ -777,6 +918,7 @@ export async function msg91Widget(request) {
       }
     });
     verifyBtn.addEventListener('click', verifyOtpNow);
+    sendBtn.addEventListener('click', sendOtpNow);
     resendBtn.addEventListener('click', function() {
       if (typeof window.retryOtp === 'function') {
         setError('');
@@ -794,7 +936,7 @@ export async function msg91Widget(request) {
         }, currentReqId || undefined);
         return;
       }
-      sendOtpNow();
+      sendOtpNow(true);
     });
     (function loadOtpScript(urls) {
       var index = 0;
@@ -805,7 +947,7 @@ export async function msg91Widget(request) {
         s.onload = function() {
           if (typeof window.initSendOTP === 'function') {
             window.initSendOTP(configuration);
-            window.setTimeout(sendOtpNow, 300);
+            window.setTimeout(function() { sendOtpNow(false); }, 300);
           }
         };
         s.onerror = function() {

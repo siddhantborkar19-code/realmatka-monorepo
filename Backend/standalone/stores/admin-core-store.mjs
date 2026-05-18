@@ -1,6 +1,7 @@
 import {
   addAuditLog as addAuditLogRecord,
   applyReferralLossCommission as applyReferralLossCommissionRecord,
+  deleteUserAccount as deleteUserAccountRecord,
   findUserById as findUserByIdRecord,
   findUserByPhone as findUserByPhoneRecord,
   getAppSettings as getAppSettingsRecord,
@@ -15,6 +16,7 @@ import {
 
 export const addAuditLog = addAuditLogRecord;
 export const applyReferralLossCommission = applyReferralLossCommissionRecord;
+export const deleteUserAccount = deleteUserAccountRecord;
 export const findUserById = findUserByIdRecord;
 export const findUserByPhone = findUserByPhoneRecord;
 export const getAppSettings = getAppSettingsRecord;

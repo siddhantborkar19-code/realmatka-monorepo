@@ -1,6 +1,7 @@
 import {
   addAuditLog as addAuditLogRecord,
   applyReferralLossCommission as applyReferralLossCommissionRecord,
+  deleteUserAccount as deleteUserAccountRecord,
   findUserById as findUserByIdRecord,
   findUserByPhone as findUserByPhoneRecord,
   getAppSettings as getAppSettingsRecord,
@@ -46,6 +47,7 @@ export const addAuditLog = addAuditLogRecord;
 export const addWalletEntry = addWalletEntryRecord;
 export const applyReferralLossCommission = applyReferralLossCommissionRecord;
 export const clearWalletEntriesForUser = clearWalletEntriesForUserRecord;
+export const deleteUserAccount = deleteUserAccountRecord;
 export const findUserById = findUserByIdRecord;
 export const findUserByPhone = findUserByPhoneRecord;
 export const getAdminSnapshot = getAdminSnapshotRecord;

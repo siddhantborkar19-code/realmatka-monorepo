@@ -170,6 +170,15 @@ h1 {
   box-shadow: 0 20px 42px -22px rgba(15, 118, 110, 0.9);
 }
 
+<<<<<<< HEAD
+=======
+.button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  opacity: 0.62;
+}
+
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
 .buttonSecondary {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.7);
@@ -346,9 +355,142 @@ h1 {
   align-items: stretch;
 }
 
+<<<<<<< HEAD
 .billingPanel,
 .invoiceCard,
 .infoPanel {
+=======
+.checkoutLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.checkoutPanel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.checkoutForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.checkoutForm label {
+  display: grid;
+  gap: 8px;
+}
+
+.checkoutForm label:last-child {
+  grid-column: 1 / -1;
+}
+
+.checkoutForm span {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.checkoutForm input,
+.checkoutForm select,
+.checkoutForm textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  font: inherit;
+  outline: none;
+  padding: 13px 14px;
+}
+
+.checkoutForm textarea {
+  resize: vertical;
+}
+
+.checkoutNotice {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 18px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+  margin-top: 18px;
+  padding: 13px 14px;
+}
+
+.checkoutError {
+  color: #b91c1c !important;
+  font-size: 13px;
+  font-weight: 800;
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.checkoutPolicyLinks {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.checkoutPolicyLinks a {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: #0f766e;
+  font-weight: 900;
+  padding: 11px 12px;
+  text-decoration: none;
+}
+
+.compactCheckoutPanel {
+  max-width: 620px;
+}
+
+.paymentSummaryCard {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(245, 158, 11, 0.15), transparent 12rem),
+    rgba(240, 253, 250, 0.78);
+  margin-top: 22px;
+  padding: 16px;
+}
+
+.paymentSummaryCard div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 13px 14px;
+}
+
+.paymentSummaryCard span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.paymentSummaryCard strong {
+  color: var(--ink);
+  text-align: right;
+  word-break: break-word;
+}
+
+.billingPanel,
+.invoiceCard,
+.infoPanel,
+.checkoutPanel {
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   padding: 26px;
 }
 
@@ -978,6 +1120,10 @@ h1 {
   .heroGrid,
   .processGrid,
   .billingLayout,
+<<<<<<< HEAD
+=======
+  .checkoutLayout,
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   .picsturHero {
     grid-template-columns: 1fr;
   }
@@ -1012,10 +1158,30 @@ h1 {
     padding-top: 42px;
   }
 
+<<<<<<< HEAD
   .grid3,
   .heroStats,
   .demoGrid,
   .metricGrid {
+=======
+  .pageHero {
+    padding: 42px 0 10px;
+  }
+
+  h1 {
+    font-size: clamp(36px, 13vw, 54px);
+  }
+
+  .section {
+    padding: 26px 0;
+  }
+
+  .grid3,
+  .heroStats,
+  .demoGrid,
+  .metricGrid,
+  .checkoutForm {
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
     grid-template-columns: 1fr;
   }
 
@@ -1028,6 +1194,30 @@ h1 {
     gap: 4px;
   }
 
+<<<<<<< HEAD
+=======
+  .checkoutPanel,
+  .invoiceCard {
+    border-radius: 26px;
+    padding: 20px;
+  }
+
+  .paymentSummaryCard {
+    border-radius: 20px;
+    padding: 12px;
+  }
+
+  .paymentSummaryCard div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .paymentSummaryCard strong {
+    text-align: left;
+  }
+
+>>>>>>> b6b70012fc1bdc9cfcf0efc92014030ceb103364
   .screenTop {
     flex-direction: column;
   }

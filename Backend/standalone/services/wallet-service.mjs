@@ -1,8 +1,11 @@
 import { issueOtp, verifyOtp } from "../routes/auth-otp.mjs";
 import { findUserByPhone, verifyCredential } from "../db.mjs";
+import { getAppSettings } from "../stores/admin-store.mjs";
 import { addWalletEntry, getBankAccountsForUser, getUserBalance, getWalletEntriesForUser } from "../stores/wallet-store.mjs";
 
 export const MIN_WITHDRAW_AMOUNT = 500;
+const DEFAULT_WITHDRAW_MAX_AMOUNT = 99999;
+const DEFAULT_WITHDRAW_MULTIPLE = 100;
 const WITHDRAW_WEEKEND_CLOSED_MESSAGE = "Saturday aur Sunday ko withdraw service band rahegi.";
 const WITHDRAW_TIME_CLOSED_MESSAGE = "Withdraw request timing 11:00 AM se 11:00 PM tak hi available hai.";
 const WITHDRAW_START_MINUTES = 11 * 60;
@@ -10,6 +13,61 @@ const WITHDRAW_END_MINUTES = 23 * 60;
 
 function normalizeAmount(value) {
   return Number(value ?? 0);
+}
+
+function toSettingsMap(items) {
+  return new Map((items || []).map((item) => [String(item.key || "").trim(), String(item.value || "").trim()]));
+}
+
+function readSettingBoolean(settings, key, fallback) {
+  const raw = String(settings.get(key) ?? "").trim().toLowerCase();
+  if (!raw) {
+    return fallback;
+  }
+  return !["0", "false", "no", "off", "disabled"].includes(raw);
+}
+
+function readSettingNumber(settings, key, fallback) {
+  const value = Number(String(settings.get(key) ?? "").trim());
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
+function readSettingText(settings, key, fallback) {
+  const value = String(settings.get(key) ?? "").trim();
+  return value || fallback;
+}
+
+function parseTimeToMinutes(value, fallback) {
+  const match = String(value || "").trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+  if (!match) {
+    return fallback;
+  }
+  let hour = Number(match[1]);
+  const minute = Number(match[2] ?? 0);
+  const meridiem = String(match[3] || "").toUpperCase();
+  if (!Number.isFinite(hour) || !Number.isFinite(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+    return fallback;
+  }
+  if (meridiem === "PM" && hour < 12) hour += 12;
+  if (meridiem === "AM" && hour === 12) hour = 0;
+  return hour * 60 + minute;
+}
+
+async function getWithdrawConfig() {
+  const settings = toSettingsMap(await getAppSettings());
+  const minAmount = Math.max(1, readSettingNumber(settings, "wallet_withdraw_min_amount", MIN_WITHDRAW_AMOUNT));
+  const maxAmount = Math.max(minAmount, readSettingNumber(settings, "wallet_withdraw_max_amount", DEFAULT_WITHDRAW_MAX_AMOUNT));
+  const multiple = Math.max(1, readSettingNumber(settings, "wallet_withdraw_multiple", DEFAULT_WITHDRAW_MULTIPLE));
+  return {
+    minAmount,
+    maxAmount,
+    multiple,
+    weekendClosed: readSettingBoolean(settings, "wallet_withdraw_weekend_closed", true),
+    startMinutes: parseTimeToMinutes(settings.get("wallet_withdraw_start_time"), WITHDRAW_START_MINUTES),
+    endMinutes: parseTimeToMinutes(settings.get("wallet_withdraw_end_time"), WITHDRAW_END_MINUTES),
+    weekendMessage: readSettingText(settings, "wallet_withdraw_weekend_message", WITHDRAW_WEEKEND_CLOSED_MESSAGE),
+    timeMessage: readSettingText(settings, "wallet_withdraw_time_message", WITHDRAW_TIME_CLOSED_MESSAGE)
+  };
 }
 
 function getIndiaWeekday(date = new Date()) {
@@ -36,30 +94,37 @@ function isWithdrawWeekendClosed(date = new Date()) {
   return weekday === "Saturday" || weekday === "Sunday";
 }
 
-function isWithdrawTimeClosed(date = new Date()) {
+function isWithdrawTimeClosed(config, date = new Date()) {
   const currentMinutes = getIndiaMinutes(date);
-  return currentMinutes < WITHDRAW_START_MINUTES || currentMinutes >= WITHDRAW_END_MINUTES;
+  return currentMinutes < config.startMinutes || currentMinutes >= config.endMinutes;
 }
 
-function validateWithdrawAmount(amount) {
+function validateWithdrawAmount(amount, config) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return "Valid withdrawal amount is required";
   }
-  if (amount < MIN_WITHDRAW_AMOUNT) {
-    return `Minimum withdraw is Rs ${MIN_WITHDRAW_AMOUNT}`;
+  if (amount < config.minAmount) {
+    return `Minimum withdraw is Rs ${config.minAmount}`;
+  }
+  if (amount > config.maxAmount) {
+    return `Maximum withdraw is Rs ${config.maxAmount}`;
+  }
+  if (amount % config.multiple !== 0) {
+    return `Withdraw amount must be a multiple of Rs ${config.multiple}`;
   }
   return "";
 }
 
 async function ensureWithdrawAllowed(userId, amount) {
-  if (isWithdrawWeekendClosed()) {
-    return { ok: false, status: 400, error: WITHDRAW_WEEKEND_CLOSED_MESSAGE };
+  const config = await getWithdrawConfig();
+  if (config.weekendClosed && isWithdrawWeekendClosed()) {
+    return { ok: false, status: 400, error: config.weekendMessage };
   }
-  if (isWithdrawTimeClosed()) {
-    return { ok: false, status: 400, error: WITHDRAW_TIME_CLOSED_MESSAGE };
+  if (isWithdrawTimeClosed(config)) {
+    return { ok: false, status: 400, error: config.timeMessage };
   }
 
-  const validationError = validateWithdrawAmount(amount);
+  const validationError = validateWithdrawAmount(amount, config);
   if (validationError) {
     return { ok: false, status: 400, error: validationError };
   }
@@ -93,8 +158,11 @@ export async function getWalletBalance(userId) {
   return getUserBalance(userId);
 }
 
-export async function createDepositRequest(userId, amountInput) {
+export async function createDepositRequest(userId, amountInput, payload = {}) {
   const amount = normalizeAmount(amountInput);
+  const referenceId = String(payload.referenceId ?? "").trim();
+  const proofUrl = String(payload.proofUrl ?? "").trim();
+  const note = String(payload.note ?? "").trim();
   if (amount <= 0) {
     return { ok: false, status: 400, error: "Amount must be greater than 0" };
   }
@@ -106,7 +174,10 @@ export async function createDepositRequest(userId, amountInput) {
     status: "INITIATED",
     amount,
     beforeBalance,
-    afterBalance: beforeBalance
+    afterBalance: beforeBalance,
+    referenceId,
+    proofUrl,
+    note
   });
 
   return { ok: true, data: entry };

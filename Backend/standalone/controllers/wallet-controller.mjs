@@ -28,7 +28,7 @@ export async function walletDepositController(request) {
   const auth = await requireAuthenticatedUser(request);
   if (auth.response) return auth.response;
   const body = await getJsonBody(request);
-  const result = await createDepositRequest(auth.user.id, body.amount);
+  const result = await createDepositRequest(auth.user.id, body.amount, body);
   if (!result.ok) return fail(result.error, result.status, request);
   return ok(result.data, request);
 }

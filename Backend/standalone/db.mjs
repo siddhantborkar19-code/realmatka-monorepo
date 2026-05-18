@@ -3310,6 +3310,76 @@ export async function updateUserApprovalStatus(userId, status) {
   return findUserById(userId);
 }
 
+export async function deleteUserAccount(userId) {
+  const user = await findUserById(userId);
+  if (!user) {
+    return null;
+  }
+  if (user.role === "admin") {
+    throw new Error("Admin account delete nahi kar sakte.");
+  }
+
+  if (isStandalonePostgresEnabled()) {
+    const pool = await getReadyPgPool();
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("UPDATE users SET referred_by_user_id = NULL WHERE referred_by_user_id = $1", [userId]);
+      await client.query("UPDATE markets SET result_locked_by_user_id = NULL WHERE result_locked_by_user_id = $1", [userId]);
+      await client.query("DELETE FROM referral_commission_refs WHERE referrer_user_id = $1 OR referred_user_id = $1", [userId]);
+      await client.query(
+        `DELETE FROM chat_messages
+         WHERE conversation_id IN (SELECT id FROM chat_conversations WHERE user_id = $1)
+            OR sender_user_id = $1`,
+        [userId]
+      );
+      await client.query("DELETE FROM chat_conversations WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM payment_orders WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM notifications WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM notification_devices WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM bank_accounts WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM bids WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM wallet_entries WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM sessions WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM otp_challenges WHERE phone = $1", [user.phone]);
+      await client.query("DELETE FROM users WHERE id = $1", [userId]);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+    return user;
+  }
+
+  const sqlite = getSqlite();
+  const deleteUser = sqlite.transaction(() => {
+    sqlite.prepare("UPDATE users SET referred_by_user_id = NULL WHERE referred_by_user_id = ?").run(userId);
+    sqlite.prepare("UPDATE markets SET result_locked_by_user_id = NULL WHERE result_locked_by_user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM referral_commission_refs WHERE referrer_user_id = ? OR referred_user_id = ?").run(userId, userId);
+    sqlite
+      .prepare(
+        `DELETE FROM chat_messages
+         WHERE conversation_id IN (SELECT id FROM chat_conversations WHERE user_id = ?)
+            OR sender_user_id = ?`
+      )
+      .run(userId, userId);
+    sqlite.prepare("DELETE FROM chat_conversations WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM payment_orders WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM notifications WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM notification_devices WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM bank_accounts WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM bids WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM wallet_entries WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
+    sqlite.prepare("DELETE FROM otp_challenges WHERE phone = ?").run(user.phone);
+    sqlite.prepare("DELETE FROM users WHERE id = ?").run(userId);
+  });
+  deleteUser();
+  return user;
+}
+
 export async function addAuditLog(entry) {
   const id = `audit_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const createdAt = nowIso();

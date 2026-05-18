@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
@@ -22,7 +22,9 @@ export default function ForgotPasswordScreen() {
   const [verifiedAccessToken, setVerifiedAccessToken] = useState("");
   const [sdkReqId, setSdkReqId] = useState("");
   const [otpMode, setOtpMode] = useState<"otp" | "widget">("otp");
+  const [otpSent, setOtpSent] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const handledTokenRef = useRef("");
   const sendingOtpRef = useRef(false);
   const normalizedPhone = phone.replace(/[^0-9]/g, "");
   const normalizedOtp = otp.replace(/[^0-9]/g, "");
@@ -30,6 +32,10 @@ export default function ForgotPasswordScreen() {
   const hasValidOtp = normalizedOtp.length === 6;
   const hasValidPassword = password.trim().length >= 8;
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
+
+  function isLikelyMsg91AccessToken(token: string) {
+    return token.split(".").length >= 3 && token.length > 32;
+  }
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -47,8 +53,20 @@ export default function ForgotPasswordScreen() {
     if (callbackPhone) {
       setPhone(callbackPhone);
     }
+    if (!token || handledTokenRef.current === token) {
+      return;
+    }
+    handledTokenRef.current = token;
+    if (!isLikelyMsg91AccessToken(token)) {
+      setError("");
+      setMessage("");
+      router.replace("/auth/forgot-password");
+      return;
+    }
     if (token) {
       setVerifiedAccessToken(token);
+      setOtpSent(true);
+      setOtp("");
       setMessage("Mobile number verified successfully. Ab naya password set karo.");
       setError("");
     }
@@ -99,6 +117,8 @@ export default function ForgotPasswordScreen() {
                   setVerifiedAccessToken("");
                   setSdkReqId("");
                   setOtpMode("otp");
+                  setOtpSent(false);
+                  setOtp("");
                   const response = await api.requestOtp(normalizedPhone, "password_reset");
                   setOtpMode(response.mode === "widget" ? "widget" : "otp");
                   if (response.mode === "widget" && response.widgetUrl) {
@@ -112,9 +132,11 @@ export default function ForgotPasswordScreen() {
                       const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
                       if (sdkResponse.accessToken) {
                         setVerifiedAccessToken(sdkResponse.accessToken);
+                        setOtpSent(true);
                         setMessage("Mobile number verified successfully. Ab naya password set karo.");
                       } else {
                         setSdkReqId(sdkResponse.reqId);
+                        setOtpSent(true);
                         setMessage("Password reset OTP SMS successfully sent.");
                       }
                       setCooldownSeconds(OTP_RESEND_SECONDS);
@@ -131,6 +153,7 @@ export default function ForgotPasswordScreen() {
                   }
                   if (response.mode !== "widget") {
                     setMessage(response.provider === "local" ? "Password reset OTP generated." : "Password reset OTP SMS successfully sent.");
+                    setOtpSent(true);
                     setCooldownSeconds(OTP_RESEND_SECONDS);
                   }
                 } catch (otpError) {
@@ -150,7 +173,7 @@ export default function ForgotPasswordScreen() {
               )}
             </Pressable>
 
-            {!verifiedAccessToken ? (
+            {!verifiedAccessToken && otpSent ? (
               <>
                 <Text style={styles.label}>OTP</Text>
                 <TextInput
@@ -170,16 +193,21 @@ export default function ForgotPasswordScreen() {
               <Text style={styles.success}>Mobile verification complete. OTP manually daalne ki zaroorat nahi hai.</Text>
             )}
 
-            <Text style={styles.label}>New Password</Text>
-            <TextInput secureTextEntry onChangeText={setPassword} style={styles.input} value={password} placeholder="Enter new password" placeholderTextColor="#94a3b8" />
-            <Text style={styles.helperText}>Minimum 8 characters or more required.</Text>
+            {verifiedAccessToken || otpSent ? (
+              <>
+                <Text style={styles.label}>New Password</Text>
+                <TextInput secureTextEntry onChangeText={setPassword} style={styles.input} value={password} placeholder="Enter new password" placeholderTextColor="#94a3b8" />
+                <Text style={styles.helperText}>Minimum 8 characters or more required.</Text>
 
-            <Text style={styles.label}>Confirm Password</Text>
-            <TextInput secureTextEntry onChangeText={setConfirmPassword} style={styles.input} value={confirmPassword} placeholder="Confirm new password" placeholderTextColor="#94a3b8" />
+                <Text style={styles.label}>Confirm Password</Text>
+                <TextInput secureTextEntry onChangeText={setConfirmPassword} style={styles.input} value={confirmPassword} placeholder="Confirm new password" placeholderTextColor="#94a3b8" />
+              </>
+            ) : null}
 
             {message ? <Text style={styles.success}>{message}</Text> : null}
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
+            {verifiedAccessToken || otpSent ? (
             <Pressable
               onPress={async () => {
                 if (!hasValidPhone) {
@@ -218,6 +246,10 @@ export default function ForgotPasswordScreen() {
                   setPassword("");
                   setConfirmPassword("");
                   setVerifiedAccessToken("");
+                  setOtpSent(false);
+                  setTimeout(() => {
+                    router.replace("/auth/login");
+                  }, 700);
                 } catch (resetError) {
                   setError(formatApiError(resetError, "Unable to reset password"));
                 } finally {
@@ -229,6 +261,7 @@ export default function ForgotPasswordScreen() {
             >
               {resettingPassword ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryText}>Reset Password</Text>}
             </Pressable>
+            ) : null}
 
             <View style={styles.linkGroup}>
               <Link href="/auth/login" style={styles.link}>

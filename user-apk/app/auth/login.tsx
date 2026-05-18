@@ -193,7 +193,7 @@ export default function LoginScreen() {
                 </Pressable>
                 <Pressable
                   onPress={() => {
-                    void openWebAuth("/auth/forgot-password");
+                    router.push("/auth/forgot-password");
                   }}
                 >
                   <Text style={styles.link}>Forgot password</Text>

@@ -22,7 +22,7 @@ import { getMarketDayKey } from "../services/admin-settlement-helpers.mjs";
 
 const MIN_BID_POINTS = 5;
 const MAX_BID_POINTS = 99999;
-const DUPLICATE_BID_WINDOW_SECONDS = 5;
+const DUPLICATE_BID_WINDOW_SECONDS = 60;
 const emptySangam = { valid: false, value: "", message: "" };
 const sessionlessBoards = new Set([
   "Jodi Digit",
@@ -95,28 +95,30 @@ export async function place(request) {
       await client.query("BEGIN");
       await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [user.id]);
 
-      const duplicateRows =
-        requestId
-          ? await findProcessedBidBatchByRequestIdPostgres(client, {
-              userId: user.id,
-              market,
-              marketDay,
-              boardLabel,
-              sessionType,
-              requestId,
-              normalizedItems
-            })
-          : await findRecentDuplicateBidBatchPostgres(client, {
-              userId: user.id,
-              market,
-              marketDay,
-              boardLabel,
-              sessionType,
-              normalizedItems
-            });
-      if (duplicateRows.length > 0) {
+      const duplicateRows = requestId
+        ? await findProcessedBidBatchByRequestIdPostgres(client, {
+            userId: user.id,
+            market,
+            marketDay,
+            boardLabel,
+            sessionType,
+            requestId,
+            normalizedItems
+          })
+        : [];
+      const recentDuplicateRows = duplicateRows.length
+        ? duplicateRows
+        : await findRecentDuplicateBidBatchPostgres(client, {
+            userId: user.id,
+            market,
+            marketDay,
+            boardLabel,
+            sessionType,
+            normalizedItems
+          });
+      if (recentDuplicateRows.length > 0) {
         await client.query("COMMIT");
-        return ok(duplicateRows, request);
+        return ok(recentDuplicateRows, request);
       }
 
       const beforeBalance = await getAccurateUserBalancePostgres(client, user.id);
@@ -184,6 +186,9 @@ export async function place(request) {
           requestId,
           normalizedItems
         })
+      : [];
+    const recentDuplicateRows = duplicateRows.length
+      ? duplicateRows
       : findRecentDuplicateBidBatchSqlite(sqlite, {
           userId: user.id,
           market,
@@ -192,9 +197,9 @@ export async function place(request) {
           sessionType,
           normalizedItems
         });
-    if (duplicateRows.length > 0) {
+    if (recentDuplicateRows.length > 0) {
       sqlite.exec("COMMIT");
-      return ok(duplicateRows, request);
+      return ok(recentDuplicateRows, request);
     }
 
     const beforeBalance = await getUserBalance(user.id);
@@ -282,6 +287,22 @@ function isDuplicateBatch(items, rows) {
   return true;
 }
 
+function findDuplicateBatchRows(items, rows) {
+  const batchSize = items.length;
+  if (!batchSize || rows.length < batchSize) {
+    return [];
+  }
+
+  for (let index = 0; index <= rows.length - batchSize; index += 1) {
+    const candidate = rows.slice(index, index + batchSize);
+    if (isDuplicateBatch(items, candidate)) {
+      return candidate;
+    }
+  }
+
+  return [];
+}
+
 async function findRecentDuplicateBidBatchPostgres(
   client,
   { userId, market, marketDay, boardLabel, sessionType, normalizedItems }
@@ -298,10 +319,11 @@ async function findRecentDuplicateBidBatchPostgres(
      ORDER BY created_at ASC, id ASC`,
     [userId, market, marketDay, boardLabel, sessionType, String(DUPLICATE_BID_WINDOW_SECONDS)]
   );
-  if (!isDuplicateBatch(normalizedItems, result.rows)) {
+  const duplicateRows = findDuplicateBatchRows(normalizedItems, result.rows);
+  if (!duplicateRows.length) {
     return [];
   }
-  return result.rows.map((row) => __internalMapBidRow(row));
+  return duplicateRows.map((row) => __internalMapBidRow(row));
 }
 
 async function findProcessedBidBatchByRequestIdPostgres(
@@ -336,10 +358,11 @@ async function findProcessedBidBatchByRequestIdPostgres(
      ORDER BY created_at ASC, id ASC`,
     [userId, market, marketDay, boardLabel, sessionType, createdAt]
   );
-  if (!isDuplicateBatch(normalizedItems, bidsResult.rows)) {
+  const duplicateRows = findDuplicateBatchRows(normalizedItems, bidsResult.rows);
+  if (!duplicateRows.length) {
     return [];
   }
-  return bidsResult.rows.map((row) => __internalMapBidRow(row));
+  return duplicateRows.map((row) => __internalMapBidRow(row));
 }
 
 function findRecentDuplicateBidBatchSqlite(
@@ -360,10 +383,11 @@ function findRecentDuplicateBidBatchSqlite(
        ORDER BY created_at ASC, id ASC`
     )
     .all(userId, market, marketDay, boardLabel, sessionType, windowStart);
-  if (!isDuplicateBatch(normalizedItems, rows)) {
+  const duplicateRows = findDuplicateBatchRows(normalizedItems, rows);
+  if (!duplicateRows.length) {
     return [];
   }
-  return rows.map((row) => __internalMapBidRow(row));
+  return duplicateRows.map((row) => __internalMapBidRow(row));
 }
 
 function findProcessedBidBatchByRequestIdSqlite(
@@ -402,17 +426,18 @@ function findProcessedBidBatchByRequestIdSqlite(
        ORDER BY created_at ASC, id ASC`
     )
     .all(userId, market, marketDay, boardLabel, sessionType, windowStart, windowEnd);
-  if (!isDuplicateBatch(normalizedItems, rows)) {
+  const duplicateRows = findDuplicateBatchRows(normalizedItems, rows);
+  if (!duplicateRows.length) {
     return [];
   }
-  return rows.map((row) => __internalMapBidRow(row));
+  return duplicateRows.map((row) => __internalMapBidRow(row));
 }
 
 async function getAccurateUserBalancePostgres(client, userId) {
   const result = await client.query(
     `SELECT COALESCE(SUM(
       CASE
-        WHEN status = 'SUCCESS' AND type IN ('DEPOSIT','BID_WIN','ADMIN_CREDIT','REFERRAL_COMMISSION','SIGNUP_BONUS','FIRST_DEPOSIT_BONUS') THEN amount
+        WHEN status = 'SUCCESS' AND type IN ('DEPOSIT','BID_WIN','ADMIN_CREDIT','REFERRAL_COMMISSION','SIGNUP_BONUS','FIRST_DEPOSIT_BONUS','SPECIAL_DEPOSIT_BONUS') THEN amount
         WHEN ((status = 'SUCCESS' AND type IN ('WITHDRAW','BID_PLACED','ADMIN_DEBIT','BID_WIN_REVERSAL'))
            OR (status = 'BACKOFFICE' AND type = 'WITHDRAW')) THEN -amount
         ELSE 0

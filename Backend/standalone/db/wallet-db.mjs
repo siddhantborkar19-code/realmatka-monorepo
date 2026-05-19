@@ -14,6 +14,7 @@ const CREDIT_WALLET_ENTRY_TYPES = [
   "BID_WIN",
   "SIGNUP_BONUS",
   "FIRST_DEPOSIT_BONUS",
+  "SPECIAL_DEPOSIT_BONUS",
   "ADMIN_CREDIT"
 ];
 const DEBIT_WALLET_ENTRY_TYPES = ["WITHDRAW", "BID_PLACED", "BID_WIN_REVERSAL", "ADMIN_DEBIT"];
@@ -683,8 +684,13 @@ export async function resolveWalletApprovalRequest(entryId, action) {
       beforeBalance,
       afterBalance: beforeBalance + request.amount
     });
-    const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible } = await import("../db.mjs");
+    const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible, applySpecialDepositBonusIfEligible } = await import("../db.mjs");
     const bonusEntry = await applyFirstDepositBonusIfEligible({
+      userId: request.userId,
+      depositAmount: request.amount,
+      depositEntryId: entryId
+    });
+    await applySpecialDepositBonusIfEligible({
       userId: request.userId,
       depositAmount: request.amount,
       depositEntryId: entryId
@@ -746,8 +752,13 @@ export async function completeWalletRequest(entryId) {
   });
 
   if (request.type === "DEPOSIT") {
-    const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible } = await import("../db.mjs");
+    const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible, applySpecialDepositBonusIfEligible } = await import("../db.mjs");
     await applyFirstDepositBonusIfEligible({
+      userId: request.userId,
+      depositAmount: request.amount,
+      depositEntryId: entryId
+    });
+    await applySpecialDepositBonusIfEligible({
       userId: request.userId,
       depositAmount: request.amount,
       depositEntryId: entryId

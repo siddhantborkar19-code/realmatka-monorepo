@@ -4,6 +4,7 @@ import { clearAdminSession, getAdminSessionExpiry, getAdminToken } from "../lib/
 import { LoginScreen } from "./LoginScreen.jsx";
 import { AdminShell } from "./AdminShell.jsx";
 import { AuditPage } from "./AuditPage.jsx";
+import { BonusPage } from "./BonusPage.jsx";
 import { NotificationsPage } from "./NotificationsPage.jsx";
 import { AdminMarketPublishList, AllChartPage, ChartEditorPreviewSection, ResultEnginePage, ResultPublishSettlementSection, buildNextResultFromSlotChange, getAdminCurrentMinutes, getBracketMarkEditorValues, getClearedEditorValues, getEditorValuesFromSelectedCell, getResultSlotNavigationTarget, publishMarketResult, saveMarketChart, sortAdminMarketsByTime } from "./ResultEnginePage.jsx";
 import { SettingsPage } from "./SettingsPage.jsx";
@@ -54,6 +55,7 @@ const navItems = [
   { key: "charts", label: "All Chart" },
   { key: "reports", label: "Reports" },
   { key: "notifications", label: "Notifications" },
+  { key: "bonus", label: "Bonus" },
   { key: "settings", label: "Settings" },
   { key: "audit", label: "Audit Logs" }
 ];
@@ -91,6 +93,7 @@ const routeMeta = {
   reports: { eyebrow: "Reports", title: "Revenue Reports", subtitle: "Track collection, payout, and user-level exposure across time ranges." },
   bids: { eyebrow: "Betting", title: "All Bets", subtitle: "" },
   notifications: { eyebrow: "Messaging", title: "Notification Center", subtitle: "Broadcast platform updates and target users from one operator screen." },
+  bonus: { eyebrow: "Promotions", title: "Bonus System", subtitle: "Control deposit, referral, and limited-time bonus rules from one place." },
   settings: { eyebrow: "Configuration", title: "Platform Settings", subtitle: "Control notices, support info, and promotional text from one panel." },
   audit: { eyebrow: "Compliance", title: "Audit Trail", subtitle: "Review sensitive actions, exports, and recovery operations with confidence." }
 };
@@ -300,6 +303,18 @@ export function App() {
               fetchApi={fetchApi}
               formatDate={formatDate}
               key={`notifications-${refreshKey}`}
+              PageHeader={PageHeader}
+              PageState={PageState}
+              token={token}
+            />
+          );
+        }
+        if (route === "bonus") {
+          return (
+            <BonusPage
+              apiBase={apiBase}
+              fetchApi={fetchApi}
+              key={`bonus-${refreshKey}`}
               PageHeader={PageHeader}
               PageState={PageState}
               token={token}
@@ -2610,7 +2625,7 @@ function buildFilteredWalletSummary(entries) {
     (summary, entry) => {
       const type = String(entry?.type || "").toUpperCase();
       const amount = Number(entry?.amount || 0);
-      if (["DEPOSIT", "REFERRAL_COMMISSION", "BID_WIN", "SIGNUP_BONUS", "FIRST_DEPOSIT_BONUS", "ADMIN_CREDIT"].includes(type)) {
+      if (["DEPOSIT", "REFERRAL_COMMISSION", "BID_WIN", "SIGNUP_BONUS", "FIRST_DEPOSIT_BONUS", "SPECIAL_DEPOSIT_BONUS", "ADMIN_CREDIT"].includes(type)) {
         summary.credits += amount;
       }
       if (["WITHDRAW", "BID_PLACED", "BID_WIN_REVERSAL", "ADMIN_DEBIT"].includes(type)) {
@@ -2649,7 +2664,7 @@ function getWalletEntryTone(entry) {
   const type = String(entry?.type || "").toUpperCase();
   const status = String(entry?.status || "").toUpperCase();
   if (status === "REJECTED" || status === "FAILED") return "high";
-  if (type === "DEPOSIT" || type === "BID_WIN" || type === "ADMIN_CREDIT" || type === "SIGNUP_BONUS" || type === "FIRST_DEPOSIT_BONUS" || type === "REFERRAL_COMMISSION") {
+  if (type === "DEPOSIT" || type === "BID_WIN" || type === "ADMIN_CREDIT" || type === "SIGNUP_BONUS" || type === "FIRST_DEPOSIT_BONUS" || type === "SPECIAL_DEPOSIT_BONUS" || type === "REFERRAL_COMMISSION") {
     return "low";
   }
   if (type === "WITHDRAW" || type === "BID_PLACED" || type === "ADMIN_DEBIT") {

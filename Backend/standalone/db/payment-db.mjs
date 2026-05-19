@@ -4,7 +4,7 @@ import {
   __internalNowIso
 } from "../db.mjs";
 
-const CREDIT_WALLET_ENTRY_TYPES_SQL = "'DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'ADMIN_CREDIT'";
+const CREDIT_WALLET_ENTRY_TYPES_SQL = "'DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'SPECIAL_DEPOSIT_BONUS', 'ADMIN_CREDIT'";
 const DEBIT_WALLET_ENTRY_TYPES_SQL = "'WITHDRAW', 'BID_PLACED', 'BID_WIN_REVERSAL', 'ADMIN_DEBIT'";
 
 function getWalletBalanceDeltaSql(columnPrefix = "") {
@@ -354,8 +354,9 @@ export async function completePaymentOrder({ paymentOrderId, gatewayOrderId, gat
     }
 
     if (bonusPayload) {
-      const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible } = await import("../db.mjs");
+      const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible, applySpecialDepositBonusIfEligible } = await import("../db.mjs");
       await applyFirstDepositBonusIfEligible(bonusPayload);
+      await applySpecialDepositBonusIfEligible(bonusPayload);
       await applyReferralDepositBonusIfEligible(bonusPayload);
     }
 
@@ -441,8 +442,9 @@ export async function completePaymentOrder({ paymentOrderId, gatewayOrderId, gat
   }
 
   if (bonusPayload) {
-    const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible } = await import("../db.mjs");
+    const { applyFirstDepositBonusIfEligible, applyReferralDepositBonusIfEligible, applySpecialDepositBonusIfEligible } = await import("../db.mjs");
     await applyFirstDepositBonusIfEligible(bonusPayload);
+    await applySpecialDepositBonusIfEligible(bonusPayload);
     await applyReferralDepositBonusIfEligible(bonusPayload);
   }
 

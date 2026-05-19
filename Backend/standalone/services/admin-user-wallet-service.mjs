@@ -45,6 +45,7 @@ function buildUserLedgerSummary(walletEntries, bids, walletBalance) {
     adminDebits: 0,
     signupBonus: 0,
     firstDepositBonus: 0,
+    specialDepositBonus: 0,
     referralIncome: 0
   };
 
@@ -59,6 +60,7 @@ function buildUserLedgerSummary(walletEntries, bids, walletBalance) {
     if (type === "ADMIN_DEBIT" && entry.status === "SUCCESS") totals.adminDebits += amount;
     if (type === "SIGNUP_BONUS" && entry.status === "SUCCESS") totals.signupBonus += amount;
     if (type === "FIRST_DEPOSIT_BONUS" && entry.status === "SUCCESS") totals.firstDepositBonus += amount;
+    if (type === "SPECIAL_DEPOSIT_BONUS" && entry.status === "SUCCESS") totals.specialDepositBonus += amount;
     if (type === "REFERRAL_COMMISSION" && entry.status === "SUCCESS") totals.referralIncome += amount;
   }
 
@@ -72,6 +74,7 @@ function buildUserLedgerSummary(walletEntries, bids, walletBalance) {
     adminDebits: roundAmount(totals.adminDebits),
     signupBonus: roundAmount(totals.signupBonus),
     firstDepositBonus: roundAmount(totals.firstDepositBonus),
+    specialDepositBonus: roundAmount(totals.specialDepositBonus),
     referralIncome: roundAmount(totals.referralIncome),
     totalBids: bids.length,
     wonBids: bids.filter((bid) => bid.status === "Won").length,

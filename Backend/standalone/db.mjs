@@ -29,6 +29,10 @@ const firstDepositBonusMinimum = 1000;
 const firstDepositBonusUpperTierMinimum = 2000;
 const firstDepositBonusBaseAmount = 50;
 const firstDepositBonusUpperTierAmount = 100;
+const specialDepositBonusMinimum = 5000;
+const specialDepositBonusUpperTierMinimum = 10000;
+const specialDepositBonusBaseAmount = 500;
+const specialDepositBonusUpperTierAmount = 1000;
 const defaultNoticeText =
   "Abhi market aur betting running hai. Aap app me bet place kar sakte ho. First deposit bonus: Rs 1000 par 50 points aur Rs 2000 par 100 points milenge. Bonus sirf first deposit par milega.";
 const supportChatResolvedRetentionMs = Math.max(1, standaloneConfig.supportChatResolvedRetentionDays) * 24 * 60 * 60 * 1000;
@@ -179,6 +183,33 @@ const referralCommissionThreshold = Math.max(0.01, Number(process.env.REFERRAL_C
 const referralDepositBonusRate = Math.max(0, Number(process.env.REFERRAL_DEPOSIT_BONUS_RATE || "2"));
 const referralDepositBonusMaxTimesPerUser = Math.max(0, Math.floor(Number(process.env.REFERRAL_DEPOSIT_BONUS_MAX_TIMES_PER_USER || "5")));
 const referralDepositBonusMaxPerDeposit = Math.max(0, Number(process.env.REFERRAL_DEPOSIT_BONUS_MAX_PER_DEPOSIT || "100"));
+
+function settingValue(settings, key, fallback) {
+  const item = settings.find((entry) => entry.key === key);
+  const value = String(item?.value ?? "").trim();
+  return value ? value : fallback;
+}
+
+function settingBool(settings, key, fallback) {
+  const value = String(settingValue(settings, key, fallback ? "true" : "false")).trim().toLowerCase();
+  return ["1", "true", "yes", "on", "enabled"].includes(value);
+}
+
+function settingNumber(settings, key, fallback) {
+  const value = Number(settingValue(settings, key, String(fallback)));
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function getIndiaDateString(date = new Date()) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+  const parts = Object.fromEntries(formatter.formatToParts(date).map((part) => [part.type, part.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
 
 function toIso(value) {
   if (!value) {
@@ -1729,7 +1760,7 @@ export async function getUserAdminSummaries() {
         SELECT COALESCE(
           SUM(
             CASE
-              WHEN status = 'SUCCESS' AND type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(amount, 0)
+              WHEN status = 'SUCCESS' AND type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'SPECIAL_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(amount, 0)
         WHEN ((status = 'SUCCESS' AND type IN ('WITHDRAW', 'BID_PLACED', 'BID_WIN_REVERSAL', 'ADMIN_DEBIT'))
            OR (status = 'BACKOFFICE' AND type = 'WITHDRAW')) THEN -COALESCE(amount, 0)
               ELSE 0
@@ -1811,7 +1842,7 @@ export async function getUserAdminSummaries() {
          COALESCE((
            SELECT SUM(
              CASE
-               WHEN we.status = 'SUCCESS' AND we.type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(we.amount, 0)
+               WHEN we.status = 'SUCCESS' AND we.type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'SPECIAL_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(we.amount, 0)
         WHEN ((we.status = 'SUCCESS' AND we.type IN ('WITHDRAW', 'BID_PLACED', 'BID_WIN_REVERSAL', 'ADMIN_DEBIT'))
            OR (we.status = 'BACKOFFICE' AND we.type = 'WITHDRAW')) THEN -COALESCE(we.amount, 0)
                ELSE 0
@@ -1894,7 +1925,7 @@ function getWalletEntryBalanceDelta(entry) {
 
   const amount = Number(entry.amount ?? 0);
   const type = String(entry.type || "").toUpperCase();
-  const creditTypes = new Set(["DEPOSIT", "REFERRAL_COMMISSION", "BID_WIN", "SIGNUP_BONUS", "FIRST_DEPOSIT_BONUS", "ADMIN_CREDIT"]);
+  const creditTypes = new Set(["DEPOSIT", "REFERRAL_COMMISSION", "BID_WIN", "SIGNUP_BONUS", "FIRST_DEPOSIT_BONUS", "SPECIAL_DEPOSIT_BONUS", "ADMIN_CREDIT"]);
   const debitTypes = new Set(["WITHDRAW", "BID_PLACED", "BID_WIN_REVERSAL", "ADMIN_DEBIT"]);
 
   if (creditTypes.has(type)) return amount;
@@ -2512,7 +2543,15 @@ export async function applyReferralDepositBonusIfEligible({ userId, depositAmoun
   const normalizedUserId = String(userId || "").trim();
   const normalizedDepositEntryId = String(depositEntryId || "").trim();
   const normalizedAmount = roundMoney(Number(depositAmount || 0));
-  if (!normalizedUserId || !normalizedDepositEntryId || normalizedAmount <= 0 || referralDepositBonusRate <= 0 || referralDepositBonusMaxTimesPerUser <= 0) {
+  if (!normalizedUserId || !normalizedDepositEntryId || normalizedAmount <= 0) {
+    return null;
+  }
+
+  const settings = await getAppSettings();
+  const depositBonusRate = Math.max(0, settingNumber(settings, "referral_deposit_bonus_rate", referralDepositBonusRate));
+  const maxTimesPerUser = Math.max(0, Math.floor(settingNumber(settings, "referral_deposit_bonus_max_times", referralDepositBonusMaxTimesPerUser)));
+  const maxPerDeposit = Math.max(0, settingNumber(settings, "referral_deposit_bonus_max_per_deposit", referralDepositBonusMaxPerDeposit));
+  if (depositBonusRate <= 0 || maxTimesPerUser <= 0) {
     return null;
   }
 
@@ -2526,7 +2565,7 @@ export async function applyReferralDepositBonusIfEligible({ userId, depositAmoun
     return null;
   }
 
-  const bonusAmount = roundMoney(Math.min(normalizedAmount * (referralDepositBonusRate / 100), referralDepositBonusMaxPerDeposit));
+  const bonusAmount = roundMoney(Math.min(normalizedAmount * (depositBonusRate / 100), maxPerDeposit));
   if (bonusAmount <= 0) {
     return null;
   }
@@ -2559,12 +2598,12 @@ export async function applyReferralDepositBonusIfEligible({ userId, depositAmoun
           [referrer.id, player.id]
         );
         const awardedCount = Math.max(0, Number(countResult.rows[0]?.count ?? 0) || 0);
-        if (awardedCount < referralDepositBonusMaxTimesPerUser) {
+        if (awardedCount < maxTimesPerUser) {
           const sequence = awardedCount + 1;
           const balanceResult = await client.query(
             `SELECT COALESCE(SUM(
               CASE
-                WHEN status = 'SUCCESS' AND type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(amount, 0)
+                WHEN status = 'SUCCESS' AND type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'SPECIAL_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(amount, 0)
                 WHEN ((status = 'SUCCESS' AND type IN ('WITHDRAW', 'BID_PLACED', 'BID_WIN_REVERSAL', 'ADMIN_DEBIT'))
                    OR (status = 'BACKOFFICE' AND type = 'WITHDRAW')) THEN -COALESCE(amount, 0)
                 ELSE 0
@@ -2592,7 +2631,7 @@ export async function applyReferralDepositBonusIfEligible({ userId, depositAmoun
               beforeBalance,
               afterBalance,
               referenceId,
-              `${noteBase} | ${sequence}/${referralDepositBonusMaxTimesPerUser}`,
+              `${noteBase} | ${sequence}/${maxTimesPerUser}`,
               nowIso()
             ]
           );
@@ -2644,13 +2683,13 @@ export async function applyReferralDepositBonusIfEligible({ userId, depositAmoun
         )
         .get(referrer.id, player.id);
       const awardedCount = Math.max(0, Number(countRow?.count ?? 0) || 0);
-      if (awardedCount < referralDepositBonusMaxTimesPerUser) {
+      if (awardedCount < maxTimesPerUser) {
         const sequence = awardedCount + 1;
         const balanceRow = sqlite
           .prepare(
             `SELECT COALESCE(SUM(
               CASE
-                WHEN status = 'SUCCESS' AND type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(amount, 0)
+                WHEN status = 'SUCCESS' AND type IN ('DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'SPECIAL_DEPOSIT_BONUS', 'ADMIN_CREDIT') THEN COALESCE(amount, 0)
                 WHEN ((status = 'SUCCESS' AND type IN ('WITHDRAW', 'BID_PLACED', 'BID_WIN_REVERSAL', 'ADMIN_DEBIT'))
                    OR (status = 'BACKOFFICE' AND type = 'WITHDRAW')) THEN -COALESCE(amount, 0)
                 ELSE 0
@@ -2681,7 +2720,7 @@ export async function applyReferralDepositBonusIfEligible({ userId, depositAmoun
             beforeBalance,
             afterBalance,
             referenceId,
-            `${noteBase} | ${sequence}/${referralDepositBonusMaxTimesPerUser}`,
+            `${noteBase} | ${sequence}/${maxTimesPerUser}`,
             nowIso()
           );
         created = true;
@@ -2719,11 +2758,20 @@ export async function applyFirstDepositBonusIfEligible({ userId, depositAmount, 
     return null;
   }
 
+  const settings = await getAppSettings();
+  if (!settingBool(settings, "first_deposit_bonus_enabled", true)) {
+    return null;
+  }
+  const minimum = Math.max(0, settingNumber(settings, "first_deposit_bonus_minimum", firstDepositBonusMinimum));
+  const baseAmount = Math.max(0, settingNumber(settings, "first_deposit_bonus_amount", firstDepositBonusBaseAmount));
+  const upperMinimum = Math.max(minimum, settingNumber(settings, "first_deposit_bonus_upper_minimum", firstDepositBonusUpperTierMinimum));
+  const upperAmount = Math.max(0, settingNumber(settings, "first_deposit_bonus_upper_amount", firstDepositBonusUpperTierAmount));
+  const isUpperSlab = normalizedAmount >= upperMinimum;
   const bonusAmount =
-    normalizedAmount >= firstDepositBonusUpperTierMinimum
-      ? firstDepositBonusUpperTierAmount
-      : normalizedAmount >= firstDepositBonusMinimum
-        ? firstDepositBonusBaseAmount
+    isUpperSlab
+      ? upperAmount
+      : normalizedAmount >= minimum
+        ? baseAmount
         : 0;
   if (bonusAmount <= 0) {
     return null;
@@ -2745,9 +2793,9 @@ export async function applyFirstDepositBonusIfEligible({ userId, depositAmount, 
     afterBalance: beforeBalance + bonusAmount,
     referenceId,
     note:
-      bonusAmount >= firstDepositBonusUpperTierAmount
-        ? `First deposit bonus slab | Rs ${firstDepositBonusUpperTierMinimum}+ -> Rs ${firstDepositBonusUpperTierAmount}`
-        : `First deposit bonus slab | Rs ${firstDepositBonusMinimum}+ -> Rs ${firstDepositBonusBaseAmount}`
+      isUpperSlab
+        ? `First deposit bonus slab | Rs ${upperMinimum}+ -> Rs ${upperAmount}`
+        : `First deposit bonus slab | Rs ${minimum}+ -> Rs ${baseAmount}`
   });
 
   if (isStandalonePostgresEnabled()) {
@@ -2756,6 +2804,70 @@ export async function applyFirstDepositBonusIfEligible({ userId, depositAmount, 
   } else {
     getSqlite().prepare(`UPDATE users SET first_deposit_bonus_granted = 1 WHERE id = ?`).run(normalizedUserId);
   }
+
+  return entry;
+}
+
+export async function applySpecialDepositBonusIfEligible({ userId, depositAmount, depositEntryId }) {
+  const normalizedUserId = String(userId || "").trim();
+  const normalizedDepositEntryId = String(depositEntryId || "").trim();
+  const normalizedAmount = roundMoney(Number(depositAmount || 0));
+  if (!normalizedUserId || !normalizedDepositEntryId || normalizedAmount <= 0) {
+    return null;
+  }
+
+  const settings = await getAppSettings();
+  if (!settingBool(settings, "special_deposit_bonus_enabled", false)) {
+    return null;
+  }
+
+  const bonusDate = settingValue(settings, "special_deposit_bonus_date", "").trim();
+  if (bonusDate && bonusDate !== getIndiaDateString()) {
+    return null;
+  }
+
+  const minimum = Math.max(0, settingNumber(settings, "special_deposit_bonus_minimum", specialDepositBonusMinimum));
+  const baseAmount = Math.max(0, settingNumber(settings, "special_deposit_bonus_amount", specialDepositBonusBaseAmount));
+  const upperMinimum = Math.max(minimum, settingNumber(settings, "special_deposit_bonus_upper_minimum", specialDepositBonusUpperTierMinimum));
+  const upperAmount = Math.max(0, settingNumber(settings, "special_deposit_bonus_upper_amount", specialDepositBonusUpperTierAmount));
+  const isUpperSlab = normalizedAmount >= upperMinimum;
+  const bonusAmount =
+    isUpperSlab
+      ? upperAmount
+      : normalizedAmount >= minimum
+        ? baseAmount
+        : 0;
+  if (bonusAmount <= 0) {
+    return null;
+  }
+
+  const referenceId = `special-deposit-bonus:${normalizedDepositEntryId}`;
+  const existingEntry = await findWalletEntryByReferenceId(normalizedUserId, referenceId);
+  if (existingEntry) {
+    return existingEntry;
+  }
+
+  const beforeBalance = await getUserBalance(normalizedUserId);
+  const entry = await addWalletEntry({
+    userId: normalizedUserId,
+    type: "SPECIAL_DEPOSIT_BONUS",
+    status: "SUCCESS",
+    amount: bonusAmount,
+    beforeBalance,
+    afterBalance: beforeBalance + bonusAmount,
+    referenceId,
+    note:
+      isUpperSlab
+        ? `Today limited deposit bonus | Rs ${upperMinimum}+ -> Rs ${upperAmount}`
+        : `Today limited deposit bonus | Rs ${minimum}+ -> Rs ${baseAmount}`
+  });
+
+  await createNotification({
+    userId: normalizedUserId,
+    title: "Special deposit bonus credited",
+    body: `Rs ${bonusAmount.toFixed(2)} special deposit bonus credit hua.`,
+    channel: "wallet"
+  });
 
   return entry;
 }

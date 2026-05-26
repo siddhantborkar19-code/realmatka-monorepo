@@ -120,6 +120,11 @@ body {
   line-height: 1.9rem;
 }
 
+.market-result-pending {
+  font-size: 1.18rem;
+  line-height: 1.55rem;
+}
+
 .section-shell article,
 .section-shell [class*="bg-white"] {
   border-color: #e2e8f0 !important;
@@ -269,6 +274,11 @@ main .text-rose-300 {
   .market-result-text {
     font-size: 1.38rem;
     line-height: 1.75rem;
+  }
+
+  .market-result-pending {
+    font-size: 1.08rem;
+    line-height: 1.42rem;
   }
 
   .market-card-layout {

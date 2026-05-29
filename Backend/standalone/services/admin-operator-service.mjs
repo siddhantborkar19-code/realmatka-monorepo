@@ -1,7 +1,7 @@
 import { normalizeIndianPhone } from "../http.mjs";
 import { listOperatorAdminAccounts, upsertOperatorAdminAccount } from "../stores/auth-store.mjs";
 
-const OPERATOR_ROLES = new Set(["operator", "result_operator", "result_only_operator", "support_operator"]);
+const OPERATOR_ROLES = new Set(["operator", "result_operator", "result_only_operator", "support_operator", "cricket_operator"]);
 
 export async function getOperatorAccounts() {
   return listOperatorAdminAccounts();

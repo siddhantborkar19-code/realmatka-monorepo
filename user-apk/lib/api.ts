@@ -94,7 +94,7 @@ export type CricketMatch = {
   matchWinner: string | null;
   tossSettledAt: string | null;
   matchSettledAt: string | null;
-  markets?: Record<string, { label: string; rate: number; open: boolean; closeAt: string | null; winner: string | null }>;
+  markets?: Record<string, { label: string; rates: Record<string, number>; open: boolean; closeAt: string | null; winner: string | null }>;
   createdAt: string;
 };
 
@@ -115,7 +115,7 @@ export type CricketBet = {
 };
 
 export type CricketMatchesPayload = {
-  rates: Record<string, number>;
+  rates: Record<string, Record<string, number>>;
   matches: CricketMatch[];
 };
 

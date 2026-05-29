@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Image, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { AppHeader, AppScreen, SurfaceCard } from "@/components/ui";
 import { marketCatalog } from "../../data/mock";
-import { api, formatApiError, type CricketMatchesPayload } from "@/lib/api";
+import { api, formatApiError, type CricketMatch, type CricketMatchesPayload } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import {
   getCachedChart,
@@ -155,7 +155,7 @@ export default function HomeScreen() {
       <View style={styles.stickyModeWrap}>
         <View style={styles.modeSwitch}>
           <Pressable onPress={() => setHomeMode("matka")} style={[styles.modeButton, homeMode === "matka" && styles.modeButtonActive]}>
-            <Ionicons color={homeMode === "matka" ? colors.surface : colors.textSecondary} name="apps-outline" size={17} />
+            <Ionicons color={homeMode === "matka" ? colors.primary : colors.textSecondary} name="apps-outline" size={17} />
             <Text style={[styles.modeButtonText, homeMode === "matka" && styles.modeButtonTextActive]}>Matka</Text>
           </Pressable>
           <Pressable
@@ -165,7 +165,7 @@ export default function HomeScreen() {
             }}
             style={[styles.modeButton, homeMode === "cricket" && styles.modeButtonActive]}
           >
-            <Ionicons color={homeMode === "cricket" ? colors.surface : colors.textSecondary} name="baseball-outline" size={17} />
+            <Ionicons color={homeMode === "cricket" ? colors.primary : colors.textSecondary} name="baseball-outline" size={17} />
             <Text style={[styles.modeButtonText, homeMode === "cricket" && styles.modeButtonTextActive]}>Play Cricket</Text>
           </Pressable>
         </View>
@@ -177,19 +177,20 @@ export default function HomeScreen() {
         showPromo={false}
       >
         <View style={styles.contentWrap}>
-        <View style={styles.heroBannerCard}>
-          <Image
-            resizeMode="stretch"
-            source={require("../../assets/images/realmatkabanner.jpg")}
-            style={styles.heroBannerImage}
-          />
-        </View>
+        {homeMode === "matka" ? (
+          <View style={styles.heroBannerCard}>
+            <Image
+              resizeMode="stretch"
+              source={require("../../assets/images/realmatkabanner.jpg")}
+              style={styles.heroBannerImage}
+            />
+          </View>
+        ) : null}
         {homeMode === "cricket" ? (
           <CricketHomeSection
             data={cricketData}
             error={cricketError}
             loading={cricketLoading}
-            onRefresh={() => loadCricket(true)}
           />
         ) : loading && !listedMarkets.length ? (
           <SurfaceCard>
@@ -452,28 +453,20 @@ export default function HomeScreen() {
 function CricketHomeSection({
   data,
   error,
-  loading,
-  onRefresh
+  loading
 }: {
   data: CricketMatchesPayload;
   error: string;
   loading: boolean;
-  onRefresh: () => void;
 }) {
+  const [, setClockTick] = useState(0);
   const matches = data.matches || [];
+  useEffect(() => {
+    const timer = setInterval(() => setClockTick((tick) => tick + 1), 30_000);
+    return () => clearInterval(timer);
+  }, []);
   return (
     <View style={styles.cricketWrap}>
-      <View style={styles.cricketHero}>
-        <View style={styles.cricketHeroText}>
-          <Text style={styles.cricketEyebrow}>Live Cricket Games</Text>
-          <Text style={styles.cricketTitle}>Toss aur match winner</Text>
-          <Text style={styles.cricketSubtitle}>Team winner par simple 1.8x cricket bet.</Text>
-        </View>
-        <Pressable onPress={onRefresh} style={styles.cricketRefresh}>
-          <Ionicons color={colors.surface} name="refresh" size={18} />
-        </Pressable>
-      </View>
-
       {error ? <Text style={styles.cricketError}>{error}</Text> : null}
 
       {loading && !matches.length ? (
@@ -500,7 +493,7 @@ function CricketHomeSection({
               <View style={styles.cricketPosterText}>
                 <Text style={styles.cricketPosterTitle}>{match.teamA} vs {match.teamB}</Text>
                 <Text style={styles.cricketPosterSubtitle}>{match.title}</Text>
-                <Text style={styles.cricketPosterMeta}>{formatCricketStart(match.startAt)}</Text>
+                <Text style={styles.cricketPosterMeta}>{formatCricketCountdown(match)}</Text>
               </View>
             </View>
             <View style={[styles.cricketStatusPill, match.matchBettingOpen || match.tossBettingOpen ? styles.cricketStatusLive : styles.cricketStatusClosed]}>
@@ -523,6 +516,20 @@ function formatCricketStart(value: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Winner markets";
   return date.toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function formatCricketCountdown(match: CricketMatch) {
+  const closeAt = match.markets?.match_winner?.closeAt || match.matchCloseAt || match.startAt;
+  if (!closeAt) return "Betting time not set";
+  const closeTime = new Date(closeAt).getTime();
+  if (Number.isNaN(closeTime)) return formatCricketStart(match.startAt);
+  const remaining = closeTime - Date.now();
+  if (remaining <= 0) return "Betting closed";
+  const totalSeconds = Math.floor(remaining / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `Betting closes in ${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 const styles = StyleSheet.create({
@@ -581,7 +588,7 @@ const styles = StyleSheet.create({
   stickyModeWrap: {
     backgroundColor: colors.surface,
     paddingHorizontal: 0,
-    paddingTop: 0,
+    paddingTop: 8,
     paddingBottom: 0,
     borderBottomWidth: 1,
     borderColor: colors.border
@@ -606,7 +613,9 @@ const styles = StyleSheet.create({
     borderRightColor: colors.border
   },
   modeButtonActive: {
-    backgroundColor: colors.primary
+    backgroundColor: colors.surface,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary
   },
   modeButtonText: {
     color: colors.textSecondary,
@@ -614,49 +623,11 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   modeButtonTextActive: {
-    color: colors.surface
+    color: colors.primary
   },
   cricketWrap: {
     gap: 14,
     paddingBottom: 8
-  },
-  cricketHero: {
-    borderRadius: 18,
-    backgroundColor: "#064e3b",
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12
-  },
-  cricketHeroText: {
-    flex: 1,
-    gap: 3
-  },
-  cricketEyebrow: {
-    color: "#a7f3d0",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  cricketTitle: {
-    color: colors.surface,
-    fontSize: 20,
-    fontWeight: "900"
-  },
-  cricketSubtitle: {
-    color: "#d1fae5",
-    fontSize: 12,
-    fontWeight: "700",
-    lineHeight: 17
-  },
-  cricketRefresh: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#10b981"
   },
   cricketMessage: {
     color: colors.success,

@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 const operatorRoleOptions = [
   { value: "result_operator", label: "Result + Support" },
   { value: "result_only_operator", label: "Only Result Engine" },
-  { value: "support_operator", label: "Only Support Chat" }
+  { value: "support_operator", label: "Only Support Chat" },
+  { value: "cricket_operator", label: "Only Cricket Dashboard" }
 ];
 
 const emptyOperatorForm = {

@@ -8,16 +8,37 @@ import { api, formatApiError, type CricketMatch, type CricketMatchesPayload } fr
 import { useAppState } from "@/lib/app-state";
 import { colors } from "@/theme/colors";
 
-const MARKET_COPY = {
+const MARKET_ORDER = ["toss_winner", "match_winner", "first_over_runs", "first_2_over_runs", "first_3_over_runs"] as const;
+const MIN_CRICKET_BET = 10;
+const MAX_CRICKET_BET = 2000;
+
+const MARKET_COPY: Record<string, { title: string; subtitle: string; icon: keyof typeof Ionicons.glyphMap }> = {
   toss_winner: {
     title: "Toss Winner",
-    subtitle: "Toss betting match start se pehle close hogi."
+    subtitle: "Toss market match start se pehle close hogi.",
+    icon: "disc-outline"
   },
   match_winner: {
     title: "Match Winner",
-    subtitle: "Final match winner par bet place karo."
+    subtitle: "Final winner par simple cricket bet.",
+    icon: "trophy-outline"
+  },
+  first_over_runs: {
+    title: "First Over Runs",
+    subtitle: "1st over total runs range choose karo.",
+    icon: "speedometer-outline"
+  },
+  first_2_over_runs: {
+    title: "First 2 Overs Runs",
+    subtitle: "First 2 overs ka total runs range choose karo.",
+    icon: "stats-chart-outline"
+  },
+  first_3_over_runs: {
+    title: "First 3 Overs Runs",
+    subtitle: "First 3 overs ka total runs range choose karo.",
+    icon: "bar-chart-outline"
   }
-} as const;
+};
 
 export default function CricketMatchScreen() {
   const insets = useSafeAreaInsets();
@@ -27,6 +48,7 @@ export default function CricketMatchScreen() {
   const [amount, setAmount] = useState("100");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [selectedBet, setSelectedBet] = useState<{ marketType: string; selection: string } | null>(null);
 
   const match = useMemo(
     () => data.matches.find((item) => item.id === params.match) || null,
@@ -55,14 +77,15 @@ export default function CricketMatchScreen() {
       return;
     }
     const betAmount = Number(amount || 0);
-    if (!Number.isFinite(betAmount) || betAmount <= 0) {
-      setMessage("Valid amount enter karo.");
+    if (!Number.isFinite(betAmount) || betAmount < MIN_CRICKET_BET || betAmount > MAX_CRICKET_BET) {
+      setMessage(`Cricket bet amount Rs ${MIN_CRICKET_BET} se Rs ${MAX_CRICKET_BET} ke beech hona chahiye.`);
       return;
     }
     try {
       setMessage("");
       await api.placeCricketBet(sessionToken, { matchId: targetMatch.id, marketType, selection, amount: betAmount });
-      setMessage(`${getTeamName(targetMatch, selection)} bet placed successfully.`);
+      setMessage(`${formatSelectionLabel(targetMatch, selection)} bet placed successfully.`);
+      setSelectedBet(null);
       await Promise.allSettled([reloadSessionData({ force: true }), loadCricketHistory({ force: true }), load()]);
     } catch (error) {
       setMessage(formatApiError(error, "Cricket bet place nahi hui."));
@@ -71,7 +94,7 @@ export default function CricketMatchScreen() {
 
   return (
     <View style={styles.page}>
-      <BackHeader subtitle="Cricket winner market" title={String(params.title || match?.title || "Play Cricket").toUpperCase()} />
+      <BackHeader subtitle="Cricket markets" title={String(params.title || match?.title || "Play Cricket").toUpperCase()} />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 112, 132) }]} showsVerticalScrollIndicator={false}>
         {loading ? (
           <SurfaceCard>
@@ -87,25 +110,27 @@ export default function CricketMatchScreen() {
                 <Text style={styles.matchOver}>{formatStart(match.startAt)}</Text>
               </View>
               <View style={styles.ratePill}>
-                <Text style={styles.ratePillText}>1.8x</Text>
+                <Text style={styles.ratePillText}>Scheduled</Text>
               </View>
-            </View>
-
-            <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Bet Amount</Text>
-              <TextInput
-                keyboardType="numeric"
-                onChangeText={(value) => setAmount(value.replace(/[^0-9]/g, ""))}
-                placeholder="100"
-                style={styles.amountInput}
-                value={amount}
-              />
             </View>
 
             {message ? <Text style={message.includes("success") || message.includes("placed") ? styles.successMessage : styles.errorMessage}>{message}</Text> : null}
 
-            <CricketWinnerGroup match={match} marketType="toss_winner" onPlaceBet={placeBet} />
-            <CricketWinnerGroup match={match} marketType="match_winner" onPlaceBet={placeBet} />
+            {MARKET_ORDER.map((marketType) => (
+              <CricketMarketGroup
+                key={marketType}
+                amount={amount}
+                match={match}
+                marketType={marketType}
+                onAmountChange={setAmount}
+                onPlaceBet={placeBet}
+                onSelect={(selection) => {
+                  setMessage("");
+                  setSelectedBet({ marketType, selection });
+                }}
+                selectedSelection={selectedBet?.marketType === marketType ? selectedBet.selection : ""}
+              />
+            ))}
           </>
         ) : (
           <SurfaceCard>
@@ -118,52 +143,86 @@ export default function CricketMatchScreen() {
   );
 }
 
-function CricketWinnerGroup({
+function CricketMarketGroup({
+  amount,
   match,
   marketType,
-  onPlaceBet
+  onAmountChange,
+  onPlaceBet,
+  onSelect,
+  selectedSelection
 }: {
+  amount: string;
   match: CricketMatch;
-  marketType: "toss_winner" | "match_winner";
+  marketType: string;
+  onAmountChange: (value: string) => void;
   onPlaceBet: (match: CricketMatch, marketType: string, selection: string) => void;
+  onSelect: (selection: string) => void;
+  selectedSelection: string;
 }) {
   const market = match.markets?.[marketType];
   const isOpen = Boolean(market?.open);
-  const winner = marketType === "toss_winner" ? match.tossWinner : match.matchWinner;
+  const winner = market?.winner || (marketType === "toss_winner" ? match.tossWinner : marketType === "match_winner" ? match.matchWinner : null);
+  const copy = MARKET_COPY[marketType] || { title: market?.label || "Cricket Market", subtitle: "Selection choose karo.", icon: "baseball-outline" as const };
+  const rates = market?.rates || {};
+  const options = Object.entries(rates);
   return (
     <View style={styles.boardCard}>
       <View style={styles.boardHeader}>
         <View style={styles.boardIcon}>
-          <Ionicons color={colors.surface} name={marketType === "toss_winner" ? "disc-outline" : "trophy-outline"} size={18} />
+          <Ionicons color={colors.surface} name={copy.icon} size={18} />
         </View>
         <View style={styles.boardCopy}>
-          <Text style={styles.boardTitle}>{MARKET_COPY[marketType].title}</Text>
-          <Text style={styles.boardSubtitle}>{winner ? `Result: ${getTeamName(match, winner)}` : isOpen ? `Close: ${formatStart(market?.closeAt || null)}` : "Betting closed"}</Text>
+          <Text style={styles.boardTitle}>{copy.title}</Text>
+          <Text style={styles.boardSubtitle}>{winner ? `Result: ${formatSelectionLabel(match, winner)}` : isOpen ? `Close: ${formatStart(market?.closeAt || null)}` : "Betting closed"}</Text>
         </View>
         <View style={[styles.statusPill, isOpen ? styles.statusLive : styles.statusClosed]}>
           <Text style={styles.statusText}>{isOpen ? "OPEN" : "CLOSED"}</Text>
         </View>
       </View>
-      <Text style={styles.helperText}>{MARKET_COPY[marketType].subtitle}</Text>
+      <Text style={styles.helperText}>{copy.subtitle}</Text>
       <View style={styles.options}>
-        <Pressable disabled={!isOpen} onPress={() => onPlaceBet(match, marketType, "team_a")} style={[styles.optionButton, !isOpen && styles.optionDisabled]}>
-          <Text style={styles.optionText}>{match.teamA} Win</Text>
-          <Text style={styles.rateText}>1.8x</Text>
-        </Pressable>
-        <Pressable disabled={!isOpen} onPress={() => onPlaceBet(match, marketType, "team_b")} style={[styles.optionButton, !isOpen && styles.optionDisabled]}>
-          <Text style={styles.optionText}>{match.teamB} Win</Text>
-          <Text style={styles.rateText}>1.8x</Text>
-        </Pressable>
+        {options.map(([selection, rate]) => (
+          <Pressable
+            key={selection}
+            disabled={!isOpen}
+            onPress={() => onSelect(selection)}
+            style={[styles.optionButton, selectedSelection === selection && styles.optionSelected, !isOpen && styles.optionDisabled]}
+          >
+            <Text style={styles.optionText}>{formatSelectionLabel(match, selection, marketType)}</Text>
+            <Text style={styles.rateText}>{rate}x</Text>
+          </Pressable>
+        ))}
       </View>
+      {selectedSelection ? (
+        <View style={styles.betPanel}>
+          <View style={styles.betPanelCopy}>
+            <Text style={styles.betPanelTitle}>{formatSelectionLabel(match, selectedSelection, marketType)}</Text>
+            <Text style={styles.betPanelHint}>Min Rs {MIN_CRICKET_BET} | Max Rs {MAX_CRICKET_BET}</Text>
+          </View>
+          <View style={styles.betActionRow}>
+            <TextInput
+              keyboardType="numeric"
+              onChangeText={(value) => onAmountChange(value.replace(/[^0-9]/g, ""))}
+              placeholder="100"
+              style={styles.amountInput}
+              value={amount}
+            />
+            <Pressable onPress={() => onPlaceBet(match, marketType, selectedSelection)} style={styles.placeButton}>
+              <Text style={styles.placeButtonText}>Place Bet</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
 
-function getTeamName(match: CricketMatch, selection: string) {
-  if (selection === "team_a") return match.teamA;
-  if (selection === "team_b") return match.teamB;
+function formatSelectionLabel(match: CricketMatch, selection: string, marketType = "") {
+  if (selection === "team_a") return marketType ? `${match.teamA} Win` : match.teamA;
+  if (selection === "team_b") return marketType ? `${match.teamB} Win` : match.teamB;
   if (selection === "cancel") return "Refund";
-  return selection;
+  return selection.replace(/_/g, "-").replace("-plus", "+");
 }
 
 function formatStart(value: string | null) {
@@ -197,19 +256,8 @@ const styles = StyleSheet.create({
   statusLive: { backgroundColor: "#dcfce7" },
   statusClosed: { backgroundColor: colors.dangerSoft },
   statusText: { color: "#166534", fontSize: 10, fontWeight: "900" },
-  amountRow: {
-    borderRadius: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
-  },
-  amountLabel: { color: colors.textPrimary, fontSize: 14, fontWeight: "900" },
   amountInput: {
-    width: 130,
+    width: 110,
     minHeight: 42,
     borderRadius: 12,
     borderWidth: 1,
@@ -249,8 +297,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8
   },
   optionDisabled: { opacity: 0.45 },
+  optionSelected: {
+    backgroundColor: "#d1fae5",
+    borderColor: "#10b981",
+    borderWidth: 2
+  },
   optionText: { color: "#064e3b", fontSize: 15, fontWeight: "900", textAlign: "center" },
   rateText: { color: "#059669", fontSize: 14, fontWeight: "900", marginTop: 4 },
+  betPanel: {
+    borderRadius: 14,
+    backgroundColor: "#fff7ed",
+    borderWidth: 1,
+    borderColor: "#fed7aa",
+    padding: 12,
+    gap: 10
+  },
+  betPanelCopy: { gap: 2 },
+  betPanelTitle: { color: colors.textPrimary, fontSize: 14, fontWeight: "900" },
+  betPanelHint: { color: colors.textMuted, fontSize: 11, fontWeight: "800" },
+  betActionRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  placeButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary
+  },
+  placeButtonText: { color: colors.surface, fontSize: 13, fontWeight: "900" },
   emptyTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: "900" },
   emptySub: { color: colors.danger, fontSize: 14, fontWeight: "700", marginTop: 8 }
 });

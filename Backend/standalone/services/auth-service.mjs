@@ -5,7 +5,7 @@ import { buildTotpSetupPayload, generateTotpSecret, verifyTotpCode } from "./tot
 const adminTwoFactorChallenges = new Map();
 const ADMIN_TOTP_ISSUER = "Real Matka Admin";
 const ADMIN_TWO_FACTOR_CHALLENGE_TTL_MS = 10 * 60 * 1000;
-const ADMIN_PANEL_ROLES = new Set(["admin", "super_admin", "operator", "result_operator", "result_only_operator", "support_operator"]);
+const ADMIN_PANEL_ROLES = new Set(["admin", "super_admin", "operator", "result_operator", "result_only_operator", "support_operator", "cricket_operator"]);
 
 function sanitizeSessionUser(user) {
   return {

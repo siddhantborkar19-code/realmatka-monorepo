@@ -51,6 +51,16 @@ function mapBet(row) {
   };
 }
 
+function mapMarketResult(row) {
+  if (!row) return null;
+  return {
+    matchId: row.match_id,
+    marketType: row.market_type,
+    winner: row.winner,
+    settledAt: row.settled_at || null
+  };
+}
+
 function normalizeIso(value) {
   const raw = String(value || "").trim();
   if (!raw) return null;
@@ -110,6 +120,15 @@ async function ensureCricketTables() {
         created_at TIMESTAMPTZ NOT NULL
       )
     `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS cricket_market_results (
+        match_id TEXT NOT NULL,
+        market_type TEXT NOT NULL,
+        winner TEXT NOT NULL,
+        settled_at TIMESTAMPTZ NOT NULL,
+        PRIMARY KEY (match_id, market_type)
+      )
+    `);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_cricket_matches_status ON cricket_matches (status, created_at DESC)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_cricket_bets_user_created_at ON cricket_bets (user_id, created_at DESC)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_cricket_bets_match_status ON cricket_bets (match_id, status, created_at ASC)`);
@@ -164,6 +183,15 @@ async function ensureCricketTables() {
         settled_at TEXT,
         settled_result TEXT,
         created_at TEXT NOT NULL
+      )
+    `).run();
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS cricket_market_results (
+        match_id TEXT NOT NULL,
+        market_type TEXT NOT NULL,
+        winner TEXT NOT NULL,
+        settled_at TEXT NOT NULL,
+        PRIMARY KEY (match_id, market_type)
       )
     `).run();
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_cricket_matches_status ON cricket_matches (status, created_at DESC)`).run();
@@ -311,6 +339,9 @@ export async function listCricketBetsForUser(userId, limit = 200) {
 
 export async function listCricketBetsForMatch(matchId) {
   await ensureCricketTables();
+  if (!String(matchId || "").trim()) {
+    return listAllCricketBets();
+  }
   if (isStandalonePostgresEnabled()) {
     const pool = await __internalGetReadyPgPool();
     const result = await pool.query(`SELECT * FROM cricket_bets WHERE match_id = $1 ORDER BY created_at DESC, id DESC`, [matchId]);
@@ -320,6 +351,41 @@ export async function listCricketBetsForMatch(matchId) {
     .prepare(`SELECT * FROM cricket_bets WHERE match_id = ? ORDER BY created_at DESC, id DESC`)
     .all(matchId)
     .map(mapBet);
+}
+
+export async function listAllCricketBets(limit = 500) {
+  await ensureCricketTables();
+  const normalizedLimit = Math.max(1, Math.min(2000, Number(limit) || 500));
+  if (isStandalonePostgresEnabled()) {
+    const pool = await __internalGetReadyPgPool();
+    const result = await pool.query(`SELECT * FROM cricket_bets ORDER BY created_at DESC, id DESC LIMIT $1`, [normalizedLimit]);
+    return result.rows.map(mapBet);
+  }
+  return __internalGetSqlite()
+    .prepare(`SELECT * FROM cricket_bets ORDER BY created_at DESC, id DESC LIMIT ?`)
+    .all(normalizedLimit)
+    .map(mapBet);
+}
+
+export async function listCricketMarketResults(matchIds = []) {
+  await ensureCricketTables();
+  const ids = Array.from(new Set((Array.isArray(matchIds) ? matchIds : []).map((id) => String(id || "").trim()).filter(Boolean)));
+  if (!ids.length) return [];
+  if (isStandalonePostgresEnabled()) {
+    const pool = await __internalGetReadyPgPool();
+    const result = await pool.query(
+      `SELECT match_id, market_type, winner, settled_at
+       FROM cricket_market_results
+       WHERE match_id = ANY($1::text[])`,
+      [ids]
+    );
+    return result.rows.map(mapMarketResult);
+  }
+  const placeholders = ids.map(() => "?").join(", ");
+  return __internalGetSqlite()
+    .prepare(`SELECT match_id, market_type, winner, settled_at FROM cricket_market_results WHERE match_id IN (${placeholders})`)
+    .all(...ids)
+    .map(mapMarketResult);
 }
 
 export async function updateCricketBetSettlement(betId, status, payout, settledResult) {
@@ -346,8 +412,18 @@ export async function saveCricketMarketResult(matchId, marketType, winner) {
   await ensureCricketTables();
   const settledAt = __internalNowIso();
   const isToss = marketType === "toss_winner";
+  const isMatchWinner = marketType === "match_winner";
   if (isStandalonePostgresEnabled()) {
     const pool = await __internalGetReadyPgPool();
+    await pool.query(
+      `INSERT INTO cricket_market_results (match_id, market_type, winner, settled_at)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (match_id, market_type) DO UPDATE SET winner = EXCLUDED.winner, settled_at = EXCLUDED.settled_at`,
+      [matchId, marketType, winner, settledAt]
+    );
+    if (!isToss && !isMatchWinner) {
+      return findCricketMatch(matchId);
+    }
     const result = await pool.query(
       `UPDATE cricket_matches
        SET ${isToss ? "toss_winner = $1, toss_settled_at = $2, toss_betting_open = FALSE" : "match_winner = $1, match_settled_at = $2, match_betting_open = FALSE"}
@@ -356,6 +432,16 @@ export async function saveCricketMarketResult(matchId, marketType, winner) {
       [winner, settledAt, matchId]
     );
     return mapMatch(result.rows[0]);
+  }
+  __internalGetSqlite()
+    .prepare(
+      `INSERT INTO cricket_market_results (match_id, market_type, winner, settled_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(match_id, market_type) DO UPDATE SET winner = excluded.winner, settled_at = excluded.settled_at`
+    )
+    .run(matchId, marketType, winner, settledAt);
+  if (!isToss && !isMatchWinner) {
+    return findCricketMatch(matchId);
   }
   __internalGetSqlite()
     .prepare(

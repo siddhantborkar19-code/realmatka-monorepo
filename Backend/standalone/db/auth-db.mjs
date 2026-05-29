@@ -15,8 +15,8 @@ import {
 
 export { verifyCredential } from "../db.mjs";
 
-const OPERATOR_ADMIN_ROLES = new Set(["operator", "result_operator", "result_only_operator", "support_operator"]);
-const OPERATOR_ROLE_SQL = "'operator','result_operator','result_only_operator','support_operator'";
+const OPERATOR_ADMIN_ROLES = new Set(["operator", "result_operator", "result_only_operator", "support_operator", "cricket_operator"]);
+const OPERATOR_ROLE_SQL = "'operator','result_operator','result_only_operator','support_operator','cricket_operator'";
 
 export async function findUserByPhone(phone) {
   if (__internalGetReadyPgPool) {

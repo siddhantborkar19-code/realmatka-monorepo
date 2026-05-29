@@ -121,7 +121,7 @@ function formatCricketSelection(selection: string) {
   if (selection === "team_a") return "Team A";
   if (selection === "team_b") return "Team B";
   if (selection === "cancel") return "Refund";
-  return selection;
+  return String(selection || "").replace(/_/g, "-").replace("-plus", "+");
 }
 
 function formatSessionLabel(sessionType: "Open" | "Close" | "NA") {

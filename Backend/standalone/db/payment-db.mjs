@@ -4,7 +4,7 @@ import {
   __internalNowIso
 } from "../db.mjs";
 
-const CREDIT_WALLET_ENTRY_TYPES_SQL = "'DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'SPECIAL_DEPOSIT_BONUS', 'ADMIN_CREDIT'";
+const CREDIT_WALLET_ENTRY_TYPES_SQL = "'DEPOSIT', 'REFERRAL_COMMISSION', 'BID_WIN', 'BID_REFUND', 'SIGNUP_BONUS', 'FIRST_DEPOSIT_BONUS', 'SPECIAL_DEPOSIT_BONUS', 'ADMIN_CREDIT'";
 const DEBIT_WALLET_ENTRY_TYPES_SQL = "'WITHDRAW', 'BID_PLACED', 'BID_WIN_REVERSAL', 'ADMIN_DEBIT'";
 
 function getWalletBalanceDeltaSql(columnPrefix = "") {
@@ -288,6 +288,40 @@ export async function completePaymentOrder({ paymentOrderId, gatewayOrderId, gat
         throw new Error("Gateway order mismatch");
       }
       if (existing.status !== "SUCCESS") {
+        const duplicateSuccessResult = await client.query(
+          `SELECT id
+           FROM wallet_entries
+           WHERE user_id = $1
+             AND type = 'DEPOSIT'
+             AND status = 'SUCCESS'
+             AND reference_id = ANY($2::text[])
+           ORDER BY created_at DESC, id DESC
+           LIMIT 1
+           FOR UPDATE`,
+          [existing.user_id, [existing.reference, gatewayPaymentId].filter(Boolean)]
+        );
+        const alreadyCreditedEntryId = duplicateSuccessResult.rows[0]?.id ? String(duplicateSuccessResult.rows[0].id) : "";
+        if (alreadyCreditedEntryId) {
+          await client.query(
+            `UPDATE payment_orders
+             SET status = 'SUCCESS',
+                 gateway_order_id = $2,
+                 gateway_payment_id = $3,
+                 gateway_signature = $4,
+                 verified_at = $5,
+                 updated_at = $5
+             WHERE id = $1`,
+            [paymentOrderId, gatewayOrderId, gatewayPaymentId, gatewaySignature, verifiedAt]
+          );
+          await client.query(
+            `UPDATE wallet_entries
+             SET note = COALESCE(note, '') || $2
+             WHERE id = $1 AND COALESCE(note, '') NOT LIKE $3`,
+            [alreadyCreditedEntryId, ` | Processor confirmed: ${gatewayPaymentId}`, `%Processor confirmed: ${gatewayPaymentId}%`]
+          );
+          await client.query("COMMIT");
+          return findPaymentOrderById(paymentOrderId);
+        }
         const currentBalance = await getAccurateUserBalanceFromPg(client, existing.user_id);
         const nextBalance = currentBalance + Number(existing.amount);
         await client.query(
@@ -382,6 +416,37 @@ export async function completePaymentOrder({ paymentOrderId, gatewayOrderId, gat
       throw new Error("Gateway order mismatch");
     }
     if (existing.status !== "SUCCESS") {
+      const duplicateSuccessEntry = db
+        .prepare(
+          `SELECT id
+           FROM wallet_entries
+           WHERE user_id = ?
+             AND type = 'DEPOSIT'
+             AND status = 'SUCCESS'
+             AND reference_id IN (?, ?)
+           ORDER BY created_at DESC, id DESC
+           LIMIT 1`
+        )
+        .get(existing.user_id, existing.reference, gatewayPaymentId);
+      if (duplicateSuccessEntry?.id) {
+        db.prepare(
+          `UPDATE payment_orders
+           SET status = 'SUCCESS',
+               gateway_order_id = ?,
+               gateway_payment_id = ?,
+               gateway_signature = ?,
+               verified_at = ?,
+               updated_at = ?
+           WHERE id = ?`
+        ).run(gatewayOrderId, gatewayPaymentId, gatewaySignature, verifiedAt, verifiedAt, paymentOrderId);
+        const marker = `Processor confirmed: ${gatewayPaymentId}`;
+        const existingNote = db.prepare(`SELECT note FROM wallet_entries WHERE id = ? LIMIT 1`).get(duplicateSuccessEntry.id)?.note || "";
+        if (!String(existingNote).includes(marker)) {
+          db.prepare(`UPDATE wallet_entries SET note = ? WHERE id = ?`).run(`${existingNote ? `${existingNote} | ` : ""}${marker}`, duplicateSuccessEntry.id);
+        }
+        db.exec("COMMIT");
+        return findPaymentOrderById(paymentOrderId);
+      }
       const currentBalance = getAccurateUserBalanceFromSqlite(db, existing.user_id);
       const nextBalance = currentBalance + Number(existing.amount);
       db.prepare(

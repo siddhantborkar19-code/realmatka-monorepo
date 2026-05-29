@@ -4,6 +4,7 @@ import { requireAdminByToken, requireUserByToken } from "../stores/auth-store.mj
 const FULL_ADMIN_ROLES = new Set(["admin", "super_admin"]);
 const RESULT_ENGINE_ROLES = new Set(["operator", "result_operator", "result_only_operator"]);
 const SUPPORT_DESK_ROLES = new Set(["operator", "result_operator", "support_operator"]);
+const CRICKET_OPERATOR_ROLES = new Set(["cricket_operator"]);
 
 export function normalizeAdminRole(role) {
   return String(role || "").trim().toLowerCase();
@@ -21,6 +22,11 @@ export function hasResultEngineRole(role) {
 export function hasSupportDeskRole(role) {
   const normalized = normalizeAdminRole(role);
   return FULL_ADMIN_ROLES.has(normalized) || SUPPORT_DESK_ROLES.has(normalized);
+}
+
+export function hasCricketOperatorRole(role) {
+  const normalized = normalizeAdminRole(role);
+  return FULL_ADMIN_ROLES.has(normalized) || CRICKET_OPERATOR_ROLES.has(normalized);
 }
 
 export function hasAdminPanelRole(role) {
@@ -60,4 +66,8 @@ export async function requireAdminOrResultOperator(request) {
 
 export async function requireAdminOrSupportOperator(request) {
   return requireAdminByRole(request, hasSupportDeskRole, "Support desk access required");
+}
+
+export async function requireAdminOrCricketOperator(request) {
+  return requireAdminByRole(request, hasCricketOperatorRole, "Cricket dashboard access required");
 }

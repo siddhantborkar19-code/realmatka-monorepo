@@ -6,10 +6,11 @@ const FULL_ADMIN_ROLES = new Set(["admin", "super_admin"]);
 const RESULT_OPERATOR_ROLES = new Set(["operator", "result_operator"]);
 const RESULT_ONLY_OPERATOR_ROLES = new Set(["result_only_operator"]);
 const SUPPORT_OPERATOR_ROLES = new Set(["support_operator"]);
+const CRICKET_OPERATOR_ROLES = new Set(["cricket_operator"]);
 
 function isAllowedAdminRole(role) {
   const normalized = normalizeAdminRole(role);
-  return FULL_ADMIN_ROLES.has(normalized) || RESULT_OPERATOR_ROLES.has(normalized) || RESULT_ONLY_OPERATOR_ROLES.has(normalized) || SUPPORT_OPERATOR_ROLES.has(normalized);
+  return FULL_ADMIN_ROLES.has(normalized) || RESULT_OPERATOR_ROLES.has(normalized) || RESULT_ONLY_OPERATOR_ROLES.has(normalized) || SUPPORT_OPERATOR_ROLES.has(normalized) || CRICKET_OPERATOR_ROLES.has(normalized);
 }
 
 function normalizeAdminRole(role) {
@@ -23,6 +24,9 @@ function getDefaultRouteForRole(role) {
   }
   if (SUPPORT_OPERATOR_ROLES.has(normalized)) {
     return "support";
+  }
+  if (CRICKET_OPERATOR_ROLES.has(normalized)) {
+    return "cricket";
   }
   return "dashboard";
 }

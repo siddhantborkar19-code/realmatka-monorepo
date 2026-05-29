@@ -16,6 +16,7 @@ import {
 const MARKET_TYPES = new Set(["toss_winner", "match_winner", "first_over_runs", "first_2_over_runs", "first_3_over_runs"]);
 const MIN_CRICKET_BET_AMOUNT = 10;
 const MAX_CRICKET_BET_AMOUNT = 2000;
+const CLOSED_MATCH_VISIBLE_MS = 12 * 60 * 60 * 1000;
 
 const CRICKET_RATES = {
   toss_winner: { team_a: 1.8, team_b: 1.8 },
@@ -118,6 +119,31 @@ function decorateMatch(match, resultMap = new Map()) {
   };
 }
 
+function getLatestResultTime(match) {
+  const times = [
+    match?.matchSettledAt,
+    match?.tossSettledAt,
+    ...Object.values(match?.marketResults || {}).map((item) => item?.settledAt),
+    match?.matchCloseAt,
+    match?.startAt
+  ]
+    .map((value) => new Date(value || "").getTime())
+    .filter((time) => Number.isFinite(time));
+  return times.length ? Math.max(...times) : 0;
+}
+
+function isArchivedCricketMatch(match) {
+  const status = String(match?.status || "").toLowerCase();
+  if (status === "hidden") return true;
+  if (status !== "closed") return false;
+  const closedAt = getLatestResultTime(match);
+  return closedAt > 0 && Date.now() - closedAt >= CLOSED_MATCH_VISIBLE_MS;
+}
+
+function hasOpenCricketMarket(match) {
+  return Object.values(match?.markets || {}).some((market) => Boolean(market?.open));
+}
+
 export async function getCricketMatches({ admin = false } = {}) {
   const matches = await listCricketMatches({ admin });
   const resultRows = await listCricketMarketResults(matches.map((match) => match.id));
@@ -127,9 +153,13 @@ export async function getCricketMatches({ admin = false } = {}) {
     list.push(row);
     resultMap.set(row.matchId, list);
   }
+  const decoratedMatches = matches.map((match) => decorateMatch(match, resultMap)).filter(Boolean);
   return {
     rates: CRICKET_RATES,
-    matches: matches.map((match) => decorateMatch(match, resultMap))
+    matches: decoratedMatches.filter((match) => {
+      if (admin) return !isArchivedCricketMatch(match);
+      return !isArchivedCricketMatch(match) && hasOpenCricketMarket(match);
+    })
   };
 }
 

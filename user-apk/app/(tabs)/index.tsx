@@ -462,6 +462,7 @@ function CricketHomeSection({
 }) {
   const [, setClockTick] = useState(0);
   const matches = data.matches || [];
+  const sections = groupCricketMatches(matches);
   useEffect(() => {
     const timer = setInterval(() => setClockTick((tick) => tick + 1), 30_000);
     return () => clearInterval(timer);
@@ -476,33 +477,13 @@ function CricketHomeSection({
           <Text style={styles.stateText}>Cricket games load ho rahe hain...</Text>
         </SurfaceCard>
       ) : matches.length ? (
-        matches.map((match) => (
-          <Pressable
-            key={match.id}
-            onPress={() => {
-              router.push({
-                pathname: "/cricket/[match]",
-                params: { match: match.id, title: match.title }
-              });
-            }}
-            style={styles.cricketPosterCard}
-          >
-            <View style={styles.cricketPosterContent}>
-              <View style={styles.cricketTeamLogos}>
-                <CricketTeamLogo name={match.teamA} url={match.teamALogoUrl} />
-                <Text style={styles.cricketVs}>VS</Text>
-                <CricketTeamLogo name={match.teamB} url={match.teamBLogoUrl} />
-              </View>
-              <View style={styles.cricketPosterText}>
-                <Text style={styles.cricketPosterTitle}>{match.teamA} vs {match.teamB}</Text>
-                <Text style={styles.cricketPosterSubtitle}>{match.title}</Text>
-                <Text style={styles.cricketPosterMeta}>{formatCricketCountdown(match)}</Text>
-              </View>
-            </View>
-            <View style={[styles.cricketStatusPill, match.matchBettingOpen || match.tossBettingOpen ? styles.cricketStatusLive : styles.cricketStatusClosed]}>
-              <Text style={styles.cricketStatusText}>{match.matchBettingOpen || match.tossBettingOpen ? "OPEN" : "CLOSED"}</Text>
-            </View>
-          </Pressable>
+        sections.map((section) => (
+          <View key={section.title} style={styles.cricketSection}>
+            <Text style={styles.cricketSectionTitle}>{section.title}</Text>
+            {section.items.map((match) => (
+              <CricketMatchCard key={match.id} match={match} />
+            ))}
+          </View>
         ))
       ) : (
         <SurfaceCard>
@@ -511,6 +492,36 @@ function CricketHomeSection({
         </SurfaceCard>
       )}
     </View>
+  );
+}
+
+function CricketMatchCard({ match }: { match: CricketMatch }) {
+  return (
+    <Pressable
+      onPress={() => {
+        router.push({
+          pathname: "/cricket/[match]",
+          params: { match: match.id, title: match.title }
+        });
+      }}
+      style={styles.cricketPosterCard}
+    >
+      <View style={styles.cricketPosterContent}>
+        <View style={styles.cricketTeamLogos}>
+          <CricketTeamLogo name={match.teamA} url={match.teamALogoUrl} />
+          <Text style={styles.cricketVs}>VS</Text>
+          <CricketTeamLogo name={match.teamB} url={match.teamBLogoUrl} />
+        </View>
+        <View style={styles.cricketPosterText}>
+          <Text style={styles.cricketPosterTitle}>{match.teamA} vs {match.teamB}</Text>
+          <Text style={styles.cricketPosterSubtitle}>{match.title}</Text>
+          <Text style={styles.cricketPosterMeta}>{formatCricketCountdown(match)}</Text>
+        </View>
+      </View>
+      <View style={[styles.cricketStatusPill, hasAnyOpenCricketMarket(match) ? styles.cricketStatusLive : styles.cricketStatusClosed]}>
+        <Text style={styles.cricketStatusText}>{hasAnyOpenCricketMarket(match) ? "OPEN" : "CLOSED"}</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -541,6 +552,38 @@ function formatCricketStart(value: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Winner markets";
   return date.toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function hasAnyOpenCricketMarket(match: CricketMatch) {
+  return Object.values(match.markets || {}).some((market) => Boolean(market?.open));
+}
+
+function groupCricketMatches(matches: CricketMatch[]) {
+  const groups = [
+    { title: "Today Matches", items: [] as CricketMatch[] },
+    { title: "Tomorrow Matches", items: [] as CricketMatch[] },
+    { title: "More Matches", items: [] as CricketMatch[] }
+  ];
+  const today = getLocalDateKey(new Date());
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = getLocalDateKey(tomorrowDate);
+
+  for (const match of matches) {
+    const key = getLocalDateKey(new Date(match.startAt || match.createdAt || Date.now()));
+    if (key === today) groups[0].items.push(match);
+    else if (key === tomorrow) groups[1].items.push(match);
+    else groups[2].items.push(match);
+  }
+  return groups.filter((group) => group.items.length);
+}
+
+function getLocalDateKey(date: Date) {
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function formatCricketCountdown(match: CricketMatch) {
@@ -653,6 +696,15 @@ const styles = StyleSheet.create({
   cricketWrap: {
     gap: 14,
     paddingBottom: 8
+  },
+  cricketSection: {
+    gap: 10
+  },
+  cricketSectionTitle: {
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: "900",
+    marginLeft: 2
   },
   cricketMessage: {
     color: colors.success,

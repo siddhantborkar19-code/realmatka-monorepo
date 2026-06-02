@@ -488,8 +488,8 @@ function CricketHomeSection({
         ))
       ) : (
         <SurfaceCard>
-          <Text style={styles.errorTitle}>Cricket match available nahi hai</Text>
-          <Text style={styles.errorText}>Admin panel se pehla cricket match create karo.</Text>
+          <Text style={styles.errorTitle}>Cricket market abhi available nahi hai</Text>
+          <Text style={styles.errorText}>Next match ke liye thodi der baad check karein.</Text>
         </SurfaceCard>
       )}
     </View>
@@ -522,7 +522,7 @@ function CricketMatchCard({ match, now }: { match: CricketMatch; now: number }) 
         </View>
         <View style={styles.cricketPosterText}>
           <Text style={styles.cricketPosterTitle}>{match.teamA} vs {match.teamB}</Text>
-          <Text style={styles.cricketPosterSubtitle}>{match.title}</Text>
+          <Text style={styles.cricketPosterSubtitle}>{formatCricketMatchType(match.matchType)} | {match.title}</Text>
           <Text style={styles.cricketPosterMeta}>{formatCricketCountdown(match, now)}</Text>
         </View>
       </LinearGradient>
@@ -551,6 +551,11 @@ function CricketTeamLogo({ name, url }: { name: string; url?: string }) {
 function getTeamInitials(name: string) {
   const parts = String(name || "?").trim().split(/\s+/).filter(Boolean).slice(0, 2);
   return parts.map((part) => part[0]).join("").toUpperCase() || "?";
+}
+
+function formatCricketMatchType(value?: string) {
+  const raw = String(value || "T20").trim();
+  return raw.toUpperCase() === "ODI" ? "ODI" : raw;
 }
 
 function formatCricketStart(value: string | null) {

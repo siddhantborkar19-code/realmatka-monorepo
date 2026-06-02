@@ -112,7 +112,7 @@ export default function CricketMatchScreen() {
                   <CricketTeamLogo name={match.teamB} url={match.teamBLogoUrl} />
                 </View>
                 <Text style={styles.matchTitle}>{match.teamA} vs {match.teamB}</Text>
-                <Text style={styles.matchSub}>{match.title}</Text>
+                <Text style={styles.matchSub}>{formatMatchType(match.matchType)} | {match.title}</Text>
                 <Text style={styles.matchOver}>{formatStart(match.startAt)}</Text>
               </View>
               <View style={styles.ratePill}>
@@ -243,6 +243,11 @@ function CricketTeamLogo({ name, url }: { name: string; url?: string }) {
 
 function getTeamInitials(name: string) {
   return String(name || "?").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "?";
+}
+
+function formatMatchType(value?: string) {
+  const raw = String(value || "T20").trim();
+  return raw.toUpperCase() === "ODI" ? "ODI" : raw;
 }
 
 function formatSelectionLabel(match: CricketMatch, selection: string, marketType = "") {

@@ -89,11 +89,12 @@ function getMarketOpenState(match, marketType) {
     if (isAfterClose(match.tossCloseAt)) return { open: false, reason: "Toss betting time is over" };
     return { open: true, reason: "" };
   }
+  const marketCloseAt = match.matchCloseAt || match.startAt;
   if (marketType !== "match_winner" && !match.matchBettingOpen) return { open: false, reason: "Cricket betting is closed" };
-  if (marketType !== "match_winner" && isAfterClose(match.matchCloseAt || match.startAt)) return { open: false, reason: "Cricket betting time is over" };
+  if (marketType !== "match_winner" && isAfterClose(marketCloseAt)) return { open: false, reason: "Cricket betting time is over" };
   if (match.matchWinner) return { open: false, reason: "Match result already published" };
   if (!match.matchBettingOpen) return { open: false, reason: "Match winner betting is closed" };
-  if (isAfterClose(match.matchCloseAt)) return { open: false, reason: "Match winner betting time is over" };
+  if (isAfterClose(marketCloseAt)) return { open: false, reason: "Match winner betting time is over" };
   return { open: true, reason: "" };
 }
 
@@ -113,9 +114,11 @@ function decorateMatch(match, resultMap = new Map()) {
       winner: marketResults[marketType]?.winner || (marketType === "toss_winner" ? match.tossWinner : marketType === "match_winner" ? match.matchWinner : null)
     };
   }
+  const hasOpenMarket = Object.values(markets).some((market) => Boolean(market?.open));
   return {
     ...enrichedMatch,
-    markets
+    markets,
+    hasOpenMarket
   };
 }
 
@@ -141,7 +144,7 @@ function isArchivedCricketMatch(match) {
 }
 
 function hasOpenCricketMarket(match) {
-  return Object.values(match?.markets || {}).some((market) => Boolean(market?.open));
+  return Boolean(match?.hasOpenMarket) || Object.values(match?.markets || {}).some((market) => Boolean(market?.open));
 }
 
 export async function getCricketMatches({ admin = false } = {}) {
@@ -169,7 +172,7 @@ function defaultCloseTimes(startAt) {
     return { tossCloseAt: null, matchCloseAt: null };
   }
   return {
-    tossCloseAt: new Date(start.getTime() - 35 * 60 * 1000).toISOString(),
+    tossCloseAt: new Date(start.getTime() - 30 * 60 * 1000).toISOString(),
     matchCloseAt: start.toISOString()
   };
 }
@@ -177,9 +180,13 @@ function defaultCloseTimes(startAt) {
 export async function saveAdminCricketMatch(body) {
   try {
     const defaults = defaultCloseTimes(body.startAt);
+    if (!defaults.matchCloseAt) {
+      return { ok: false, status: 400, error: "Match Start Time required hai. Iske bina cricket betting auto close rule work nahi karega." };
+    }
     const match = await upsertCricketMatch({
       id: body.id,
       title: body.title,
+      matchType: body.matchType,
       teamA: body.teamA,
       teamB: body.teamB,
       teamALogoUrl: body.teamALogoUrl,
@@ -356,6 +363,7 @@ export async function cancelAdminCricketMatch(body) {
   const savedMatch = await upsertCricketMatch({
     id: match.id,
     title: match.title,
+    matchType: match.matchType,
     teamA: match.teamA,
     teamB: match.teamB,
     teamALogoUrl: match.teamALogoUrl,

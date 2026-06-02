@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 const emptyForm = {
   id: "",
   title: "",
+  matchType: "T20",
   teamA: "",
   teamB: "",
   teamALogoUrl: "",
@@ -14,6 +15,18 @@ const emptyForm = {
   tossBettingOpen: "true",
   matchBettingOpen: "true"
 };
+
+const matchTypeOptions = [
+  "T20",
+  "ODI",
+  "Test",
+  "T10",
+  "IPL",
+  "International",
+  "Domestic",
+  "League",
+  "Other"
+];
 
 const cricketMarkets = [
   { value: "toss_winner", label: "Toss Winner" },
@@ -87,6 +100,24 @@ function formatDate(value) {
 
 function formatSelection(value) {
   return String(value || "").replace(/_/g, "-").replace("-plus", "+");
+}
+
+function hasOpenMarket(match) {
+  if (typeof match?.hasOpenMarket === "boolean") return match.hasOpenMarket;
+  return Object.values(match?.markets || {}).some((market) => Boolean(market?.open));
+}
+
+function getMatchStatusLabel(match) {
+  const status = String(match?.status || "").trim();
+  if (status.toLowerCase() === "live" && !hasOpenMarket(match)) return "Betting Closed";
+  return status || "Live";
+}
+
+function getMatchStatusStyle(match) {
+  const label = getMatchStatusLabel(match).toLowerCase();
+  if (label === "live") return { background: "#dcfce7", color: "#166534" };
+  if (label === "betting closed") return { background: "#fef3c7", color: "#92400e" };
+  return { background: "#fee2e2", color: "#991b1b" };
 }
 
 function TeamLogo({ name, url }) {
@@ -218,6 +249,7 @@ export function CricketPage({ apiBase, token, fetchApi, mode = "cricket", PageHe
     setForm({
       id: match.id,
       title: match.title || "",
+      matchType: match.matchType || "T20",
       teamA: match.teamA || "",
       teamB: match.teamB || "",
       teamALogoUrl: match.teamALogoUrl || "",
@@ -235,7 +267,7 @@ export function CricketPage({ apiBase, token, fetchApi, mode = "cricket", PageHe
   const selectedResultMatch = state.matches.find((match) => match.id === resultForm.matchId);
   const winnerOptions = runOptions[resultForm.marketType] || ["team_a", "team_b", "cancel"];
   const filteredBets = betsFilter ? state.bets.filter((bet) => bet.matchId === betsFilter) : state.bets;
-  const liveMatches = state.matches.filter((match) => String(match.status || "").toLowerCase() === "live").length;
+  const liveMatches = state.matches.filter((match) => String(match.status || "").toLowerCase() === "live" && hasOpenMarket(match)).length;
   const pendingBets = state.bets.filter((bet) => bet.status === "Pending").length;
   const totalStake = state.bets.reduce((sum, bet) => sum + Number(bet.amount || 0), 0);
   const totalPayout = state.bets.reduce((sum, bet) => sum + Number(bet.payout || 0), 0);
@@ -264,10 +296,11 @@ export function CricketPage({ apiBase, token, fetchApi, mode = "cricket", PageHe
       {showForm ? <section className="panel">
         <div className="panel-head">
           <h2>{form.id ? "Update Match" : "Create Match"}</h2>
-          <p>Match ko pehle se schedule karo. Toss 35 min pehle aur baaki cricket markets match start time par auto close honge.</p>
+          <p>Match ko pehle se schedule karo. Toss 30 min pehle close hoga; match winner aur over-runs markets match start time par auto close honge.</p>
         </div>
         <div className="form-grid">
           <label><span>Match Title</span><input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="RCB vs CSK Final" /></label>
+          <label><span>Match Type</span><select value={form.matchType} onChange={(e) => setForm({ ...form, matchType: e.target.value })}>{matchTypeOptions.map((item) => <option key={item} value={item}>{item === "ODI" ? "ODI - One Day International" : item}</option>)}</select></label>
           <label><span>Team A</span><input value={form.teamA} onChange={(e) => setForm({ ...form, teamA: e.target.value })} placeholder="RCB" /></label>
           <label><span>Team B</span><input value={form.teamB} onChange={(e) => setForm({ ...form, teamB: e.target.value })} placeholder="CSK" /></label>
           <label><span>Team A Logo URL</span><input value={form.teamALogoUrl} onChange={(e) => setForm({ ...form, teamALogoUrl: e.target.value })} placeholder="https://..." /></label>
@@ -275,7 +308,7 @@ export function CricketPage({ apiBase, token, fetchApi, mode = "cricket", PageHe
           <label><span>Status</span><select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}><option>Live</option><option>Closed</option><option>Hidden</option></select></label>
           <label><span>Match Start Time</span><input type="datetime-local" value={form.startAt} onChange={(e) => setForm({ ...form, startAt: e.target.value })} /></label>
           <label><span>Toss Auto Close</span><input type="datetime-local" value={form.tossCloseAt} onChange={(e) => setForm({ ...form, tossCloseAt: e.target.value })} /></label>
-          <label><span>Match Winner Auto Close</span><input type="datetime-local" value={form.matchCloseAt} onChange={(e) => setForm({ ...form, matchCloseAt: e.target.value })} /></label>
+          <label><span>Match / Over Markets Auto Close</span><input type="datetime-local" value={form.matchCloseAt} onChange={(e) => setForm({ ...form, matchCloseAt: e.target.value })} /></label>
           <label><span>Toss Betting</span><select value={form.tossBettingOpen} onChange={(e) => setForm({ ...form, tossBettingOpen: e.target.value })}><option value="true">Open</option><option value="false">Closed</option></select></label>
           <label><span>Match Winner Betting</span><select value={form.matchBettingOpen} onChange={(e) => setForm({ ...form, matchBettingOpen: e.target.value })}><option value="true">Open</option><option value="false">Closed</option></select></label>
         </div>
@@ -376,10 +409,10 @@ export function CricketPage({ apiBase, token, fetchApi, mode = "cricket", PageHe
                   <strong style={{ fontSize: 12, color: "#64748b" }}>vs</strong>
                   <TeamLogo name={match.teamB} url={match.teamBLogoUrl} />
                 </div>
-                <span style={{ borderRadius: 999, padding: "6px 10px", background: match.status === "Live" ? "#dcfce7" : "#fee2e2", color: match.status === "Live" ? "#166534" : "#991b1b", fontWeight: 800, fontSize: 12 }}>{match.status}</span>
+                <span style={{ borderRadius: 999, padding: "6px 10px", ...getMatchStatusStyle(match), fontWeight: 800, fontSize: 12 }}>{getMatchStatusLabel(match)}</span>
               </div>
               <h3 style={{ margin: "14px 0 4px", fontSize: 18 }}>{match.title}</h3>
-              <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>{match.teamA} vs {match.teamB}</p>
+              <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>{match.matchType || "T20"} | {match.teamA} vs {match.teamB}</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
                 <small style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: 10 }}><b>Start</b><br />{formatDate(match.startAt)}</small>
                 <small style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: 10 }}><b>Toss Close</b><br />{formatDate(match.tossCloseAt)}</small>
@@ -397,7 +430,7 @@ export function CricketPage({ apiBase, token, fetchApi, mode = "cricket", PageHe
             <tbody>
               {state.matches.length ? state.matches.map((match) => (
                 <tr key={match.id}>
-                  <td>{match.title}</td>
+                  <td>{match.title}<br /><small>{match.matchType || "T20"}</small></td>
                   <td>{match.teamA} vs {match.teamB}</td>
                   <td>{formatDate(match.startAt)}</td>
                   <td>{match.tossBettingOpen ? "Open" : "Closed"}<br /><small>Close: {formatDate(match.tossCloseAt)}</small></td>

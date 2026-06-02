@@ -82,6 +82,7 @@ export type MarketItem = {
 export type CricketMatch = {
   id: string;
   title: string;
+  matchType?: string;
   teamA: string;
   teamB: string;
   teamALogoUrl?: string;

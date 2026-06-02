@@ -16,6 +16,7 @@ function mapMatch(row) {
   return {
     id: row.id,
     title: row.title,
+    matchType: row.match_type || "T20",
     teamA: row.team_a,
     teamB: row.team_b,
     teamALogoUrl: row.team_a_logo_url || "",
@@ -100,6 +101,7 @@ async function ensureCricketTables() {
     await pool.query(`
       ALTER TABLE cricket_matches
         ADD COLUMN IF NOT EXISTS start_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS match_type TEXT DEFAULT 'T20',
         ADD COLUMN IF NOT EXISTS toss_betting_open BOOLEAN NOT NULL DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS match_betting_open BOOLEAN NOT NULL DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS toss_close_at TIMESTAMPTZ,
@@ -162,6 +164,7 @@ async function ensureCricketTables() {
     const columns = new Set(db.prepare(`PRAGMA table_info(cricket_matches)`).all().map((column) => column.name));
     const additions = [
       ["start_at", "TEXT"],
+      ["match_type", "TEXT DEFAULT 'T20'"],
       ["toss_betting_open", "INTEGER NOT NULL DEFAULT 1"],
       ["match_betting_open", "INTEGER NOT NULL DEFAULT 1"],
       ["toss_close_at", "TEXT"],
@@ -252,6 +255,7 @@ export async function upsertCricketMatch(input) {
   const now = __internalNowIso();
   const id = String(input.id || `cricket_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`).trim();
   const title = String(input.title || "").trim();
+  const matchType = String(input.matchType || input.match_type || "T20").trim() || "T20";
   const teamA = String(input.teamA || "").trim();
   const teamB = String(input.teamB || "").trim();
   const teamALogoUrl = String(input.teamALogoUrl || input.teamALogo || "").trim();
@@ -270,11 +274,12 @@ export async function upsertCricketMatch(input) {
     const pool = await __internalGetReadyPgPool();
     const result = await pool.query(
       `INSERT INTO cricket_matches (
-         id, title, team_a, team_b, team_a_logo_url, team_b_logo_url, status, start_at, toss_betting_open, match_betting_open, toss_close_at, match_close_at, created_at
+         id, title, match_type, team_a, team_b, team_a_logo_url, team_b_logo_url, status, start_at, toss_betting_open, match_betting_open, toss_close_at, match_close_at, created_at
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        ON CONFLICT (id) DO UPDATE SET
          title = EXCLUDED.title,
+         match_type = EXCLUDED.match_type,
          team_a = EXCLUDED.team_a,
          team_b = EXCLUDED.team_b,
          team_a_logo_url = EXCLUDED.team_a_logo_url,
@@ -286,7 +291,7 @@ export async function upsertCricketMatch(input) {
          toss_close_at = EXCLUDED.toss_close_at,
          match_close_at = EXCLUDED.match_close_at
        RETURNING *`,
-      [id, title, teamA, teamB, teamALogoUrl, teamBLogoUrl, status, startAt, tossBettingOpen, matchBettingOpen, tossCloseAt, matchCloseAt, now]
+      [id, title, matchType, teamA, teamB, teamALogoUrl, teamBLogoUrl, status, startAt, tossBettingOpen, matchBettingOpen, tossCloseAt, matchCloseAt, now]
     );
     return mapMatch(result.rows[0]);
   }
@@ -294,11 +299,12 @@ export async function upsertCricketMatch(input) {
   __internalGetSqlite()
     .prepare(
       `INSERT INTO cricket_matches (
-         id, title, team_a, team_b, team_a_logo_url, team_b_logo_url, status, start_at, toss_betting_open, match_betting_open, toss_close_at, match_close_at, created_at
+         id, title, match_type, team_a, team_b, team_a_logo_url, team_b_logo_url, status, start_at, toss_betting_open, match_betting_open, toss_close_at, match_close_at, created_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          title = excluded.title,
+         match_type = excluded.match_type,
          team_a = excluded.team_a,
          team_b = excluded.team_b,
          team_a_logo_url = excluded.team_a_logo_url,
@@ -310,7 +316,7 @@ export async function upsertCricketMatch(input) {
          toss_close_at = excluded.toss_close_at,
          match_close_at = excluded.match_close_at`
     )
-    .run(id, title, teamA, teamB, teamALogoUrl, teamBLogoUrl, status, startAt, tossBettingOpen ? 1 : 0, matchBettingOpen ? 1 : 0, tossCloseAt, matchCloseAt, now);
+    .run(id, title, matchType, teamA, teamB, teamALogoUrl, teamBLogoUrl, status, startAt, tossBettingOpen ? 1 : 0, matchBettingOpen ? 1 : 0, tossCloseAt, matchCloseAt, now);
   return findCricketMatch(id);
 }
 
@@ -481,7 +487,7 @@ export async function saveCricketMarketResult(matchId, marketType, winner) {
     }
     const result = await pool.query(
       `UPDATE cricket_matches
-       SET ${isToss ? "toss_winner = $1, toss_settled_at = $2, toss_betting_open = FALSE" : "match_winner = $1, match_settled_at = $2, match_betting_open = FALSE"}
+       SET ${isToss ? "toss_winner = $1, toss_settled_at = $2, toss_betting_open = FALSE" : "match_winner = $1, match_settled_at = $2, match_betting_open = FALSE, status = 'Closed'"}
        WHERE id = $3
        RETURNING *`,
       [winner, settledAt, matchId]
@@ -501,7 +507,7 @@ export async function saveCricketMarketResult(matchId, marketType, winner) {
   __internalGetSqlite()
     .prepare(
       `UPDATE cricket_matches
-       SET ${isToss ? "toss_winner = ?, toss_settled_at = ?, toss_betting_open = 0" : "match_winner = ?, match_settled_at = ?, match_betting_open = 0"}
+       SET ${isToss ? "toss_winner = ?, toss_settled_at = ?, toss_betting_open = 0" : "match_winner = ?, match_settled_at = ?, match_betting_open = 0, status = 'Closed'"}
        WHERE id = ?`
     )
     .run(winner, settledAt, matchId);

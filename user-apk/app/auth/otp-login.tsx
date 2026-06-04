@@ -150,6 +150,26 @@ export default function OtpLoginScreen() {
                   setOtpSent(false);
                   const response = await api.requestOtp(normalizedPhone, "login");
                   setOtpMode(response.mode === "widget" ? "widget" : "otp");
+                  if (response.mode === "widget" && Platform.OS !== "web" && isMsg91NativeOtpAvailable()) {
+                    try {
+                      const sdkResponse = await sendMsg91NativeOtp(normalizedPhone);
+                      if (sdkResponse.accessToken) {
+                        setSdkAccessToken(sdkResponse.accessToken);
+                        setOtpSent(true);
+                        setMessage("Mobile verified. Login button dabao.");
+                      } else {
+                        setSdkReqId(sdkResponse.reqId);
+                        setOtpSent(true);
+                        setMessage("OTP SMS successfully sent.");
+                      }
+                      setCooldownSeconds(OTP_RESEND_SECONDS);
+                      return;
+                    } catch {
+                      if (!response.widgetUrl) {
+                        throw new Error("MSG91 OTP method available nahi hai.");
+                      }
+                    }
+                  }
                   if (response.mode === "widget" && response.widgetUrl) {
                     setMessage("OTP verification page open ho raha hai...");
                     setCooldownSeconds(OTP_RESEND_SECONDS);

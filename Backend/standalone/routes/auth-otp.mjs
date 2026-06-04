@@ -851,13 +851,14 @@ export async function msg91Widget(request) {
       setError('');
       setStatus('OTP SMS bheja ja raha hai...');
       sendBtn.disabled = true;
-      if (typeof window.sendOtp !== 'function') {
+      var sendOtpMethod = window.sendOtp || window.sendOTP;
+      if (typeof sendOtpMethod !== 'function') {
         setError('OTP service load nahi hua. Dobara try karo.');
         sendBtn.disabled = false;
         sendInFlight = false;
         return;
       }
-      window.sendOtp(
+      sendOtpMethod(
         identifier,
         function(data) {
           setReqId(data);
@@ -886,7 +887,14 @@ export async function msg91Widget(request) {
       setError('');
       setStatus('OTP verify ho raha hai...');
       verifyBtn.disabled = true;
-      window.verifyOtp(
+      var verifyOtpMethod = window.verifyOtp || window.verifyOTP;
+      if (typeof verifyOtpMethod !== 'function') {
+        setStatus('');
+        setError('OTP verify service load nahi hua. Dobara try karo.');
+        verifyBtn.disabled = false;
+        return;
+      }
+      verifyOtpMethod(
         otp,
         function(data) {
           setReqId(data);
@@ -920,11 +928,12 @@ export async function msg91Widget(request) {
     verifyBtn.addEventListener('click', verifyOtpNow);
     sendBtn.addEventListener('click', sendOtpNow);
     resendBtn.addEventListener('click', function() {
-      if (typeof window.retryOtp === 'function') {
+      var retryOtpMethod = window.retryOtp || window.retryOTP;
+      if (typeof retryOtpMethod === 'function') {
         setError('');
         setStatus('OTP resend ho raha hai...');
         resendBtn.disabled = true;
-        window.retryOtp(null, function(data) {
+        retryOtpMethod(null, function(data) {
           setReqId(data);
           setStatus('OTP SMS resent. Code enter karo.');
           startResendTimer();
@@ -948,6 +957,8 @@ export async function msg91Widget(request) {
           if (typeof window.initSendOTP === 'function') {
             window.initSendOTP(configuration);
             window.setTimeout(function() { sendOtpNow(false); }, 300);
+          } else {
+            document.getElementById('error').textContent = 'OTP widget initialize nahi hua. Dobara try karo.';
           }
         };
         s.onerror = function() {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, router } from "expo-router";
 import { ActivityIndicator, Image, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { SurfaceCard } from "@/components/ui";
+import { AppScreen, SurfaceCard } from "@/components/ui";
 import { useAppState } from "@/lib/app-state";
 import { formatApiError } from "@/lib/api";
 import { requestGoogleAccessToken } from "@/lib/google-auth";
@@ -94,7 +94,8 @@ export default function LoginScreen() {
         <Text style={styles.tagline}>Secure login for wallet, bids, charts, and market play.</Text>
       </LinearGradient>
 
-      <View style={styles.content}>
+      <AppScreen padded={false} showPromo={false} scrollContentStyle={styles.scrollContent}>
+        <View style={styles.content}>
         <SurfaceCard style={styles.formCard}>
           <Text style={styles.title}>Login</Text>
           <Text style={styles.subtitle}>Use your registered phone number and password to continue.</Text>
@@ -216,7 +217,8 @@ export default function LoginScreen() {
             )}
           </View>
         </SurfaceCard>
-      </View>
+        </View>
+      </AppScreen>
     </View>
   );
 }
@@ -254,6 +256,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 32,
     alignSelf: "center"
+  },
+  scrollContent: {
+    paddingBottom: 80
   },
   formCard: {
     width: "100%",

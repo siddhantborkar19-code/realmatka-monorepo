@@ -35,8 +35,15 @@ const MONTH_INDEX = new Map([
 ]);
 
 function normalizeJodiRows(rows) {
+  const sourceRows = Array.isArray(rows)
+    ? rows
+    : Array.isArray(rows?.rows)
+      ? rows.rows
+      : Array.isArray(rows?.jodi)
+        ? rows.jodi
+        : [];
   const draws = [];
-  for (const row of Array.isArray(rows) ? rows : []) {
+  for (const row of sourceRows) {
     if (!Array.isArray(row)) continue;
     for (let dayIndex = 1; dayIndex < row.length; dayIndex += 1) {
       const value = String(row[dayIndex] ?? "").trim();
@@ -230,29 +237,45 @@ function getRecentRepeatExclusions(draws, endIndex = draws.length) {
   );
 }
 
-function buildFailureJodis(context, firstSet, count, endIndex = context.draws.length, balanceSeed = []) {
+function buildMissContext(context) {
+  const prefixCounts = [new Uint16Array(100)];
   const draws = context.draws;
-  const misses = [];
-  for (let index = 180; index < endIndex; index += 1) {
-    const historicalFirst = getTopJodis(context, 20, new Set(), index);
-    if (!historicalFirst.includes(draws[index].jodi)) {
-      misses.push({ index, jodi: draws[index].jodi });
+
+  for (let index = 0; index < draws.length; index += 1) {
+    const next = new Uint16Array(prefixCounts[prefixCounts.length - 1]);
+    if (index >= 180) {
+      const actual = draws[index].jodi;
+      const historicalRecentExclusions = getRecentRepeatExclusions(draws, index);
+      const historicalFirst = getTopJodis(context, 20, historicalRecentExclusions, index, {
+        maxOpen: FIRST_GROUP_DIGIT_LIMIT,
+        maxClose: FIRST_GROUP_DIGIT_LIMIT
+      });
+      if (!historicalFirst.includes(actual)) {
+        next[jodiToIndex(actual)] += 1;
+      }
     }
+    prefixCounts.push(next);
   }
 
-  const recentMisses = misses.slice(-220);
-  const m30 = countJodiStrings(recentMisses.slice(-30));
-  const m60 = countJodiStrings(recentMisses.slice(-60));
-  const m120 = countJodiStrings(recentMisses.slice(-120));
-  const mall = countJodiStrings(recentMisses);
+  return { prefixCounts };
+}
+
+function countMissInWindow(missContext, jodi, endIndex, windowSize) {
+  const end = Math.max(0, Math.min(endIndex, missContext.prefixCounts.length - 1));
+  const start = Math.max(0, end - windowSize);
+  const index = jodiToIndex(jodi);
+  return missContext.prefixCounts[end][index] - missContext.prefixCounts[start][index];
+}
+
+function buildFailureJodis(context, firstSet, count, endIndex = context.draws.length, balanceSeed = [], missContext = buildMissContext(context)) {
   const fallbackRank = new Map(getTopJodis(context, 90, firstSet, endIndex).map((jodi, index) => [jodi, 90 - index]));
 
   function failureScore(jodi) {
     return (
-      (m30.get(jodi) || 0) * 6 +
-      (m60.get(jodi) || 0) * 3 +
-      (m120.get(jodi) || 0) * 1.5 +
-      (mall.get(jodi) || 0) +
+      countMissInWindow(missContext, jodi, endIndex, 30) * 6 +
+      countMissInWindow(missContext, jodi, endIndex, 60) * 3 +
+      countMissInWindow(missContext, jodi, endIndex, 120) * 1.5 +
+      countMissInWindow(missContext, jodi, endIndex, 220) +
       (fallbackRank.get(jodi) || 0) * 0.08
     );
   }
@@ -268,12 +291,20 @@ function buildFailureJodis(context, firstSet, count, endIndex = context.draws.le
   });
 }
 
-function countJodiStrings(items) {
-  const counts = new Map();
-  for (const item of items) {
-    counts.set(item.jodi, (counts.get(item.jodi) || 0) + 1);
-  }
-  return counts;
+function buildPredictionAtIndex(context, endIndex = context.draws.length, missContext = buildMissContext(context)) {
+  const recentRepeatExclusions = getRecentRepeatExclusions(context.draws, endIndex);
+  const first20 = getTopJodis(context, 20, recentRepeatExclusions, endIndex, {
+    maxOpen: FIRST_GROUP_DIGIT_LIMIT,
+    maxClose: FIRST_GROUP_DIGIT_LIMIT
+  });
+  const second20 = buildFailureJodis(context, new Set([...recentRepeatExclusions, ...first20]), 20, endIndex, first20, missContext);
+
+  return {
+    first20,
+    second20,
+    combined40: [...first20, ...second20],
+    recentRepeatExclusions
+  };
 }
 
 function countHits(draws, jodis, limit) {
@@ -289,41 +320,54 @@ function getMissStreak(draws, jodis) {
   return draws.length;
 }
 
-function backtestFailureStrategy(context) {
+function backtestPredictionStrategy(context) {
   const draws = context.draws;
-  let plays = 0;
-  let hits = 0;
-  let firstHits = 0;
-  let secondHits = 0;
+  const results = [];
   const startIndex = Math.max(220, draws.length - 500);
+  const missContext = buildMissContext(context);
 
   for (let index = startIndex; index < draws.length; index += 1) {
-    const recentRepeatExclusions = getRecentRepeatExclusions(draws, index);
-    const first = getTopJodis(context, 20, recentRepeatExclusions, index, {
-      maxOpen: FIRST_GROUP_DIGIT_LIMIT,
-      maxClose: FIRST_GROUP_DIGIT_LIMIT
-    });
-    const second = getTopJodis(context, 20, new Set([...recentRepeatExclusions, ...first]), index, {
-      selected: first,
-      maxOpen: COMBINED_GROUP_DIGIT_LIMIT,
-      maxClose: COMBINED_GROUP_DIGIT_LIMIT
-    });
+    const { first20: first, second20: second } = buildPredictionAtIndex(context, index, missContext);
     const actual = draws[index].jodi;
     const firstHit = first.includes(actual);
     const secondHit = second.includes(actual);
-    plays += 1;
-    if (firstHit || secondHit) hits += 1;
-    if (firstHit) firstHits += 1;
-    if (secondHit) secondHits += 1;
+    results.push({
+      actual,
+      firstHit,
+      secondHit,
+      hit: firstHit || secondHit
+    });
   }
+
+  const plays = results.length;
+  const hits = results.filter((item) => item.hit).length;
+  const firstHits = results.filter((item) => item.firstHit).length;
+  const secondHits = results.filter((item) => item.secondHit).length;
 
   return {
     plays,
     hits,
     firstHits,
     secondHits,
-    hitRate: plays ? roundPercent((hits / plays) * 100) : 0
+    hitRate: plays ? roundPercent((hits / plays) * 100) : 0,
+    last30Hits: countBacktestHits(results, 30),
+    last60Hits: countBacktestHits(results, 60),
+    last90Hits: countBacktestHits(results, 90),
+    missStreak: getBacktestMissStreak(results)
   };
+}
+
+function countBacktestHits(results, limit) {
+  return results.slice(-limit).filter((item) => item.hit).length;
+}
+
+function getBacktestMissStreak(results) {
+  let streak = 0;
+  for (let index = results.length - 1; index >= 0; index -= 1) {
+    if (results[index].hit) return streak;
+    streak += 1;
+  }
+  return streak;
 }
 
 function roundPercent(value) {
@@ -345,13 +389,9 @@ export function buildJodiPredictionFromRows(rows, options = {}) {
   }
 
   const context = buildScoreContext(draws);
-  const recentRepeatExclusions = getRecentRepeatExclusions(draws);
-  const first20 = getTopJodis(context, 20, recentRepeatExclusions, undefined, {
-    maxOpen: FIRST_GROUP_DIGIT_LIMIT,
-    maxClose: FIRST_GROUP_DIGIT_LIMIT
-  });
-  const second20 = buildFailureJodis(context, new Set([...recentRepeatExclusions, ...first20]), 20, undefined, first20);
-  const combined40 = [...first20, ...second20];
+  const missContext = buildMissContext(context);
+  const { first20, second20, combined40, recentRepeatExclusions } = buildPredictionAtIndex(context, undefined, missContext);
+  const backtest = backtestPredictionStrategy(context);
   const stats = {
     totalResults: draws.length,
     todayDateKey: todayExclusion.todayDateKey,
@@ -363,12 +403,12 @@ export function buildJodiPredictionFromRows(rows, options = {}) {
     skippedRecentJodis: recentRepeatExclusions.size,
     firstGroupDigitLimit: FIRST_GROUP_DIGIT_LIMIT,
     combinedGroupDigitLimit: COMBINED_GROUP_DIGIT_LIMIT,
-    last30Hits: countHits(draws, combined40, 30),
-    last60Hits: countHits(draws, combined40, 60),
-    last90Hits: countHits(draws, combined40, 90),
-    missStreak: getMissStreak(draws, combined40),
-    confidence: getConfidenceLabel(draws, combined40),
-    backtest: backtestFailureStrategy(context)
+    last30Hits: backtest.last30Hits,
+    last60Hits: backtest.last60Hits,
+    last90Hits: backtest.last90Hits,
+    missStreak: backtest.missStreak,
+    confidence: getConfidenceLabel(backtest),
+    backtest
   };
 
   return {
@@ -383,13 +423,13 @@ export function buildJodiPredictionFromRows(rows, options = {}) {
   };
 }
 
-function getConfidenceLabel(draws, combined40) {
-  const last30 = countHits(draws, combined40, 30);
-  const last60 = countHits(draws, combined40, 60);
-  const last90 = countHits(draws, combined40, 90);
-  const missStreak = getMissStreak(draws, combined40);
+function getConfidenceLabel(backtest) {
+  const last30 = Number(backtest?.last30Hits || 0);
+  const last60 = Number(backtest?.last60Hits || 0);
+  const last90 = Number(backtest?.last90Hits || 0);
+  const missStreak = Number(backtest?.missStreak || 0);
 
-  if (last30 >= 13 && last60 >= 25 && last90 >= 38 && missStreak >= 1) {
+  if (last30 >= 13 && last60 >= 25 && last90 >= 38 && missStreak <= 2) {
     return "strong";
   }
   if (last30 >= 11 && last60 >= 22 && last90 >= 34) {

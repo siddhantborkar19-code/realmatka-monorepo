@@ -61,31 +61,31 @@ export function JodiPredictorPage({ apiBase, token, fetchApi, PageHeader, PageSt
     try {
       const data = await fetchApi(apiBase, `/api/admin/jodi-prediction?market=${encodeURIComponent(selectedMarket)}`, token);
       setPrediction(data);
-      setMessage(`${selectedMarketName} ke liye 40 jodi ready hai.`);
+      setMessage(`${selectedMarketName} ke liye Trend Mix 7 digit ready hai.`);
     } catch (error) {
       setPrediction(null);
-      setMessage(formatApiError(error, "Prediction generate nahi ho payi."));
+      setMessage(formatApiError(error, "Panna prediction generate nahi ho payi."));
     } finally {
       setBusy(false);
     }
   }
 
-  async function copyJodis(jodis) {
-    const text = jodis.join(" ");
+  async function copyValues(values, label = "Copied") {
+    const text = values.join(" ");
     try {
       await navigator.clipboard.writeText(text);
-      setMessage("Jodi copied.");
+      setMessage(label);
     } catch {
       setMessage(text);
     }
   }
 
-  if (state.loading) return <PageState title="Jodi Predictor" subtitle="Loading markets..." />;
-  if (state.error) return <PageState title="Jodi Predictor" subtitle={state.error} tone="error" />;
+  if (state.loading) return <PageState title="Panna Predictor" subtitle="Loading markets..." />;
+  if (state.error) return <PageState title="Panna Predictor" subtitle={state.error} tone="error" />;
 
   return (
     <>
-      <PageHeader title="Jodi Predictor" subtitle="Market chart se today ke liye trend aur failure learning jodi auto generate karo." />
+      <PageHeader title="Panna Predictor" subtitle="Trend Mix 7 digit se open single panna prediction generate karo." />
       <section className="panel">
         <div className="form-grid predictor-form">
           <label>
@@ -96,10 +96,13 @@ export function JodiPredictorPage({ apiBase, token, fetchApi, PageHeader, PageSt
           </label>
           <div className="actions predictor-actions">
             <button className="primary" disabled={busy || !selectedMarket} onClick={generatePrediction}>
-              {busy ? "Generating..." : "Generate 40 Jodi"}
+              {busy ? "Generating..." : "Generate 7 Digit"}
             </button>
-            {prediction?.combined40?.length ? (
-              <button className="secondary" onClick={() => copyJodis(prediction.combined40)}>Copy Full 40</button>
+            {prediction?.digits?.length ? (
+              <>
+                <button className="secondary" onClick={() => copyValues(prediction.digits, "7 digit copied.")}>Copy Digits</button>
+                <button className="secondary" onClick={() => copyValues(prediction.singlePannas || [], "Single panna copied.")}>Copy Panna</button>
+              </>
             ) : null}
           </div>
         </div>
@@ -115,28 +118,58 @@ export function JodiPredictorPage({ apiBase, token, fetchApi, PageHeader, PageSt
             </div>
             <div className="mini-stats predictor-stats">
               <div className={`mini-stat confidence-${prediction.stats?.confidence || "weak"}`}><span>Confidence</span><strong>{prediction.stats?.confidence || "weak"}</strong></div>
-              <div className="mini-stat"><span>Last 30 Hit</span><strong>{prediction.stats?.last30Hits || 0}/30</strong></div>
-              <div className="mini-stat"><span>Last 60 Hit</span><strong>{prediction.stats?.last60Hits || 0}/60</strong></div>
-              <div className="mini-stat"><span>Last 90 Hit</span><strong>{prediction.stats?.last90Hits || 0}/90</strong></div>
-              <div className="mini-stat"><span>Miss Streak</span><strong>{prediction.stats?.missStreak ?? "-"}</strong></div>
-              <div className="mini-stat"><span>Backtest</span><strong>{prediction.stats?.backtest?.hitRate || 0}%</strong></div>
-              <div className="mini-stat"><span>Recent Skipped</span><strong>{prediction.stats?.skippedRecentJodis || 0}</strong></div>
-              <div className="mini-stat"><span>Digit Balance</span><strong>{prediction.stats?.combinedGroupDigitLimit || 6} max</strong></div>
-              <div className="mini-stat"><span>Soft Penalty</span><strong>{prediction.stats?.recentSoftPenaltyDays || 21} days</strong></div>
+              <div className="mini-stat"><span>Strategy</span><strong>Trend Mix 7</strong></div>
+              <div className="mini-stat"><span>Digits</span><strong>{prediction.stats?.digitCount || 0}</strong></div>
+              <div className="mini-stat"><span>Single Panna</span><strong>{prediction.stats?.pannaCount || 0}</strong></div>
+              <div className="mini-stat"><span>Bet / Panna</span><strong>Rs {prediction.stats?.betAmountPerPanna || 10}</strong></div>
+              <div className="mini-stat"><span>Open Stake</span><strong>Rs {prediction.stats?.stakePerOpen || 0}</strong></div>
+              <div className="mini-stat"><span>Hit Return</span><strong>Rs {prediction.stats?.hitReturn || 0}</strong></div>
+              <div className="mini-stat"><span>Hit Profit</span><strong>Rs {prediction.stats?.hitProfit || 0}</strong></div>
+              <BacktestStat title="Last 30" data={prediction.stats?.backtest?.last30} />
+              <BacktestStat title="Last 60" data={prediction.stats?.backtest?.last60} />
+              <BacktestStat title="Last 90" data={prediction.stats?.backtest?.last90} />
+              <BacktestStat title="Open Fail Close" data={prediction.stats?.backtest?.openFailCloseLast30} />
             </div>
           </section>
 
-          <PredictionBlock title="Trend Top 20" jodis={prediction.first20 || []} onCopy={copyJodis} />
-          <PredictionBlock title="Failure Learning 20" jodis={prediction.second20 || []} onCopy={copyJodis} />
-          <PredictionBlock title="Full 40 Jodi" jodis={prediction.combined40 || []} onCopy={copyJodis} wide />
+          <PredictionBlock
+            title="Trend Mix 7 Digit"
+            subtitle="In 7 final digits ke single panna open me use karo."
+            values={prediction.digits || []}
+            onCopy={() => copyValues(prediction.digits || [], "7 digit copied.")}
+          />
+
+          <section className="panel prediction-block prediction-block-wide">
+            <div className="panel-head prediction-head">
+              <div>
+                <h2>Single Panna By Digit</h2>
+                <p>{prediction.stats?.pannaCount || 0} panna | Sirf open single panna</p>
+              </div>
+              <button className="secondary" onClick={() => copyValues(prediction.singlePannas || [], "Single panna copied.")}>Copy All</button>
+            </div>
+            <div className="panna-predictor-groups">
+              {(prediction.singlePannaMap || []).map((group) => (
+                <div className="panna-predictor-group" key={group.digit}>
+                  <div className="panna-predictor-digit">Digit {group.digit}</div>
+                  <div className="jodi-chip-grid compact">
+                    {(group.pannas || []).map((panna) => <span className="jodi-chip" key={`${group.digit}-${panna}`}>{panna}</span>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
           <section className="panel">
             <div className="panel-head">
-              <h2>Recent Skip List</h2>
-              <p>Last {prediction.stats?.recentSkipDays || 7} old result hard skip hain.</p>
+              <h2>Latest Chart Panna</h2>
+              <p>Predictor me aaj ka chart result exclude hota hai.</p>
             </div>
             <div className="jodi-chip-grid compact">
-              {(prediction.skippedRecent || []).map((jodi, index) => <span className="jodi-chip muted" key={`${jodi}-${index}`}>{jodi}</span>)}
+              {(prediction.latestResults || []).map((item, index) => (
+                <span className="jodi-chip muted" key={`${item.openPanna}-${index}`}>
+                  {item.openPanna}-{item.openDigit} / {item.closePanna || "***"}-{item.closeDigit || "*"}
+                </span>
+              ))}
             </div>
           </section>
         </>
@@ -145,18 +178,28 @@ export function JodiPredictorPage({ apiBase, token, fetchApi, PageHeader, PageSt
   );
 }
 
-function PredictionBlock({ title, jodis, onCopy, wide = false }) {
+function BacktestStat({ title, data }) {
   return (
-    <section className={`panel prediction-block${wide ? " prediction-block-wide" : ""}`}>
+    <div className="mini-stat">
+      <span>{title}</span>
+      <strong>{data?.hits || 0}/{data?.plays || 0}</strong>
+      <small>Profit Rs {data?.profit || 0}</small>
+    </div>
+  );
+}
+
+function PredictionBlock({ title, subtitle, values, onCopy }) {
+  return (
+    <section className="panel prediction-block prediction-block-wide">
       <div className="panel-head prediction-head">
         <div>
           <h2>{title}</h2>
-          <p>{jodis.length} jodi</p>
+          <p>{subtitle}</p>
         </div>
-        <button className="secondary" onClick={() => onCopy(jodis)}>Copy</button>
+        <button className="secondary" onClick={onCopy}>Copy</button>
       </div>
       <div className="jodi-chip-grid">
-        {jodis.map((jodi, index) => <span className="jodi-chip" key={`${title}-${jodi}-${index}`}>{jodi}</span>)}
+        {values.map((value, index) => <span className="jodi-chip" key={`${title}-${value}-${index}`}>{value}</span>)}
       </div>
     </section>
   );

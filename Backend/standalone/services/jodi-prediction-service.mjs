@@ -1,12 +1,22 @@
-const ALL_NON_DOUBLE_JODIS = Array.from({ length: 10 }, (_, open) =>
-  Array.from({ length: 10 }, (__, close) => (open === close ? "" : `${open}${close}`))
-).flat().filter(Boolean);
-const RECENT_REPEAT_SKIP_DAYS = 7;
-const RECENT_SOFT_PENALTY_DAYS = 21;
-const RECENT_SOFT_REPEAT_PENALTY = 1.5;
-const FIRST_GROUP_DIGIT_LIMIT = 4;
-const COMBINED_GROUP_DIGIT_LIMIT = 6;
+import { pannaChartBySingle } from "../matka-rules.mjs";
+
 const INDIA_TIME_ZONE = "Asia/Kolkata";
+const TREND_DIGIT_LIMIT = 7;
+const SINGLE_PANNA_STAKE = 10;
+const SINGLE_PANNA_RATE = 160;
+const FINAL_NUMBER_DIGIT_MAP = {
+  0: ["2", "3", "5", "9"],
+  1: ["4", "5", "7", "9"],
+  2: ["0", "2", "6", "8"],
+  3: ["0", "1", "8", "9"],
+  4: ["1", "3", "6", "7"],
+  5: ["2", "4", "6", "7"],
+  6: ["0", "3", "6", "8"],
+  7: ["1", "2", "4", "7"],
+  8: ["2", "5", "6", "8"],
+  9: ["1", "4", "7", "8"]
+};
+const ALL_DIGITS = Array.from({ length: 10 }, (_, digit) => String(digit));
 const MONTH_INDEX = new Map([
   ["jan", 0],
   ["january", 0],
@@ -34,29 +44,66 @@ const MONTH_INDEX = new Map([
   ["december", 11]
 ]);
 
-function normalizeJodiRows(rows) {
+function getSourceRows(rows, key) {
   const sourceRows = Array.isArray(rows)
     ? rows
     : Array.isArray(rows?.rows)
       ? rows.rows
-      : Array.isArray(rows?.jodi)
-        ? rows.jodi
+      : Array.isArray(rows?.[key])
+        ? rows[key]
         : [];
+  return sourceRows;
+}
+
+function normalizeJodiRows(rows) {
+  const sourceRows = getSourceRows(rows, "jodi");
   const draws = [];
+
   for (const row of sourceRows) {
     if (!Array.isArray(row)) continue;
-    for (let dayIndex = 1; dayIndex < row.length; dayIndex += 1) {
-      const value = String(row[dayIndex] ?? "").trim();
-      if (/^[0-9]{2}$/.test(value)) {
-        draws.push({
-          jodi: value,
-          weekLabel: String(row[0] ?? "").trim(),
-          dayIndex: dayIndex - 1
-        });
-      }
+    for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+      const jodi = String(row[1 + dayIndex] ?? "").trim().padStart(2, "0");
+      draws.push(/^[0-9]{2}$/.test(jodi) ? jodi : "");
     }
   }
+
   return draws;
+}
+
+function normalizePannaRows(rows, jodiRows = null) {
+  const sourceRows = getSourceRows(rows, "panna");
+  const sourceJodiRows = getSourceRows(jodiRows, "jodi");
+  const draws = [];
+
+  for (let rowIndex = 0; rowIndex < sourceRows.length; rowIndex += 1) {
+    const row = sourceRows[rowIndex];
+    if (!Array.isArray(row)) continue;
+    for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+      const openPanna = normalizePanna(row[1 + dayIndex * 2]);
+      const closePanna = normalizePanna(row[2 + dayIndex * 2]);
+      const jodi = String(sourceJodiRows[rowIndex]?.[1 + dayIndex] ?? "").trim().padStart(2, "0");
+      if (!openPanna) continue;
+      draws.push({
+        openPanna,
+        closePanna,
+        jodi: /^[0-9]{2}$/.test(jodi) ? jodi : "",
+        weekLabel: String(row[0] ?? "").trim(),
+        dayIndex
+      });
+    }
+  }
+
+  return draws;
+}
+
+function normalizePanna(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  if (raw.includes("*")) return "";
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  const normalized = digits.padStart(3, "0");
+  return /^[0-9]{3}$/.test(normalized) ? normalized : "";
 }
 
 function getIndiaDateKey(date = new Date()) {
@@ -88,352 +135,249 @@ function excludeTodayDraws(draws, todayDateKey = getIndiaDateKey()) {
   const kept = [];
   const excluded = [];
   for (const draw of draws) {
-    if (getDrawDateKey(draw) === todayDateKey) {
-      excluded.push(draw);
-    } else {
-      kept.push(draw);
-    }
+    if (getDrawDateKey(draw) === todayDateKey) excluded.push(draw);
+    else kept.push(draw);
   }
   return { kept, excluded, todayDateKey };
 }
 
-function jodiToIndex(jodi) {
-  return Number.parseInt(jodi, 10);
+function getPannaFinalDigit(panna) {
+  return String([...String(panna)].reduce((sum, digit) => sum + Number(digit), 0) % 10);
 }
 
-function buildScoreContext(draws) {
-  const prefixCounts = [new Uint16Array(100)];
-  const positions = new Map(ALL_NON_DOUBLE_JODIS.map((jodi) => [jodi, []]));
-
-  draws.forEach((item, index) => {
-    const next = new Uint16Array(prefixCounts[prefixCounts.length - 1]);
-    const jodiIndex = jodiToIndex(item.jodi);
-    next[jodiIndex] += 1;
-    prefixCounts.push(next);
-    if (positions.has(item.jodi)) {
-      positions.get(item.jodi).push(index);
-    }
-  });
-
-  return { draws, prefixCounts, positions };
+function getPannaType(panna) {
+  const uniqueDigits = new Set(String(panna).split("")).size;
+  if (uniqueDigits === 1) return "triple";
+  if (uniqueDigits === 2) return "double";
+  if (uniqueDigits === 3) return "single";
+  return "unknown";
 }
 
-function countJodiInWindow(context, jodi, endIndex, windowSize) {
-  const end = Math.max(0, Math.min(endIndex, context.draws.length));
-  const start = Math.max(0, end - windowSize);
-  const index = jodiToIndex(jodi);
-  return context.prefixCounts[end][index] - context.prefixCounts[start][index];
+function deriveJodiFromDraw(draw) {
+  if (/^[0-9]{2}$/.test(draw?.jodi || "")) return draw.jodi;
+  if (!draw?.openPanna || !draw?.closePanna) return "";
+  return `${getPannaFinalDigit(draw.openPanna)}${getPannaFinalDigit(draw.closePanna)}`;
 }
 
-function countDigitInWindow(draws, digit, endIndex, windowSize, side) {
+function getJodiFinalNumber(jodi) {
+  if (!/^[0-9]{2}$/.test(jodi)) return null;
+  return (Number(jodi[0]) + Number(jodi[1])) % 10;
+}
+
+function countWindow(draws, endIndex, fieldFn, windowSize) {
+  const counts = Object.fromEntries(ALL_DIGITS.map((digit) => [digit, 0]));
   const end = Math.max(0, Math.min(endIndex, draws.length));
   const start = Math.max(0, end - windowSize);
-  let count = 0;
   for (let index = start; index < end; index += 1) {
-    const jodi = draws[index]?.jodi || "";
-    const value = side === "open" ? jodi[0] : jodi[1];
-    if (value === digit) count += 1;
+    const digit = fieldFn(draws[index]);
+    if (counts[digit] !== undefined) counts[digit] += 1;
   }
-  return count;
+  return counts;
 }
 
-function getLastPositionBefore(positions, endIndex) {
-  let low = 0;
-  let high = positions.length - 1;
-  let found = -1;
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    if (positions[mid] < endIndex) {
-      found = positions[mid];
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-    }
-  }
-  return found;
+function normalizeCounts(counts) {
+  const max = Math.max(1, ...Object.values(counts));
+  return Object.fromEntries(ALL_DIGITS.map((digit) => [digit, Number(counts[digit] || 0) / max]));
 }
 
-function getJodiGap(context, jodi, endIndex = context.draws.length) {
-  const positions = context.positions.get(jodi) || [];
-  const lastPosition = getLastPositionBefore(positions, endIndex);
-  return lastPosition >= 0 ? endIndex - 1 - lastPosition : 999;
-}
-
-function scoreJodi(context, jodi, endIndex = context.draws.length) {
-  const gap = getJodiGap(context, jodi, endIndex);
-  const openDigit = jodi[0];
-  const closeDigit = jodi[1];
-  const openRecent = countDigitInWindow(context.draws, openDigit, endIndex, RECENT_REPEAT_SKIP_DAYS, "open");
-  const closeRecent = countDigitInWindow(context.draws, closeDigit, endIndex, RECENT_REPEAT_SKIP_DAYS, "close");
-  let score =
-    countJodiInWindow(context, jodi, endIndex, 7) * 10 +
-    countJodiInWindow(context, jodi, endIndex, 14) * 6 +
-    countJodiInWindow(context, jodi, endIndex, 30) * 4 +
-    countJodiInWindow(context, jodi, endIndex, 60) * 2 +
-    countJodiInWindow(context, jodi, endIndex, 90) +
-    countJodiInWindow(context, jodi, endIndex, 180) * 0.25;
-
-  if (gap >= 8 && gap <= 60) score += 2;
-  if (gap <= 1) score -= 1;
-  if (openRecent <= 1) score += 1.5;
-  if (closeRecent <= 1) score += 1.5;
-  if (openRecent >= 5) score -= 1;
-  if (closeRecent >= 5) score -= 1;
-  if (countJodiInWindow(context, jodi, endIndex, RECENT_SOFT_PENALTY_DAYS) > 0) {
-    score -= RECENT_SOFT_REPEAT_PENALTY;
-  }
-  return score;
-}
-
-function getTopJodis(context, count, exclude = new Set(), endIndex = context.draws.length, options = {}) {
-  const ranked = ALL_NON_DOUBLE_JODIS
-    .filter((jodi) => !exclude.has(jodi))
-    .sort((left, right) => scoreJodi(context, right, endIndex) - scoreJodi(context, left, endIndex) || left.localeCompare(right));
-
-  return pickBalancedJodis(ranked, count, options);
-}
-
-function pickBalancedJodis(ranked, count, options = {}) {
-  const selected = [...(options.selected || [])];
-  const output = [];
-  const maxOpen = options.maxOpen ?? 99;
-  const maxClose = options.maxClose ?? 99;
-  const openCounts = new Map();
-  const closeCounts = new Map();
-
-  for (const jodi of selected) {
-    openCounts.set(jodi[0], (openCounts.get(jodi[0]) || 0) + 1);
-    closeCounts.set(jodi[1], (closeCounts.get(jodi[1]) || 0) + 1);
-  }
-
-  for (const jodi of ranked) {
-    if (output.length >= count) break;
-    const openDigit = jodi[0];
-    const closeDigit = jodi[1];
-    if ((openCounts.get(openDigit) || 0) >= maxOpen) continue;
-    if ((closeCounts.get(closeDigit) || 0) >= maxClose) continue;
-    output.push(jodi);
-    openCounts.set(openDigit, (openCounts.get(openDigit) || 0) + 1);
-    closeCounts.set(closeDigit, (closeCounts.get(closeDigit) || 0) + 1);
-  }
-
-  if (output.length < count) {
-    for (const jodi of ranked) {
-      if (output.length >= count) break;
-      if (!output.includes(jodi)) output.push(jodi);
-    }
-  }
-
-  return output.slice(0, count);
-}
-
-function getRecentRepeatExclusions(draws, endIndex = draws.length) {
-  const start = Math.max(0, endIndex - RECENT_REPEAT_SKIP_DAYS);
-  return new Set(
-    draws
-      .slice(start, endIndex)
-      .map((item) => item.jodi)
-      .filter((jodi) => ALL_NON_DOUBLE_JODIS.includes(jodi))
-  );
-}
-
-function buildMissContext(context) {
-  const prefixCounts = [new Uint16Array(100)];
-  const draws = context.draws;
-
-  for (let index = 0; index < draws.length; index += 1) {
-    const next = new Uint16Array(prefixCounts[prefixCounts.length - 1]);
-    if (index >= 180) {
-      const actual = draws[index].jodi;
-      const historicalRecentExclusions = getRecentRepeatExclusions(draws, index);
-      const historicalFirst = getTopJodis(context, 20, historicalRecentExclusions, index, {
-        maxOpen: FIRST_GROUP_DIGIT_LIMIT,
-        maxClose: FIRST_GROUP_DIGIT_LIMIT
-      });
-      if (!historicalFirst.includes(actual)) {
-        next[jodiToIndex(actual)] += 1;
+function getGapScores(draws, endIndex) {
+  const scores = {};
+  for (const digit of ALL_DIGITS) {
+    let gap = 60;
+    for (let index = endIndex - 1; index >= 0; index -= 1) {
+      if (getPannaFinalDigit(draws[index]?.openPanna) === digit) {
+        gap = endIndex - index;
+        break;
       }
     }
-    prefixCounts.push(next);
+    scores[digit] = Math.min(gap, 30) / 30;
+  }
+  return scores;
+}
+
+function getFailureLearningCounts(draws, endIndex, bucket) {
+  const counts = Object.fromEntries(ALL_DIGITS.map((digit) => [digit, 0]));
+  const baseDigits = FINAL_NUMBER_DIGIT_MAP[bucket] || [];
+
+  for (let index = 1; index < endIndex; index += 1) {
+    const previousBucket = getJodiFinalNumber(deriveJodiFromDraw(draws[index - 1]));
+    if (previousBucket !== bucket) continue;
+    const actualDigit = getPannaFinalDigit(draws[index].openPanna);
+    if (!baseDigits.includes(actualDigit)) counts[actualDigit] += 1;
   }
 
-  return { prefixCounts };
+  return counts;
 }
 
-function countMissInWindow(missContext, jodi, endIndex, windowSize) {
-  const end = Math.max(0, Math.min(endIndex, missContext.prefixCounts.length - 1));
-  const start = Math.max(0, end - windowSize);
-  const index = jodiToIndex(jodi);
-  return missContext.prefixCounts[end][index] - missContext.prefixCounts[start][index];
-}
+function buildTrendMixDigitsAtIndex(draws, endIndex = draws.length, limit = TREND_DIGIT_LIMIT) {
+  if (endIndex <= 0) return [];
 
-function buildFailureJodis(context, firstSet, count, endIndex = context.draws.length, balanceSeed = [], missContext = buildMissContext(context)) {
-  const fallbackRank = new Map(getTopJodis(context, 90, firstSet, endIndex).map((jodi, index) => [jodi, 90 - index]));
+  const previousDraw = draws[endIndex - 1];
+  const previousJodi = deriveJodiFromDraw(previousDraw);
+  const bucket = getJodiFinalNumber(previousJodi);
+  const baseDigits = bucket === null ? [] : FINAL_NUMBER_DIGIT_MAP[bucket] || [];
+  const recent7 = normalizeCounts(countWindow(draws, endIndex, (draw) => getPannaFinalDigit(draw.openPanna), 7));
+  const recent14 = normalizeCounts(countWindow(draws, endIndex, (draw) => getPannaFinalDigit(draw.openPanna), 14));
+  const recent30 = normalizeCounts(countWindow(draws, endIndex, (draw) => getPannaFinalDigit(draw.openPanna), 30));
+  const failure = normalizeCounts(bucket === null ? {} : getFailureLearningCounts(draws, endIndex, bucket));
+  const neighbor = Object.fromEntries(ALL_DIGITS.map((digit) => [digit, 0]));
 
-  function failureScore(jodi) {
-    return (
-      countMissInWindow(missContext, jodi, endIndex, 30) * 6 +
-      countMissInWindow(missContext, jodi, endIndex, 60) * 3 +
-      countMissInWindow(missContext, jodi, endIndex, 120) * 1.5 +
-      countMissInWindow(missContext, jodi, endIndex, 220) +
-      (fallbackRank.get(jodi) || 0) * 0.08
-    );
+  for (const sourceDigit of [getPannaFinalDigit(previousDraw.openPanna), previousDraw.closePanna ? getPannaFinalDigit(previousDraw.closePanna) : ""]) {
+    if (!/^[0-9]$/.test(sourceDigit)) continue;
+    for (const delta of [-1, 0, 1]) {
+      neighbor[String((Number(sourceDigit) + delta + 10) % 10)] += 1;
+    }
   }
 
-  const ranked = ALL_NON_DOUBLE_JODIS
-    .filter((jodi) => !firstSet.has(jodi))
-    .sort((left, right) => failureScore(right) - failureScore(left) || left.localeCompare(right));
-
-  return pickBalancedJodis(ranked, count, {
-    selected: balanceSeed,
-    maxOpen: COMBINED_GROUP_DIGIT_LIMIT,
-    maxClose: COMBINED_GROUP_DIGIT_LIMIT
-  });
-}
-
-function buildPredictionAtIndex(context, endIndex = context.draws.length, missContext = buildMissContext(context)) {
-  const recentRepeatExclusions = getRecentRepeatExclusions(context.draws, endIndex);
-  const first20 = getTopJodis(context, 20, recentRepeatExclusions, endIndex, {
-    maxOpen: FIRST_GROUP_DIGIT_LIMIT,
-    maxClose: FIRST_GROUP_DIGIT_LIMIT
-  });
-  const second20 = buildFailureJodis(context, new Set([...recentRepeatExclusions, ...first20]), 20, endIndex, first20, missContext);
-
-  return {
-    first20,
-    second20,
-    combined40: [...first20, ...second20],
-    recentRepeatExclusions
-  };
-}
-
-function countHits(draws, jodis, limit) {
-  const set = new Set(jodis);
-  return draws.slice(-limit).filter((item) => set.has(item.jodi)).length;
-}
-
-function getMissStreak(draws, jodis) {
-  const set = new Set(jodis);
-  for (let index = draws.length - 1, streak = 0; index >= 0; index -= 1, streak += 1) {
-    if (set.has(draws[index].jodi)) return streak;
-  }
-  return draws.length;
-}
-
-function backtestPredictionStrategy(context) {
-  const draws = context.draws;
-  const results = [];
-  const startIndex = Math.max(220, draws.length - 500);
-  const missContext = buildMissContext(context);
-
-  for (let index = startIndex; index < draws.length; index += 1) {
-    const { first20: first, second20: second } = buildPredictionAtIndex(context, index, missContext);
-    const actual = draws[index].jodi;
-    const firstHit = first.includes(actual);
-    const secondHit = second.includes(actual);
-    results.push({
-      actual,
-      firstHit,
-      secondHit,
-      hit: firstHit || secondHit
-    });
+  const scores = {};
+  for (const digit of ALL_DIGITS) {
+    scores[digit] = 0;
+    scores[digit] += baseDigits.includes(digit) ? 0.8 : 0;
+    scores[digit] += failure[digit] * 1.2;
+    scores[digit] += recent7[digit] * 2;
+    scores[digit] += recent14[digit] * 1;
+    scores[digit] += recent30[digit] * 0.5;
+    scores[digit] += neighbor[digit] * 0.8;
   }
 
-  const plays = results.length;
-  const hits = results.filter((item) => item.hit).length;
-  const firstHits = results.filter((item) => item.firstHit).length;
-  const secondHits = results.filter((item) => item.secondHit).length;
+  return ALL_DIGITS
+    .slice()
+    .sort((left, right) => scores[right] - scores[left] || Number(left) - Number(right))
+    .slice(0, limit);
+}
 
+function getSinglePannaMap(digits) {
+  return digits.map((digit) => ({
+    digit,
+    pannas: pannaChartBySingle[digit] || []
+  }));
+}
+
+function flattenSinglePannas(pannaMap) {
+  return pannaMap.flatMap((item) => item.pannas);
+}
+
+function backtestTrendMix(draws, limit, mode = "open") {
+  const start = Math.max(1, draws.length - limit);
+  let stake = 0;
+  let win = 0;
+  let hits = 0;
+  let openHits = 0;
+  let closeHits = 0;
+  let closeTried = 0;
+  let miss = 0;
+  let currentMiss = 0;
+  let maxMiss = 0;
+
+  for (let index = start; index < draws.length; index += 1) {
+    const digits = buildTrendMixDigitsAtIndex(draws, index);
+    const roundStake = digits.length * 12 * SINGLE_PANNA_STAKE;
+    let hit = false;
+    stake += roundStake;
+
+    const openDigit = getPannaFinalDigit(draws[index].openPanna);
+    if (getPannaType(draws[index].openPanna) === "single" && digits.includes(openDigit)) {
+      win += SINGLE_PANNA_STAKE * SINGLE_PANNA_RATE;
+      hits += 1;
+      openHits += 1;
+      hit = true;
+    } else if (mode === "openClose" && draws[index].closePanna) {
+      closeTried += 1;
+      stake += roundStake;
+      const closeDigit = getPannaFinalDigit(draws[index].closePanna);
+      if (getPannaType(draws[index].closePanna) === "single" && digits.includes(closeDigit)) {
+        win += SINGLE_PANNA_STAKE * SINGLE_PANNA_RATE;
+        hits += 1;
+        closeHits += 1;
+        hit = true;
+      }
+    }
+
+    if (hit) {
+      currentMiss = 0;
+    } else {
+      miss += 1;
+      currentMiss += 1;
+      maxMiss = Math.max(maxMiss, currentMiss);
+    }
+  }
+
+  const plays = draws.length - start;
   return {
     plays,
     hits,
-    firstHits,
-    secondHits,
+    openHits,
+    closeHits,
+    closeTried,
+    miss,
     hitRate: plays ? roundPercent((hits / plays) * 100) : 0,
-    last30Hits: countBacktestHits(results, 30),
-    last60Hits: countBacktestHits(results, 60),
-    last90Hits: countBacktestHits(results, 90),
-    missStreak: getBacktestMissStreak(results)
+    maxMiss,
+    stake,
+    win,
+    profit: win - stake,
+    profitPerDay: plays ? Math.round((win - stake) / plays) : 0
   };
-}
-
-function countBacktestHits(results, limit) {
-  return results.slice(-limit).filter((item) => item.hit).length;
-}
-
-function getBacktestMissStreak(results) {
-  let streak = 0;
-  for (let index = results.length - 1; index >= 0; index -= 1) {
-    if (results[index].hit) return streak;
-    streak += 1;
-  }
-  return streak;
 }
 
 function roundPercent(value) {
   return Math.round(Number(value || 0) * 100) / 100;
 }
 
-export function buildJodiPredictionFromRows(rows, options = {}) {
-  let draws = normalizeJodiRows(rows);
+function getConfidenceLabel(backtest) {
+  const last30Hits = Number(backtest?.last30?.hits || 0);
+  const last60Hits = Number(backtest?.last60?.hits || 0);
+  const missStreak = Number(backtest?.last30?.maxMiss || 0);
+
+  if (last30Hits >= 21 && last60Hits >= 39 && missStreak <= 3) return "strong";
+  if (last30Hits >= 18 && last60Hits >= 34) return "medium";
+  return "weak";
+}
+
+export function buildPannaPredictionFromRows(rows, options = {}) {
+  let draws = normalizePannaRows(rows, options.jodiRows);
   const todayExclusion = excludeTodayDraws(draws, options.todayDateKey || getIndiaDateKey());
   draws = todayExclusion.kept;
-  const excludedLatestJodi = String(options.excludeLatestJodi || "").trim();
-  const shouldExcludeLatest =
-    /^[0-9]{2}$/.test(excludedLatestJodi) &&
-    draws.length > 0 &&
-    draws[draws.length - 1]?.jodi === excludedLatestJodi;
 
-  if (shouldExcludeLatest) {
-    draws = draws.slice(0, -1);
-  }
-
-  const context = buildScoreContext(draws);
-  const missContext = buildMissContext(context);
-  const { first20, second20, combined40, recentRepeatExclusions } = buildPredictionAtIndex(context, undefined, missContext);
-  const backtest = backtestPredictionStrategy(context);
-  const stats = {
-    totalResults: draws.length,
-    todayDateKey: todayExclusion.todayDateKey,
-    excludedTodayJodis: todayExclusion.excluded.map((item) => item.jodi),
-    recentSkipDays: RECENT_REPEAT_SKIP_DAYS,
-    recentSoftPenaltyDays: RECENT_SOFT_PENALTY_DAYS,
-    recentSoftRepeatPenalty: RECENT_SOFT_REPEAT_PENALTY,
-    excludedLatestJodi: shouldExcludeLatest ? excludedLatestJodi : "",
-    skippedRecentJodis: recentRepeatExclusions.size,
-    firstGroupDigitLimit: FIRST_GROUP_DIGIT_LIMIT,
-    combinedGroupDigitLimit: COMBINED_GROUP_DIGIT_LIMIT,
-    last30Hits: backtest.last30Hits,
-    last60Hits: backtest.last60Hits,
-    last90Hits: backtest.last90Hits,
-    missStreak: backtest.missStreak,
-    confidence: getConfidenceLabel(backtest),
-    backtest
+  const digits = buildTrendMixDigitsAtIndex(draws);
+  const singlePannaMap = getSinglePannaMap(digits);
+  const singlePannas = flattenSinglePannas(singlePannaMap);
+  const stakePerOpen = singlePannas.length * SINGLE_PANNA_STAKE;
+  const winReturn = SINGLE_PANNA_STAKE * SINGLE_PANNA_RATE;
+  const backtest = {
+    last30: backtestTrendMix(draws, 30, "open"),
+    last60: backtestTrendMix(draws, 60, "open"),
+    last90: backtestTrendMix(draws, 90, "open"),
+    openFailCloseLast30: backtestTrendMix(draws, 30, "openClose")
   };
 
   return {
-    first20,
-    second20,
-    combined40,
-    stats,
-    excludedToday: todayExclusion.excluded.map((item) => item.jodi),
-    skippedRecent: Array.from(recentRepeatExclusions),
-    latestResults: draws.slice(-10).map((item) => item.jodi),
+    strategy: "trend-mix-7-single-panna",
+    digits,
+    singlePannaMap,
+    singlePannas,
+    stats: {
+      totalResults: draws.length,
+      todayDateKey: todayExclusion.todayDateKey,
+      excludedTodayCount: todayExclusion.excluded.length,
+      digitCount: digits.length,
+      pannaCount: singlePannas.length,
+      stakePerOpen,
+      betAmountPerPanna: SINGLE_PANNA_STAKE,
+      singlePannaRate: SINGLE_PANNA_RATE,
+      hitReturn: winReturn,
+      hitProfit: winReturn - stakePerOpen,
+      confidence: getConfidenceLabel(backtest),
+      backtest
+    },
+    excludedToday: todayExclusion.excluded.map((item) => item.openPanna),
+    latestResults: draws.slice(-10).map((item) => ({
+      openPanna: item.openPanna,
+      openDigit: getPannaFinalDigit(item.openPanna),
+      closePanna: item.closePanna,
+      closeDigit: item.closePanna ? getPannaFinalDigit(item.closePanna) : ""
+    })),
     generatedAt: new Date().toISOString()
   };
 }
 
-function getConfidenceLabel(backtest) {
-  const last30 = Number(backtest?.last30Hits || 0);
-  const last60 = Number(backtest?.last60Hits || 0);
-  const last90 = Number(backtest?.last90Hits || 0);
-  const missStreak = Number(backtest?.missStreak || 0);
-
-  if (last30 >= 13 && last60 >= 25 && last90 >= 38 && missStreak <= 2) {
-    return "strong";
-  }
-  if (last30 >= 11 && last60 >= 22 && last90 >= 34) {
-    return "medium";
-  }
-  return "weak";
-}
+export const buildJodiPredictionFromRows = buildPannaPredictionFromRows;

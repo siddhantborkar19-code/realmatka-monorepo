@@ -955,6 +955,30 @@ a.secondary {
   background: #fff;
 }
 
+.mini-stat small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.panna-predictor-groups {
+  margin-top: 18px;
+  display: grid;
+  gap: 18px;
+}
+
+.panna-predictor-group {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.panna-predictor-digit {
+  color: var(--primary-dark);
+  font-size: 15px;
+  font-weight: 900;
+}
+
 .audit-list {
   margin-top: 16px;
   display: grid;

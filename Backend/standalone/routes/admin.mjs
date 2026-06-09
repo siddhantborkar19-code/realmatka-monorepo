@@ -1,7 +1,7 @@
 import { corsPreflight, fail, ok } from "../http.mjs";
 import { requireAdminUser } from "../middleware/auth-middleware.mjs";
 import { getChartRecord } from "../stores/market-store.mjs";
-import { buildJodiPredictionFromRows } from "../services/jodi-prediction-service.mjs";
+import { buildPannaPredictionFromRows } from "../services/jodi-prediction-service.mjs";
 import {
   adminDashboardSummaryController,
   adminExportDataController,
@@ -160,15 +160,16 @@ export async function jodiPrediction(request) {
     return fail("market query is required", 400, request);
   }
 
-  const chart = await getChartRecord(marketSlug, "jodi");
+  const chart = await getChartRecord(marketSlug, "panna");
   if (!chart?.rows?.length) {
-    return fail("Jodi chart data not found for this market", 404, request);
+    return fail("Panna chart data not found for this market", 404, request);
   }
+  const jodiChart = await getChartRecord(marketSlug, "jodi");
 
   return ok({
     marketSlug,
-    chartType: "jodi",
-    ...buildJodiPredictionFromRows(chart.rows)
+    chartType: "panna",
+    ...buildPannaPredictionFromRows(chart.rows, { jodiRows: jodiChart?.rows || [] })
   }, request);
 }
 

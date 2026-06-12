@@ -4,6 +4,7 @@ import { findMarketBySlug, getChartRecord, updateMarketRecord, upsertChartRecord
 import { logger } from "../ops/logger.mjs";
 
 const MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX = "market_manual_close_day_india:";
+const MARKET_MANUAL_CLOSE_SOURCE_SETTING_PREFIX = "market_manual_close_source:";
 
 function getIndiaDateKey() {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -19,6 +20,10 @@ function getIndiaDateKey() {
 
 function getMarketManualCloseSettingKey(slug) {
   return `${MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX}${String(slug || "").trim()}`;
+}
+
+function getMarketManualCloseSourceSettingKey(slug) {
+  return `${MARKET_MANUAL_CLOSE_SOURCE_SETTING_PREFIX}${String(slug || "").trim()}`;
 }
 
 export async function updateChartData({ slug, chartType, rows }, deps) {
@@ -51,7 +56,7 @@ export async function updateChartData({ slug, chartType, rows }, deps) {
 }
 
 export async function updateMarketData(payload, deps) {
-  const { slug, result, status, action, open, close, category } = payload;
+  const { slug, result, status, action, open, close, category, availabilityMode = "manual" } = payload;
   if (!deps.isValidMarketResultString(result)) {
     return { ok: false, status: 400, error: "Result must follow ***-**-***, 123-4*-***, or 123-45-678 format" };
   }
@@ -59,9 +64,31 @@ export async function updateMarketData(payload, deps) {
   const existingMarket = await findMarketBySlug(slug);
   if (!existingMarket) return { ok: false, status: 404, error: "Market not found" };
 
-  const updated = await updateMarketRecord(slug, { result, status, action, open, close, category });
-  const normalizedStatus = String(status || "").trim().toLowerCase();
-  const normalizedAction = String(action || "").trim().toLowerCase();
+  const isResultOnlyUpdate = availabilityMode === "result-only";
+  let preserveExplicitClose = false;
+  if (isResultOnlyUpdate) {
+    const settings = await getAppSettings();
+    const settingValues = new Map(settings.map((item) => [String(item?.key || ""), String(item?.value || "").trim()]));
+    preserveExplicitClose =
+      settingValues.get(getMarketManualCloseSettingKey(slug)) === getIndiaDateKey() &&
+      settingValues.get(getMarketManualCloseSourceSettingKey(slug)) === "explicit";
+  }
+  const effectiveStatus = isResultOnlyUpdate
+    ? (preserveExplicitClose ? existingMarket.status : "Active")
+    : status;
+  const effectiveAction = isResultOnlyUpdate
+    ? (preserveExplicitClose ? existingMarket.action : "Open")
+    : action;
+  const updated = await updateMarketRecord(slug, {
+    result,
+    status: effectiveStatus,
+    action: effectiveAction,
+    open,
+    close,
+    category
+  });
+  const normalizedStatus = String(effectiveStatus || "").trim().toLowerCase();
+  const normalizedAction = String(effectiveAction || "").trim().toLowerCase();
   const shouldTemporarilyClose =
     normalizedStatus === "closed" ||
     normalizedStatus.includes("closed for today") ||
@@ -71,6 +98,10 @@ export async function updateMarketData(payload, deps) {
   await upsertAppSetting(
     getMarketManualCloseSettingKey(slug),
     shouldTemporarilyClose ? getIndiaDateKey() : ""
+  );
+  await upsertAppSetting(
+    getMarketManualCloseSourceSettingKey(slug),
+    shouldTemporarilyClose && !isResultOnlyUpdate ? "explicit" : ""
   );
   await deps.syncChartsFromMarketResult(updated);
 

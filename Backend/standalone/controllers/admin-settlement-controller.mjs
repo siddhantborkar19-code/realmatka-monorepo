@@ -48,11 +48,21 @@ export async function adminMarketUpdateController(request, deps) {
   const open = String(body.open ?? "");
   const close = String(body.close ?? "");
   const category = String(body.category ?? "");
+  const availabilityMode = String(body.availabilityMode ?? "manual") === "result-only" ? "result-only" : "manual";
   if (!slug || !resultValue || !status || !action || !open || !close || !category) {
     return fail("slug, result, status, action, open, close, and category are required", 400, request);
   }
 
-  const result = await updateMarketData({ slug, result: resultValue, status, action, open, close, category }, deps);
+  const result = await updateMarketData({
+    slug,
+    result: resultValue,
+    status,
+    action,
+    open,
+    close,
+    category,
+    availabilityMode
+  }, deps);
   if (!result.ok) return fail(result.error, result.status, request);
 
   await addAuditLog({
@@ -60,7 +70,16 @@ export async function adminMarketUpdateController(request, deps) {
     action: "MARKET_UPDATE",
     entityType: "market",
     entityId: result.market.slug,
-    details: JSON.stringify({ result: resultValue, status, action, open, close, category, broadcast: result.broadcast })
+    details: JSON.stringify({
+      result: resultValue,
+      status: result.market.status,
+      action: result.market.action,
+      open,
+      close,
+      category,
+      availabilityMode,
+      broadcast: result.broadcast
+    })
   });
 
   await refreshMarketListSnapshot();

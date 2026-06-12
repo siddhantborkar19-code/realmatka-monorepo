@@ -1504,6 +1504,7 @@ function LegacyResultsPage({ apiBase, token, mode = "results" }) {
   const [savedRows, setSavedRows] = useState([]);
   const [chartDraftRows, setChartDraftRows] = useState([]);
   const [marketForm, setMarketForm] = useState({ result: "", status: "Active", action: "Open", open: "", close: "", category: "games" });
+  const [marketAvailabilityDirty, setMarketAvailabilityDirty] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState("");
   const [lastSettlement, setLastSettlement] = useState(null);
@@ -1596,6 +1597,7 @@ function LegacyResultsPage({ apiBase, token, mode = "results" }) {
       close: market.close || "",
       category: market.category || "games"
     });
+    setMarketAvailabilityDirty(false);
     setMessage("");
     setLastSettlement(null);
   }, [selectedSlug, state.markets]);
@@ -1698,6 +1700,7 @@ function LegacyResultsPage({ apiBase, token, mode = "results" }) {
         marketTiming={marketTiming}
         markets={sortedMarketsForResultEngine}
         message={message}
+        onAvailabilityChange={() => setMarketAvailabilityDirty(true)}
         preview={preview}
         publishResult={publishResult}
         resultInputRefs={resultInputRefs}
@@ -1763,6 +1766,7 @@ function LegacyResultsPage({ apiBase, token, mode = "results" }) {
     try {
       const result = await publishMarketResult({
         apiBase,
+        availabilityMode: marketAvailabilityDirty ? "manual" : "result-only",
         chartType,
         fetchApi,
         fetchChartAfterPublish: true,
@@ -1782,6 +1786,7 @@ function LegacyResultsPage({ apiBase, token, mode = "results" }) {
         setEditorWeekLabel(normalizedRows[normalizedRows.length - 1]?.[0] || "");
       }
       setLastSettlement(result.lastSettlement);
+      setMarketAvailabilityDirty(false);
       fetchApi(apiBase, "/api/admin/audit-logs", token)
         .then((auditLogs) => {
           setState((current) => ({ ...current, auditLogs }));
@@ -1811,6 +1816,7 @@ function LegacyResultsPage({ apiBase, token, mode = "results" }) {
     try {
       const result = await publishMarketResult({
         apiBase,
+        availabilityMode: "result-only",
         chartType,
         fetchApi,
         fetchChartAfterPublish: false,

@@ -5,6 +5,7 @@ const MARKET_SNAPSHOT_TTL_MS = 60_000;
 const MARKET_RESULT_RESET_AFTER_MINUTES = 30;
 const MARKET_RESULT_RESET_SETTING_KEY = "market_results_reset_day_india";
 const MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX = "market_manual_close_day_india:";
+const MARKET_MANUAL_CLOSE_SOURCE_SETTING_PREFIX = "market_manual_close_source:";
 const MARKET_DAY_ROLLOVER_MINUTES = 30;
 const MARKET_TIME_CHANGE_SCHEDULES = [
   {
@@ -106,6 +107,10 @@ function getIndiaWeekday(date = getIndiaNow()) {
 
 function getMarketManualCloseSettingKey(slug) {
   return `${MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX}${String(slug || "").trim()}`;
+}
+
+function getMarketManualCloseSourceSettingKey(slug) {
+  return `${MARKET_MANUAL_CLOSE_SOURCE_SETTING_PREFIX}${String(slug || "").trim()}`;
 }
 
 function isMarketWeeklyOff(market, date = getIndiaNow()) {
@@ -437,10 +442,16 @@ async function applyTemporaryMarketCloseReset(markets) {
       .filter((item) => String(item?.key || "").startsWith(MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX))
       .map((item) => [String(item.key).slice(MARKET_MANUAL_CLOSE_DAY_SETTING_PREFIX.length), String(item.value || "").trim()])
   );
+  const manualCloseSourceBySlug = new Map(
+    settings
+      .filter((item) => String(item?.key || "").startsWith(MARKET_MANUAL_CLOSE_SOURCE_SETTING_PREFIX))
+      .map((item) => [String(item.key).slice(MARKET_MANUAL_CLOSE_SOURCE_SETTING_PREFIX.length), String(item.value || "").trim()])
+  );
 
   const staleClosedMarkets = [];
   const nextMarkets = (Array.isArray(markets) ? markets : []).map((market) => {
     const manualCloseDay = manualCloseDayBySlug.get(String(market?.slug || "").trim()) || "";
+    const manualCloseSource = manualCloseSourceBySlug.get(String(market?.slug || "").trim()) || "";
     const savedStatus = String(market?.status || "").trim().toLowerCase();
     const savedAction = String(market?.action || "").trim().toLowerCase();
     const hasTemporaryCloseState =
@@ -450,7 +461,7 @@ async function applyTemporaryMarketCloseReset(markets) {
       savedAction === "closed" ||
       savedAction === "paused";
 
-    if (hasTemporaryCloseState && manualCloseDay !== todayKey) {
+    if (hasTemporaryCloseState && (manualCloseDay !== todayKey || manualCloseSource !== "explicit")) {
       staleClosedMarkets.push(String(market?.slug || "").trim());
       return {
         ...market,
@@ -470,7 +481,8 @@ async function applyTemporaryMarketCloseReset(markets) {
     await Promise.all(
       staleClosedMarkets.flatMap((slug) => [
         updateMarketRecord(slug, { status: "Active", action: "Open" }).catch(() => null),
-        upsertAppSetting(getMarketManualCloseSettingKey(slug), "").catch(() => null)
+        upsertAppSetting(getMarketManualCloseSettingKey(slug), "").catch(() => null),
+        upsertAppSetting(getMarketManualCloseSourceSettingKey(slug), "").catch(() => null)
       ])
     );
   }

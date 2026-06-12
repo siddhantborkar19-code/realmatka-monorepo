@@ -161,6 +161,7 @@ export function ResultPublishSettlementSection({
   marketForm,
   markets,
   message,
+  onAvailabilityChange,
   publishResult,
   resultInputRefs,
   resultSlots,
@@ -214,8 +215,8 @@ export function ResultPublishSettlementSection({
               ))}
             </div>
             <div className="result-market-form">
-              <label><span>Status</span><select value={marketForm.status} onChange={(event) => setMarketForm((current) => ({ ...current, status: event.target.value }))}><option value="Active">Active</option><option value="Paused">Paused</option><option value="Closed">Closed</option></select></label>
-              <label><span>Action</span><select value={marketForm.action} onChange={(event) => setMarketForm((current) => ({ ...current, action: event.target.value }))}><option value="Open">Open</option><option value="Close Running">Close Running</option><option value="Closed">Closed</option></select></label>
+              <label><span>Status</span><select value={marketForm.status} onChange={(event) => { onAvailabilityChange(); setMarketForm((current) => ({ ...current, status: event.target.value })); }}><option value="Active">Active</option><option value="Paused">Paused</option><option value="Closed">Closed</option></select></label>
+              <label><span>Action</span><select value={marketForm.action} onChange={(event) => { onAvailabilityChange(); setMarketForm((current) => ({ ...current, action: event.target.value })); }}><option value="Open">Open</option><option value="Close Running">Close Running</option><option value="Closed">Closed</option></select></label>
               <label><span>Open Time</span><input value={marketForm.open} onChange={(event) => setMarketForm((current) => ({ ...current, open: event.target.value }))} /></label>
               <label><span>Close Time</span><input value={marketForm.close} onChange={(event) => setMarketForm((current) => ({ ...current, close: event.target.value }))} /></label>
               <label><span>Category</span><select value={marketForm.category} onChange={(event) => setMarketForm((current) => ({ ...current, category: event.target.value }))}><option value="games">Games</option><option value="starline">Starline</option><option value="jackpot">Jackpot</option></select></label>
@@ -278,6 +279,7 @@ export function getClearedEditorValues(chartType) {
 }
 
 export async function publishMarketResult({
+  availabilityMode = "result-only",
   apiBase,
   chartType,
   fetchApi,
@@ -293,7 +295,7 @@ export async function publishMarketResult({
 
   await fetchApi(apiBase, "/api/admin/market-update", token, {
     method: "POST",
-    body: { slug: selectedSlug, ...marketForm, result: nextResult }
+    body: { slug: selectedSlug, ...marketForm, result: nextResult, availabilityMode }
   });
 
   const isPlaceholder = nextResult === "***-**-***";

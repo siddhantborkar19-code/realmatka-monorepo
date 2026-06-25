@@ -58,6 +58,9 @@ const DEFAULT_MANUAL_DEPOSIT_UPI_ID = "s7568539842258141@slc";
 const DEFAULT_MANUAL_DEPOSIT_UPI_NAME = "NovaByte Technologies";
 
 export function isDepositGatewayHoldEnabled() {
+  if (readBooleanEnv("DEPOSIT_ALLOW_GATEWAY", false)) {
+    return false;
+  }
   return readBooleanEnv("DEPOSIT_GATEWAY_HOLD", true);
 }
 

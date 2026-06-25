@@ -88,11 +88,11 @@ export default function AddFundScreen() {
   const isMaintenanceMode = !depositConfig.enabled || depositConfig.mode === "maintenance";
   const addFundTitle = readWalletText(walletSettings, "wallet_add_fund_title", "Add Fund");
   const amountLabel = readWalletText(walletSettings, "wallet_add_fund_amount_label", "Deposit Amount");
-  const payButtonLabel = readWalletText(walletSettings, "wallet_add_fund_button_label", isManualMode ? "Generate QR" : "Pay Now");
+  const payButtonLabel = isManualMode ? "Generate QR" : readWalletText(walletSettings, "wallet_add_fund_button_label", "Pay Now");
   const historyVisible = readWalletBoolean(walletSettings, "wallet_add_fund_history_visible", true);
   const historyLabel = readWalletText(walletSettings, "wallet_add_fund_history_label", "View Wallet History");
   const howItWorksVisible = readWalletBoolean(walletSettings, "wallet_add_fund_how_it_works_visible", true);
-  const manualQrVisible = readWalletBoolean(walletSettings, "wallet_add_fund_manual_qr_visible", true);
+  const manualQrVisible = isManualMode ? true : readWalletBoolean(walletSettings, "wallet_add_fund_manual_qr_visible", true);
   const whatsappVisible = readWalletBoolean(walletSettings, "wallet_add_fund_whatsapp_visible", true);
   const upiUrl = useMemo(() => buildUpiUrl(generatedAmount, depositConfig), [depositConfig, generatedAmount]);
   const qrMatrix = useMemo(() => buildQrMatrix(upiUrl), [upiUrl]);
@@ -107,7 +107,11 @@ export default function AddFundScreen() {
         setLoadingConfig(true);
         const nextConfig = await api.getDepositConfig();
         if (active) {
-          setDepositConfig({ ...DEFAULT_DEPOSIT_CONFIG, ...nextConfig });
+          const resolvedConfig = { ...DEFAULT_DEPOSIT_CONFIG, ...nextConfig };
+          if (resolvedConfig.mode === "cashfree" || resolvedConfig.mode === "razorpay") {
+            resolvedConfig.mode = "manual_qr";
+          }
+          setDepositConfig(resolvedConfig);
         }
       } catch (configError) {
         if (active) {

@@ -1,0 +1,334 @@
+{
+  "results": [
+    {
+      "market": "Andhra Morning",
+      "mapping": {
+        "0": "7",
+        "1": "2",
+        "2": "3",
+        "3": "6",
+        "4": "5",
+        "5": "6",
+        "6": "6"
+      },
+      "days": {
+        "Sunday": {
+          "digit": "7",
+          "training": {
+            "tests": 136,
+            "absent": 118,
+            "rate": 86.76470588235294
+          },
+          "latest30": {
+            "tests": 5,
+            "absent": 5,
+            "rate": 100
+          }
+        },
+        "Monday": {
+          "digit": "2",
+          "training": {
+            "tests": 135,
+            "absent": 116,
+            "rate": 85.92592592592592
+          },
+          "latest30": {
+            "tests": 5,
+            "absent": 3,
+            "rate": 60
+          }
+        },
+        "Tuesday": {
+          "digit": "3",
+          "training": {
+            "tests": 138,
+            "absent": 120,
+            "rate": 86.95652173913044
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 4,
+            "rate": 100
+          }
+        },
+        "Wednesday": {
+          "digit": "6",
+          "training": {
+            "tests": 136,
+            "absent": 116,
+            "rate": 85.29411764705883
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 4,
+            "rate": 100
+          }
+        },
+        "Thursday": {
+          "digit": "5",
+          "training": {
+            "tests": 137,
+            "absent": 121,
+            "rate": 88.32116788321167
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        },
+        "Friday": {
+          "digit": "6",
+          "training": {
+            "tests": 135,
+            "absent": 120,
+            "rate": 88.88888888888889
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        },
+        "Saturday": {
+          "digit": "6",
+          "training": {
+            "tests": 138,
+            "absent": 117,
+            "rate": 84.78260869565217
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        }
+      },
+      "latest30": {
+        "tests": 30,
+        "absent": 25,
+        "rate": 83.33333333333333
+      }
+    },
+    {
+      "market": "Andhra Day",
+      "mapping": {
+        "0": "6",
+        "1": "6",
+        "2": "7",
+        "3": "8",
+        "4": "3",
+        "5": "8",
+        "6": "5"
+      },
+      "days": {
+        "Sunday": {
+          "digit": "6",
+          "training": {
+            "tests": 135,
+            "absent": 116,
+            "rate": 85.92592592592592
+          },
+          "latest30": {
+            "tests": 5,
+            "absent": 5,
+            "rate": 100
+          }
+        },
+        "Monday": {
+          "digit": "6",
+          "training": {
+            "tests": 135,
+            "absent": 118,
+            "rate": 87.4074074074074
+          },
+          "latest30": {
+            "tests": 5,
+            "absent": 4,
+            "rate": 80
+          }
+        },
+        "Tuesday": {
+          "digit": "7",
+          "training": {
+            "tests": 138,
+            "absent": 118,
+            "rate": 85.5072463768116
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        },
+        "Wednesday": {
+          "digit": "8",
+          "training": {
+            "tests": 136,
+            "absent": 118,
+            "rate": 86.76470588235294
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        },
+        "Thursday": {
+          "digit": "3",
+          "training": {
+            "tests": 137,
+            "absent": 118,
+            "rate": 86.13138686131387
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        },
+        "Friday": {
+          "digit": "8",
+          "training": {
+            "tests": 135,
+            "absent": 116,
+            "rate": 85.92592592592592
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 2,
+            "rate": 50
+          }
+        },
+        "Saturday": {
+          "digit": "5",
+          "training": {
+            "tests": 137,
+            "absent": 119,
+            "rate": 86.86131386861314
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 4,
+            "rate": 100
+          }
+        }
+      },
+      "latest30": {
+        "tests": 30,
+        "absent": 24,
+        "rate": 80
+      }
+    },
+    {
+      "market": "Andhra Night",
+      "mapping": {
+        "0": "6",
+        "1": "7",
+        "2": "3",
+        "3": "1",
+        "4": "7",
+        "5": "9",
+        "6": "8"
+      },
+      "days": {
+        "Sunday": {
+          "digit": "6",
+          "training": {
+            "tests": 136,
+            "absent": 117,
+            "rate": 86.02941176470588
+          },
+          "latest30": {
+            "tests": 5,
+            "absent": 4,
+            "rate": 80
+          }
+        },
+        "Monday": {
+          "digit": "7",
+          "training": {
+            "tests": 134,
+            "absent": 119,
+            "rate": 88.80597014925372
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        },
+        "Tuesday": {
+          "digit": "3",
+          "training": {
+            "tests": 137,
+            "absent": 117,
+            "rate": 85.4014598540146
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 3,
+            "rate": 75
+          }
+        },
+        "Wednesday": {
+          "digit": "1",
+          "training": {
+            "tests": 135,
+            "absent": 115,
+            "rate": 85.18518518518519
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 4,
+            "rate": 100
+          }
+        },
+        "Thursday": {
+          "digit": "7",
+          "training": {
+            "tests": 137,
+            "absent": 117,
+            "rate": 85.4014598540146
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 4,
+            "rate": 100
+          }
+        },
+        "Friday": {
+          "digit": "9",
+          "training": {
+            "tests": 135,
+            "absent": 116,
+            "rate": 85.92592592592592
+          },
+          "latest30": {
+            "tests": 4,
+            "absent": 4,
+            "rate": 100
+          }
+        },
+        "Saturday": {
+          "digit": "8",
+          "training": {
+            "tests": 136,
+            "absent": 116,
+            "rate": 85.29411764705883
+          },
+          "latest30": {
+            "tests": 5,
+            "absent": 4,
+            "rate": 80
+          }
+        }
+      },
+      "latest30": {
+        "tests": 30,
+        "absent": 26,
+        "rate": 86.66666666666667
+      }
+    }
+  ]
+}

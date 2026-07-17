@@ -1,0 +1,156 @@
+market,rule,test,hit,rate,profit,avg_jodi
+Andhra Day,Existing Hybrid,30,18,60.0,5090,43.03333333333333
+Andhra Day,New PrevWeek+PrevDayClose,30,13,43.333333333333336,400,42.0
+Andhra Day,PrevDayJodi Skip,30,12,40.0,-600,42.0
+Andhra Day,Overall 3-Week,30,14,46.666666666666664,1200,42.666666666666664
+Andhra Day,Last3 Unique,30,13,43.333333333333336,400,42.0
+Andhra Morning,Existing Hybrid,30,17,56.666666666666664,4270,42.43333333333333
+Andhra Morning,New PrevWeek+PrevDayClose,30,15,50.0,2400,42.0
+Andhra Morning,PrevDayJodi Skip,30,11,36.666666666666664,-1600,42.0
+Andhra Morning,Overall 3-Week,30,15,50.0,2270,42.43333333333333
+Andhra Morning,Last3 Unique,30,13,43.333333333333336,400,42.0
+Andhra Night,Existing Hybrid,30,16,53.333333333333336,3040,43.2
+Andhra Night,New PrevWeek+PrevDayClose,30,15,50.0,2400,42.0
+Andhra Night,PrevDayJodi Skip,30,14,46.666666666666664,1400,42.0
+Andhra Night,Overall 3-Week,30,16,53.333333333333336,3200,42.666666666666664
+Andhra Night,Last3 Unique,30,17,56.666666666666664,4400,42.0
+Kalyan,Existing Hybrid,0,0,0,0,0
+Kalyan,New PrevWeek+PrevDayClose,0,0,0,0,0
+Kalyan,PrevDayJodi Skip,0,0,0,0,0
+Kalyan,Overall 3-Week,0,0,0,0,0
+Kalyan,Last3 Unique,0,0,0,0,0
+Kalyan Night,Existing Hybrid,0,0,0,0,0
+Kalyan Night,New PrevWeek+PrevDayClose,0,0,0,0,0
+Kalyan Night,PrevDayJodi Skip,0,0,0,0,0
+Kalyan Night,Overall 3-Week,0,0,0,0,0
+Kalyan Night,Last3 Unique,0,0,0,0,0
+Karnataka Day,Existing Hybrid,0,0,0,0,0
+Karnataka Day,New PrevWeek+PrevDayClose,30,11,36.666666666666664,-1600,42.0
+Karnataka Day,PrevDayJodi Skip,30,10,33.33333333333333,-2600,42.0
+Karnataka Day,Overall 3-Week,30,11,36.666666666666664,-1730,42.43333333333333
+Karnataka Day,Last3 Unique,30,12,40.0,-600,42.0
+Madhur Day,Existing Hybrid,30,16,53.333333333333336,3400,42.0
+Madhur Day,New PrevWeek+PrevDayClose,30,15,50.0,2400,42.0
+Madhur Day,PrevDayJodi Skip,30,17,56.666666666666664,4400,42.0
+Madhur Day,Overall 3-Week,30,13,43.333333333333336,220,42.6
+Madhur Day,Last3 Unique,30,15,50.0,2400,42.0
+Madhur Night,Existing Hybrid,0,0,0,0,0
+Madhur Night,New PrevWeek+PrevDayClose,0,0,0,0,0
+Madhur Night,PrevDayJodi Skip,0,0,0,0,0
+Madhur Night,Overall 3-Week,0,0,0,0,0
+Madhur Night,Last3 Unique,0,0,0,0,0
+MAHADEVI Morning,Existing Hybrid,30,19,63.33333333333333,5500,45.0
+MAHADEVI Morning,New PrevWeek+PrevDayClose,30,15,50.0,2400,42.0
+MAHADEVI Morning,PrevDayJodi Skip,30,13,43.333333333333336,400,42.0
+MAHADEVI Morning,Overall 3-Week,30,17,56.666666666666664,4210,42.63333333333333
+MAHADEVI Morning,Last3 Unique,30,16,53.333333333333336,3400,42.0
+MAHADEVI Night,Existing Hybrid,0,0,0,0,0
+MAHADEVI Night,New PrevWeek+PrevDayClose,30,13,43.333333333333336,400,42.0
+MAHADEVI Night,PrevDayJodi Skip,30,13,43.333333333333336,400,42.0
+MAHADEVI Night,Overall 3-Week,30,14,46.666666666666664,1180,42.733333333333334
+MAHADEVI Night,Last3 Unique,30,14,46.666666666666664,1400,42.0
+MAHADEVI,Existing Hybrid,30,16,53.333333333333336,3260,42.46666666666667
+MAHADEVI,New PrevWeek+PrevDayClose,30,13,43.333333333333336,400,42.0
+MAHADEVI,PrevDayJodi Skip,30,12,40.0,-600,42.0
+MAHADEVI,Overall 3-Week,30,12,40.0,-760,42.53333333333333
+MAHADEVI,Last3 Unique,30,10,33.33333333333333,-2600,42.0
+Main Bazar,Existing Hybrid,0,0,0,0,0
+Main Bazar,New PrevWeek+PrevDayClose,0,0,0,0,0
+Main Bazar,PrevDayJodi Skip,0,0,0,0,0
+Main Bazar,Overall 3-Week,0,0,0,0,0
+Main Bazar,Last3 Unique,0,0,0,0,0
+Mangal Bazar,Existing Hybrid,0,0,0,0,0
+Mangal Bazar,New PrevWeek+PrevDayClose,0,0,0,0,0
+Mangal Bazar,PrevDayJodi Skip,0,0,0,0,0
+Mangal Bazar,Overall 3-Week,0,0,0,0,0
+Mangal Bazar,Last3 Unique,0,0,0,0,0
+Maya Bazar,Existing Hybrid,0,0,0,0,0
+Maya Bazar,New PrevWeek+PrevDayClose,0,0,0,0,0
+Maya Bazar,PrevDayJodi Skip,0,0,0,0,0
+Maya Bazar,Overall 3-Week,0,0,0,0,0
+Maya Bazar,Last3 Unique,0,0,0,0,0
+Milan Day,Existing Hybrid,0,0,0,0,0
+Milan Day,New PrevWeek+PrevDayClose,0,0,0,0,0
+Milan Day,PrevDayJodi Skip,0,0,0,0,0
+Milan Day,Overall 3-Week,0,0,0,0,0
+Milan Day,Last3 Unique,0,0,0,0,0
+Milan Morning,Existing Hybrid,30,13,43.333333333333336,400,42.0
+Milan Morning,New PrevWeek+PrevDayClose,30,13,43.333333333333336,400,42.0
+Milan Morning,PrevDayJodi Skip,30,15,50.0,2400,42.0
+Milan Morning,Overall 3-Week,30,19,63.33333333333333,6230,42.56666666666667
+Milan Morning,Last3 Unique,30,18,60.0,5400,42.0
+Milan Night,Existing Hybrid,0,0,0,0,0
+Milan Night,New PrevWeek+PrevDayClose,0,0,0,0,0
+Milan Night,PrevDayJodi Skip,0,0,0,0,0
+Milan Night,Overall 3-Week,0,0,0,0,0
+Milan Night,Last3 Unique,0,0,0,0,0
+NTR Day,Existing Hybrid,30,18,60.0,5260,42.46666666666667
+NTR Day,New PrevWeek+PrevDayClose,30,16,53.333333333333336,3400,42.0
+NTR Day,PrevDayJodi Skip,30,15,50.0,2400,42.0
+NTR Day,Overall 3-Week,30,17,56.666666666666664,4220,42.6
+NTR Day,Last3 Unique,30,18,60.0,5400,42.0
+NTR Morning,Existing Hybrid,30,19,63.33333333333333,6220,42.6
+NTR Morning,New PrevWeek+PrevDayClose,30,15,50.0,2400,42.0
+NTR Morning,PrevDayJodi Skip,30,19,63.33333333333333,6400,42.0
+NTR Morning,Overall 3-Week,30,18,60.0,5230,42.56666666666667
+NTR Morning,Last3 Unique,30,16,53.333333333333336,3400,42.0
+NTR Night,Existing Hybrid,30,17,56.666666666666664,4000,43.333333333333336
+NTR Night,New PrevWeek+PrevDayClose,30,19,63.33333333333333,6400,42.0
+NTR Night,PrevDayJodi Skip,30,19,63.33333333333333,6400,42.0
+NTR Night,Overall 3-Week,30,18,60.0,5230,42.56666666666667
+NTR Night,Last3 Unique,30,17,56.666666666666664,4400,42.0
+Rajdhani Day,Existing Hybrid,0,0,0,0,0
+Rajdhani Day,New PrevWeek+PrevDayClose,0,0,0,0,0
+Rajdhani Day,PrevDayJodi Skip,0,0,0,0,0
+Rajdhani Day,Overall 3-Week,0,0,0,0,0
+Rajdhani Day,Last3 Unique,0,0,0,0,0
+Rajdhani Night,Existing Hybrid,0,0,0,0,0
+Rajdhani Night,New PrevWeek+PrevDayClose,0,0,0,0,0
+Rajdhani Night,PrevDayJodi Skip,0,0,0,0,0
+Rajdhani Night,Overall 3-Week,0,0,0,0,0
+Rajdhani Night,Last3 Unique,0,0,0,0,0
+SITA Day,Existing Hybrid,30,18,60.0,4500,45.0
+SITA Day,New PrevWeek+PrevDayClose,30,19,63.33333333333333,6400,42.0
+SITA Day,PrevDayJodi Skip,30,18,60.0,5400,42.0
+SITA Day,Overall 3-Week,30,16,53.333333333333336,3200,42.666666666666664
+SITA Day,Last3 Unique,30,13,43.333333333333336,400,42.0
+SITA Morning,Existing Hybrid,30,19,63.33333333333333,5650,44.5
+SITA Morning,New PrevWeek+PrevDayClose,30,14,46.666666666666664,1400,42.0
+SITA Morning,PrevDayJodi Skip,30,14,46.666666666666664,1400,42.0
+SITA Morning,Overall 3-Week,30,15,50.0,2230,42.56666666666667
+SITA Morning,Last3 Unique,30,10,33.33333333333333,-2600,42.0
+SITA Night,Existing Hybrid,30,17,56.666666666666664,3500,45.0
+SITA Night,New PrevWeek+PrevDayClose,30,14,46.666666666666664,1400,42.0
+SITA Night,PrevDayJodi Skip,30,16,53.333333333333336,3400,42.0
+SITA Night,Overall 3-Week,30,16,53.333333333333336,3280,42.4
+SITA Night,Last3 Unique,30,13,43.333333333333336,400,42.0
+SRIDEVI,Existing Hybrid,30,17,56.666666666666664,3790,44.03333333333333
+SRIDEVI,New PrevWeek+PrevDayClose,30,13,43.333333333333336,400,42.0
+SRIDEVI,PrevDayJodi Skip,30,14,46.666666666666664,1400,42.0
+SRIDEVI,Overall 3-Week,30,15,50.0,2260,42.46666666666667
+SRIDEVI,Last3 Unique,30,14,46.666666666666664,1400,42.0
+SRIDEVI Night,Existing Hybrid,30,15,50.0,2130,42.9
+SRIDEVI Night,New PrevWeek+PrevDayClose,30,11,36.666666666666664,-1600,42.0
+SRIDEVI Night,PrevDayJodi Skip,30,10,33.33333333333333,-2600,42.0
+SRIDEVI Night,Overall 3-Week,30,12,40.0,-800,42.666666666666664
+SRIDEVI Night,Last3 Unique,30,11,36.666666666666664,-1600,42.0
+Star Tara Day,Existing Hybrid,30,13,43.333333333333336,-440,44.8
+Star Tara Day,New PrevWeek+PrevDayClose,30,9,30.0,-3600,42.0
+Star Tara Day,PrevDayJodi Skip,30,9,30.0,-3600,42.0
+Star Tara Day,Overall 3-Week,30,11,36.666666666666664,-1800,42.666666666666664
+Star Tara Day,Last3 Unique,30,8,26.666666666666668,-4600,42.0
+Star Tara Morning,Existing Hybrid,30,17,56.666666666666664,4150,42.833333333333336
+Star Tara Morning,New PrevWeek+PrevDayClose,30,16,53.333333333333336,3400,42.0
+Star Tara Morning,PrevDayJodi Skip,30,15,50.0,2400,42.0
+Star Tara Morning,Overall 3-Week,30,13,43.333333333333336,210,42.63333333333333
+Star Tara Morning,Last3 Unique,30,15,50.0,2400,42.0
+Star Tara Night,Existing Hybrid,30,15,50.0,2090,43.03333333333333
+Star Tara Night,New PrevWeek+PrevDayClose,30,15,50.0,2400,42.0
+Star Tara Night,PrevDayJodi Skip,30,14,46.666666666666664,1400,42.0
+Star Tara Night,Overall 3-Week,30,14,46.666666666666664,1220,42.6
+Star Tara Night,Last3 Unique,30,11,36.666666666666664,-1600,42.0
+Time Bazar,Existing Hybrid,30,11,36.666666666666664,-2420,44.733333333333334
+Time Bazar,New PrevWeek+PrevDayClose,30,13,43.333333333333336,400,42.0
+Time Bazar,PrevDayJodi Skip,30,11,36.666666666666664,-1600,42.0
+Time Bazar,Overall 3-Week,30,10,33.33333333333333,-2700,42.333333333333336
+Time Bazar,Last3 Unique,30,8,26.666666666666668,-4600,42.0

@@ -1,0 +1,3262 @@
+{
+  "results": [
+    {
+      "market": "Andhra Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 12600,
+        "profit": 1650,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 42,
+        "rate": 46.666666666666664,
+        "stake": 37800,
+        "profit": 2100,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 954,
+        "hits": 435,
+        "rate": 45.59748427672956,
+        "stake": 400680,
+        "profit": 12570,
+        "from": "2023-10-10",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "lw_o",
+            "lw_c",
+            "p2w_o",
+            "p2w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 866,
+            "hits": 306,
+            "rate": 35.33487297921478,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 30900
+          },
+          "test": {
+            "tests": 30,
+            "hits": 10,
+            "rate": 33.333333333333336,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 500
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_o",
+            "lw_c",
+            "p3w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 54,
+            "rate": 60,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 13500
+          },
+          "test": {
+            "tests": 30,
+            "hits": 16,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 2600
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 15,
+          "rate": 50,
+          "profit": 3570
+        }
+      }
+    },
+    {
+      "market": "Andhra Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 700,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 31,
+        "rate": 51.666666666666664,
+        "stake": 25200,
+        "profit": 4250,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 47,
+        "rate": 52.22222222222222,
+        "stake": 37800,
+        "profit": 6850,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 960,
+        "hits": 467,
+        "rate": 48.645833333333336,
+        "stake": 403200,
+        "profit": 40450,
+        "from": "2023-10-10",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 880,
+            "hits": 429,
+            "rate": 48.75,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 37950
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 700
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "p2d_c",
+            "lw_o",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 41,
+            "rate": 45.55555555555556,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 11950
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -1400
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 12,
+          "rate": 40,
+          "profit": -780
+        }
+      }
+    },
+    {
+      "market": "Andhra Night",
+      "source": "fresh",
+      "latestDate": "2026-06-21",
+      "last30": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 12600,
+        "profit": 3550,
+        "from": "2026-05-23",
+        "to": "2026-06-21"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 33,
+        "rate": 55,
+        "stake": 25200,
+        "profit": 6150,
+        "from": "2026-04-23",
+        "to": "2026-06-21"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 54,
+        "rate": 60,
+        "stake": 37800,
+        "profit": 13500,
+        "from": "2026-03-24",
+        "to": "2026-06-21"
+      },
+      "allTime": {
+        "tests": 949,
+        "hits": 476,
+        "rate": 50.15806111696523,
+        "stake": 398580,
+        "profit": 53620,
+        "from": "2023-10-11",
+        "to": "2026-06-21"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-23",
+        "testTo": "2026-06-21",
+        "fullTraining": {
+          "rule": [
+            "lw_o",
+            "lw_c",
+            "p3w_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 860,
+            "hits": 442,
+            "rate": 51.395348837209305,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 58700
+          },
+          "test": {
+            "tests": 30,
+            "hits": 15,
+            "rate": 50,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 1650
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "lw_c",
+            "p2w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 55,
+            "rate": 61.111111111111114,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 14450
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 700
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 17,
+          "rate": 56.666666666666664,
+          "profit": 3550
+        }
+      }
+    },
+    {
+      "market": "Kalyan",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12600,
+        "profit": -1200,
+        "from": "2026-05-12",
+        "to": "2026-06-20"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 25,
+        "rate": 41.666666666666664,
+        "stake": 25200,
+        "profit": -1450,
+        "from": "2026-03-31",
+        "to": "2026-06-20"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 37,
+        "rate": 41.111111111111114,
+        "stake": 37800,
+        "profit": -2650,
+        "from": "2026-02-12",
+        "to": "2026-06-20"
+      },
+      "allTime": {
+        "tests": 885,
+        "hits": 358,
+        "rate": 40.451977401129945,
+        "stake": 371700,
+        "profit": -31600,
+        "from": "2022-11-08",
+        "to": "2026-06-20"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-04-16",
+        "testTo": "2026-06-20",
+        "fullTraining": {
+          "rule": [
+            "p2d_o",
+            "p3d_c",
+            "lw_c",
+            "p2w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 455,
+            "hits": 159,
+            "rate": 34.94505494505494,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 14550
+          },
+          "test": {
+            "tests": 30,
+            "hits": 9,
+            "rate": 30,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -450
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_o",
+            "p3d_c",
+            "p2w_o",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 34,
+            "rate": 37.77777777777778,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 5300
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 1450
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 8,
+          "rate": 26.666666666666668,
+          "profit": -4920
+        }
+      }
+    },
+    {
+      "market": "Kalyan Night",
+      "source": "cached",
+      "latestDate": "2026-06-10",
+      "last30": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "stake": 12600,
+        "profit": -250,
+        "from": "2026-04-21",
+        "to": "2026-06-10"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 21,
+        "rate": 35,
+        "stake": 25200,
+        "profit": -5250,
+        "from": "2026-02-20",
+        "to": "2026-06-10"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 37,
+        "rate": 41.111111111111114,
+        "stake": 37800,
+        "profit": -2650,
+        "from": "2025-12-30",
+        "to": "2026-06-10"
+      },
+      "allTime": {
+        "tests": 1398,
+        "hits": 561,
+        "rate": 40.128755364806864,
+        "stake": 587160,
+        "profit": -54210,
+        "from": "2019-01-15",
+        "to": "2026-06-10"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-02-19",
+        "testTo": "2026-06-05",
+        "fullTraining": {
+          "rule": [
+            "p2d_c",
+            "lw_o",
+            "p2w_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 590,
+            "hits": 276,
+            "rate": 46.779661016949156,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 14400
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 700
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p3d_c",
+            "lw_o",
+            "lw_c",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 38,
+            "rate": 42.22222222222222,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 9100
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 1450
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 11,
+          "rate": 36.666666666666664,
+          "profit": 1450
+        }
+      }
+    },
+    {
+      "market": "Karnataka Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 11,
+        "rate": 36.666666666666664,
+        "stake": 12600,
+        "profit": -2150,
+        "from": "2026-05-21",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 24,
+        "rate": 40,
+        "stake": 25200,
+        "profit": -2400,
+        "from": "2026-04-21",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 33,
+        "rate": 36.666666666666664,
+        "stake": 37800,
+        "profit": -6450,
+        "from": "2026-03-22",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 1905,
+        "hits": 831,
+        "rate": 43.62204724409449,
+        "stake": 800100,
+        "profit": -10650,
+        "from": "2020-12-07",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-18",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "lw_o",
+            "lw_c",
+            "p2w_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 1750,
+            "hits": 784,
+            "rate": 44.8,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 9800
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 700
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_c",
+            "p2w_c",
+            "p3w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 42,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 2100
+          },
+          "test": {
+            "tests": 30,
+            "hits": 15,
+            "rate": 50,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 1650
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 10,
+          "rate": 33.333333333333336,
+          "profit": 500
+        }
+      }
+    },
+    {
+      "market": "Madhur Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 11,
+        "rate": 36.666666666666664,
+        "stake": 12600,
+        "profit": -2150,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "stake": 37800,
+        "profit": 1150,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 2787,
+        "hits": 1166,
+        "rate": 41.83710082526014,
+        "stake": 1170540,
+        "profit": -62840,
+        "from": "2018-01-08",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_c",
+            "p2w_o",
+            "p2w_c",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 2456,
+            "hits": 803,
+            "rate": 32.69543973941368,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 26050
+          },
+          "test": {
+            "tests": 30,
+            "hits": 4,
+            "rate": 13.333333333333334,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -5200
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_c",
+            "lw_c",
+            "p2w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 51,
+            "rate": 56.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 10650
+          },
+          "test": {
+            "tests": 30,
+            "hits": 9,
+            "rate": 30,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -4050
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 6,
+          "rate": 20,
+          "profit": -4400
+        }
+      }
+    },
+    {
+      "market": "Madhur Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 700,
+        "from": "2026-05-12",
+        "to": "2026-06-20"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-03-31",
+        "to": "2026-06-20"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 43,
+        "rate": 47.77777777777778,
+        "stake": 37800,
+        "profit": 3050,
+        "from": "2026-02-12",
+        "to": "2026-06-20"
+      },
+      "allTime": {
+        "tests": 1260,
+        "hits": 559,
+        "rate": 44.36507936507937,
+        "stake": 529200,
+        "profit": 1850,
+        "from": "2021-04-13",
+        "to": "2026-06-20"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-04-16",
+        "testTo": "2026-06-20",
+        "fullTraining": {
+          "rule": [
+            "p2d_c",
+            "p3d_c",
+            "p2w_o",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 660,
+            "hits": 241,
+            "rate": 36.515151515151516,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 30950
+          },
+          "test": {
+            "tests": 30,
+            "hits": 10,
+            "rate": 33.333333333333336,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 500
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p3d_c",
+            "lw_c",
+            "p3w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 48,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 7800
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -2150
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 12,
+          "rate": 40,
+          "profit": 2160
+        }
+      }
+    },
+    {
+      "market": "Mahadevi",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 700,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 44,
+        "rate": 48.888888888888886,
+        "stake": 37800,
+        "profit": 4000,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 1043,
+        "hits": 535,
+        "rate": 51.29434324065196,
+        "stake": 438060,
+        "profit": 70190,
+        "from": "2023-06-29",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 940,
+            "hits": 502,
+            "rate": 53.40425531914894,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 82100
+          },
+          "test": {
+            "tests": 30,
+            "hits": 13,
+            "rate": 43.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -250
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_c",
+            "lw_o",
+            "p2w_c",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 40,
+            "rate": 44.44444444444444,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 11000
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 4300
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 18,
+          "rate": 60,
+          "profit": 4500
+        }
+      }
+    },
+    {
+      "market": "Mahadevi Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 2600,
+        "from": "2026-05-21",
+        "to": "2026-06-21"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 33,
+        "rate": 55,
+        "stake": 25200,
+        "profit": 6150,
+        "from": "2026-04-21",
+        "to": "2026-06-21"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 48,
+        "rate": 53.333333333333336,
+        "stake": 37800,
+        "profit": 7800,
+        "from": "2026-03-22",
+        "to": "2026-06-21"
+      },
+      "allTime": {
+        "tests": 870,
+        "hits": 480,
+        "rate": 55.172413793103445,
+        "stake": 365400,
+        "profit": 90600,
+        "from": "2023-12-18",
+        "to": "2026-06-21"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-19",
+        "testTo": "2026-06-21",
+        "fullTraining": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 766,
+            "hits": 430,
+            "rate": 56.13577023498694,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 86780
+          },
+          "test": {
+            "tests": 30,
+            "hits": 15,
+            "rate": 50,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 1650
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_c",
+            "lw_o",
+            "p3w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 58,
+            "rate": 64.44444444444444,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 17300
+          },
+          "test": {
+            "tests": 30,
+            "hits": 13,
+            "rate": 43.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -250
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 9,
+          "rate": 30,
+          "profit": -2610
+        }
+      }
+    },
+    {
+      "market": "Mahadevi Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 700,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 30,
+        "rate": 50,
+        "stake": 25200,
+        "profit": 3300,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 47,
+        "rate": 52.22222222222222,
+        "stake": 37800,
+        "profit": 6850,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 879,
+        "hits": 491,
+        "rate": 55.858930602957905,
+        "stake": 369180,
+        "profit": 97270,
+        "from": "2023-12-18",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 788,
+            "hits": 456,
+            "rate": 57.868020304568525,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 102240
+          },
+          "test": {
+            "tests": 30,
+            "hits": 13,
+            "rate": 43.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -250
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "p2d_o",
+            "p2w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 55,
+            "rate": 61.111111111111114,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 14450
+          },
+          "test": {
+            "tests": 30,
+            "hits": 12,
+            "rate": 40,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -1200
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 10,
+          "rate": 33.333333333333336,
+          "profit": -940
+        }
+      }
+    },
+    {
+      "market": "Main Bazar",
+      "source": "cached",
+      "latestDate": "2026-06-10",
+      "last30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12600,
+        "profit": -1200,
+        "from": "2026-04-15",
+        "to": "2026-06-10"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 23,
+        "rate": 38.333333333333336,
+        "stake": 25200,
+        "profit": -3350,
+        "from": "2026-02-17",
+        "to": "2026-06-10"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 35,
+        "rate": 38.888888888888886,
+        "stake": 37800,
+        "profit": -4550,
+        "from": "2025-12-24",
+        "to": "2026-06-10"
+      },
+      "allTime": {
+        "tests": 860,
+        "hits": 356,
+        "rate": 41.395348837209305,
+        "stake": 361200,
+        "profit": -23000,
+        "from": "2022-01-04",
+        "to": "2026-06-10"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-02-12",
+        "testTo": "2026-06-05",
+        "fullTraining": {
+          "rule": [
+            "p2w_c",
+            "p3w_o"
+          ],
+          "skipCount": 2,
+          "training": {
+            "tests": 356,
+            "hits": 226,
+            "rate": 63.48314606741573,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 15340
+          },
+          "test": {
+            "tests": 30,
+            "hits": 19,
+            "rate": 63.333333333333336,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 1250
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_o",
+            "lw_o",
+            "p2w_o",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 38,
+            "rate": 42.22222222222222,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 9100
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 1450
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 11,
+          "rate": 36.666666666666664,
+          "profit": -590
+        }
+      }
+    },
+    {
+      "market": "Mangal Bazar",
+      "source": "fresh",
+      "latestDate": "2026-06-20",
+      "last30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 12600,
+        "profit": 1650,
+        "from": "2026-05-12",
+        "to": "2026-06-20"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 31,
+        "rate": 51.666666666666664,
+        "stake": 25200,
+        "profit": 4250,
+        "from": "2026-03-31",
+        "to": "2026-06-20"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 53,
+        "rate": 58.888888888888886,
+        "stake": 37800,
+        "profit": 12550,
+        "from": "2026-02-10",
+        "to": "2026-06-20"
+      },
+      "allTime": {
+        "tests": 558,
+        "hits": 290,
+        "rate": 51.971326164874554,
+        "stake": 234360,
+        "profit": 41140,
+        "from": "2024-02-13",
+        "to": "2026-06-20"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-04-16",
+        "testTo": "2026-06-20",
+        "fullTraining": {
+          "rule": [
+            "p2d_c",
+            "p3d_o",
+            "lw_o",
+            "p2w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 264,
+            "hits": 111,
+            "rate": 42.04545454545455,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 26250
+          },
+          "test": {
+            "tests": 30,
+            "hits": 4,
+            "rate": 13.333333333333334,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -5200
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "p2d_c",
+            "lw_c",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 46,
+            "rate": 51.111111111111114,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 16700
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -1400
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 9,
+          "rate": 30,
+          "profit": -1410
+        }
+      }
+    },
+    {
+      "market": "Maya Bazar",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12600,
+        "profit": 4500,
+        "from": "2026-04-22",
+        "to": "2026-06-19"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 37,
+        "rate": 61.666666666666664,
+        "stake": 25200,
+        "profit": 9950,
+        "from": "2026-02-24",
+        "to": "2026-06-19"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 57,
+        "rate": 63.333333333333336,
+        "stake": 37800,
+        "profit": 16350,
+        "from": "2025-12-25",
+        "to": "2026-06-19"
+      },
+      "allTime": {
+        "tests": 159,
+        "hits": 96,
+        "rate": 60.37735849056604,
+        "stake": 66780,
+        "profit": 24420,
+        "from": "2025-08-13",
+        "to": "2026-06-19"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-02-19",
+        "testTo": "2026-06-19",
+        "fullTraining": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 42,
+            "hits": 23,
+            "rate": 54.76190476190476,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 9250
+          },
+          "test": {
+            "tests": 30,
+            "hits": 15,
+            "rate": 50,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 5250
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 42,
+            "hits": 23,
+            "rate": 54.76190476190476,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 9250
+          },
+          "test": {
+            "tests": 30,
+            "hits": 15,
+            "rate": 50,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 5250
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 15,
+          "rate": 50,
+          "profit": 5250
+        }
+      }
+    },
+    {
+      "market": "Milan Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 12600,
+        "profit": 3550,
+        "from": "2026-05-12",
+        "to": "2026-06-20"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 34,
+        "rate": 56.666666666666664,
+        "stake": 25200,
+        "profit": 7100,
+        "from": "2026-03-31",
+        "to": "2026-06-20"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 42,
+        "rate": 46.666666666666664,
+        "stake": 37800,
+        "profit": 2100,
+        "from": "2026-02-12",
+        "to": "2026-06-20"
+      },
+      "allTime": {
+        "tests": 926,
+        "hits": 420,
+        "rate": 45.35637149028078,
+        "stake": 388920,
+        "profit": 10080,
+        "from": "2022-08-17",
+        "to": "2026-06-20"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-04-16",
+        "testTo": "2026-06-20",
+        "fullTraining": {
+          "rule": [
+            "p3d_o",
+            "lw_c",
+            "p2w_o",
+            "p2w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 469,
+            "hits": 172,
+            "rate": 36.67377398720682,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 22700
+          },
+          "test": {
+            "tests": 30,
+            "hits": 12,
+            "rate": 40,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 2400
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p3d_o",
+            "lw_c",
+            "p2w_c",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 35,
+            "rate": 38.888888888888886,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 6250
+          },
+          "test": {
+            "tests": 30,
+            "hits": 16,
+            "rate": 53.333333333333336,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 6200
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 14,
+          "rate": 46.666666666666664,
+          "profit": 2500
+        }
+      }
+    },
+    {
+      "market": "Milan Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12600,
+        "profit": -1200,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 27,
+        "rate": 45,
+        "stake": 25200,
+        "profit": 450,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 39,
+        "rate": 43.333333333333336,
+        "stake": 37800,
+        "profit": -750,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 2119,
+        "hits": 896,
+        "rate": 42.284096271826336,
+        "stake": 889980,
+        "profit": -38780,
+        "from": "2020-03-09",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "p2w_o",
+            "p3w_o",
+            "p3w_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 1944,
+            "hits": 852,
+            "rate": 43.82716049382716,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -7080
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -2150
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_c",
+            "lw_o",
+            "p3w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 51,
+            "rate": 56.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 10650
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -5000
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 7,
+          "rate": 23.333333333333332,
+          "profit": -2350
+        }
+      }
+    },
+    {
+      "market": "Milan Night",
+      "source": "fresh",
+      "latestDate": "2026-06-20",
+      "last30": {
+        "tests": 30,
+        "hits": 11,
+        "rate": 36.666666666666664,
+        "stake": 12600,
+        "profit": -2150,
+        "from": "2026-05-12",
+        "to": "2026-06-20"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-03-31",
+        "to": "2026-06-20"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "stake": 37800,
+        "profit": 1150,
+        "from": "2026-02-10",
+        "to": "2026-06-20"
+      },
+      "allTime": {
+        "tests": 1068,
+        "hits": 460,
+        "rate": 43.07116104868914,
+        "stake": 448560,
+        "profit": -11560,
+        "from": "2022-01-04",
+        "to": "2026-06-20"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-04-16",
+        "testTo": "2026-06-20",
+        "fullTraining": {
+          "rule": [
+            "p3d_c",
+            "p2w_c",
+            "p3w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 538,
+            "hits": 248,
+            "rate": 46.09665427509294,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 9640
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 700
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2w_c",
+            "p3w_c"
+          ],
+          "skipCount": 2,
+          "training": {
+            "tests": 90,
+            "hits": 60,
+            "rate": 66.66666666666667,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 6600
+          },
+          "test": {
+            "tests": 30,
+            "hits": 18,
+            "rate": 60,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 300
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 16,
+          "rate": 53.333333333333336,
+          "profit": -1320
+        }
+      }
+    },
+    {
+      "market": "NTR Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 2600,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 34,
+        "rate": 56.666666666666664,
+        "stake": 25200,
+        "profit": 7100,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 52,
+        "rate": 57.77777777777778,
+        "stake": 37800,
+        "profit": 11600,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 302,
+        "hits": 191,
+        "rate": 63.24503311258278,
+        "stake": 126840,
+        "profit": 54610,
+        "from": "2025-08-04",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 237,
+            "hits": 153,
+            "rate": 64.55696202531645,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 45810
+          },
+          "test": {
+            "tests": 30,
+            "hits": 16,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 2600
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 59,
+            "rate": 65.55555555555556,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 18250
+          },
+          "test": {
+            "tests": 30,
+            "hits": 16,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 2600
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 16,
+          "rate": 53.333333333333336,
+          "profit": 2600
+        }
+      }
+    },
+    {
+      "market": "NTR Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 2600,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 33,
+        "rate": 55,
+        "stake": 25200,
+        "profit": 6150,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 55,
+        "rate": 61.111111111111114,
+        "stake": 37800,
+        "profit": 14450,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 305,
+        "hits": 191,
+        "rate": 62.622950819672134,
+        "stake": 128100,
+        "profit": 53350,
+        "from": "2025-08-04",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 242,
+            "hits": 121,
+            "rate": 50,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 42350
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 1450
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 47,
+            "rate": 52.22222222222222,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 17650
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 1450
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 14,
+          "rate": 46.666666666666664,
+          "profit": 2500
+        }
+      }
+    },
+    {
+      "market": "NTR Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 6400,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 36,
+        "rate": 60,
+        "stake": 25200,
+        "profit": 9000,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 59,
+        "rate": 65.55555555555556,
+        "stake": 37800,
+        "profit": 18250,
+        "from": "2026-03-24",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 296,
+        "hits": 199,
+        "rate": 67.22972972972973,
+        "stake": 124320,
+        "profit": 64730,
+        "from": "2025-08-04",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "lw_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 223,
+            "hits": 155,
+            "rate": 69.5067264573991,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 53590
+          },
+          "test": {
+            "tests": 30,
+            "hits": 16,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 2600
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "lw_o",
+            "lw_c",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 48,
+            "rate": 53.333333333333336,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 18600
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 1450
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 14,
+          "rate": 46.666666666666664,
+          "profit": 2980
+        }
+      }
+    },
+    {
+      "market": "Rajdhani Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 12600,
+        "profit": -3100,
+        "from": "2026-05-12",
+        "to": "2026-06-20"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-03-31",
+        "to": "2026-06-20"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "stake": 37800,
+        "profit": 1150,
+        "from": "2026-02-12",
+        "to": "2026-06-20"
+      },
+      "allTime": {
+        "tests": 2034,
+        "hits": 878,
+        "rate": 43.1661750245821,
+        "stake": 854280,
+        "profit": -20180,
+        "from": "2018-02-06",
+        "to": "2026-06-20"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-04-16",
+        "testTo": "2026-06-20",
+        "fullTraining": {
+          "rule": [
+            "p2d_o",
+            "p2d_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 1082,
+            "hits": 356,
+            "rate": 32.90203327171904,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 13600
+          },
+          "test": {
+            "tests": 30,
+            "hits": 9,
+            "rate": 30,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -450
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p3d_o",
+            "lw_c",
+            "p2w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 48,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 7800
+          },
+          "test": {
+            "tests": 30,
+            "hits": 10,
+            "rate": 33.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -3100
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 7,
+          "rate": 23.333333333333332,
+          "profit": -4390
+        }
+      }
+    },
+    {
+      "market": "Rajdhani Night",
+      "source": "cached",
+      "latestDate": "2026-06-10",
+      "last30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12600,
+        "profit": -1200,
+        "from": "2026-04-21",
+        "to": "2026-06-10"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 24,
+        "rate": 40,
+        "stake": 25200,
+        "profit": -2400,
+        "from": "2026-02-20",
+        "to": "2026-06-10"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 34,
+        "rate": 37.77777777777778,
+        "stake": 37800,
+        "profit": -5500,
+        "from": "2025-12-30",
+        "to": "2026-06-10"
+      },
+      "allTime": {
+        "tests": 1056,
+        "hits": 447,
+        "rate": 42.32954545454545,
+        "stake": 443520,
+        "profit": -18870,
+        "from": "2021-01-05",
+        "to": "2026-06-10"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-02-19",
+        "testTo": "2026-06-05",
+        "fullTraining": {
+          "rule": [
+            "p2d_o",
+            "p2w_o",
+            "p2w_c",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 449,
+            "hits": 157,
+            "rate": 34.96659242761692,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 14450
+          },
+          "test": {
+            "tests": 30,
+            "hits": 7,
+            "rate": 23.333333333333332,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -2350
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "p3d_o",
+            "p3d_c",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 42,
+            "rate": 46.666666666666664,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 12900
+          },
+          "test": {
+            "tests": 30,
+            "hits": 9,
+            "rate": 30,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -450
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 8,
+          "rate": 26.666666666666668,
+          "profit": -1520
+        }
+      }
+    },
+    {
+      "market": "SITA Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 6400,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 31,
+        "rate": 51.666666666666664,
+        "stake": 25200,
+        "profit": 4250,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 44,
+        "rate": 48.888888888888886,
+        "stake": 37800,
+        "profit": 4000,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 972,
+        "hits": 424,
+        "rate": 43.62139917695473,
+        "stake": 408240,
+        "profit": -5440,
+        "from": "2023-09-25",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "p2d_c",
+            "lw_o",
+            "p3w_o"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 888,
+            "hits": 407,
+            "rate": 45.833333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 13690
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 700
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "lw_c",
+            "p3w_o",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 37,
+            "rate": 41.111111111111114,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 8150
+          },
+          "test": {
+            "tests": 30,
+            "hits": 13,
+            "rate": 43.333333333333336,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 3350
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 14,
+          "rate": 46.666666666666664,
+          "profit": 2000
+        }
+      }
+    },
+    {
+      "market": "SITA Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 11,
+        "rate": 36.666666666666664,
+        "stake": 12600,
+        "profit": -2150,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 37,
+        "rate": 41.111111111111114,
+        "stake": 37800,
+        "profit": -2650,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 1113,
+        "hits": 548,
+        "rate": 49.23629829290206,
+        "stake": 467460,
+        "profit": 53140,
+        "from": "2023-04-10",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 1012,
+            "hits": 497,
+            "rate": 49.11067193675889,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 47110
+          },
+          "test": {
+            "tests": 30,
+            "hits": 12,
+            "rate": 40,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -1200
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "p2w_c",
+            "p3w_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 48,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 7800
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -2150
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 8,
+          "rate": 26.666666666666668,
+          "profit": -2960
+        }
+      }
+    },
+    {
+      "market": "SITA Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 700,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 29,
+        "rate": 48.333333333333336,
+        "stake": 25200,
+        "profit": 2350,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 47,
+        "rate": 52.22222222222222,
+        "stake": 37800,
+        "profit": 6850,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 960,
+        "hits": 422,
+        "rate": 43.958333333333336,
+        "stake": 403200,
+        "profit": -2300,
+        "from": "2023-09-25",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "lw_c",
+            "p2w_o",
+            "p3w_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 866,
+            "hits": 404,
+            "rate": 46.65127020785219,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 20080
+          },
+          "test": {
+            "tests": 30,
+            "hits": 13,
+            "rate": 43.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -250
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_o",
+            "pd_c",
+            "p3d_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 48,
+            "rate": 53.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 7800
+          },
+          "test": {
+            "tests": 30,
+            "hits": 10,
+            "rate": 33.333333333333336,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -3100
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 12,
+          "rate": 40,
+          "profit": -1740
+        }
+      }
+    },
+    {
+      "market": "Sridevi",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12600,
+        "profit": -1200,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 25,
+        "rate": 41.666666666666664,
+        "stake": 25200,
+        "profit": -1450,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 36,
+        "rate": 40,
+        "stake": 37800,
+        "profit": -3600,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 1936,
+        "hits": 793,
+        "rate": 40.960743801652896,
+        "stake": 813120,
+        "profit": -59770,
+        "from": "2021-01-11",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "p3d_o",
+            "p3d_c",
+            "lw_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 1822,
+            "hits": 814,
+            "rate": 44.6761800219539,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 8060
+          },
+          "test": {
+            "tests": 30,
+            "hits": 11,
+            "rate": 36.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": -2150
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_o",
+            "p2d_c",
+            "p3d_o",
+            "lw_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 40,
+            "rate": 44.44444444444444,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 11000
+          },
+          "test": {
+            "tests": 30,
+            "hits": 6,
+            "rate": 20,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -3300
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 5,
+          "rate": 16.666666666666668,
+          "profit": -4250
+        }
+      }
+    },
+    {
+      "market": "Sridevi Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12600,
+        "profit": 4500,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 33,
+        "rate": 55,
+        "stake": 25200,
+        "profit": 6150,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 44,
+        "rate": 48.888888888888886,
+        "stake": 37800,
+        "profit": 4000,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 1919,
+        "hits": 811,
+        "rate": 42.26159458051068,
+        "stake": 805980,
+        "profit": -35530,
+        "from": "2021-01-25",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "pd_c",
+            "p2d_c",
+            "p3d_o",
+            "p2w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 1806,
+            "hits": 595,
+            "rate": 32.945736434108525,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 23450
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -1400
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_c",
+            "p3d_o",
+            "lw_c",
+            "p2w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 37,
+            "rate": 41.111111111111114,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 8150
+          },
+          "test": {
+            "tests": 30,
+            "hits": 7,
+            "rate": 23.333333333333332,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -2350
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 9,
+          "rate": 30,
+          "profit": -1070
+        }
+      }
+    },
+    {
+      "market": "Star Tara Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 12600,
+        "profit": 1650,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 33,
+        "rate": 55,
+        "stake": 25200,
+        "profit": 6150,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 44,
+        "rate": 48.888888888888886,
+        "stake": 37800,
+        "profit": 4000,
+        "from": "2026-03-22",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 453,
+        "hits": 204,
+        "rate": 45.033112582781456,
+        "stake": 190260,
+        "profit": 3540,
+        "from": "2025-03-03",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "p2d_c",
+            "lw_o",
+            "p2w_c",
+            "p3w_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 381,
+            "hits": 138,
+            "rate": 36.22047244094488,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 16800
+          },
+          "test": {
+            "tests": 30,
+            "hits": 12,
+            "rate": 40,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 2400
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "p2d_o",
+            "p3d_c",
+            "lw_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 38,
+            "rate": 42.22222222222222,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 9100
+          },
+          "test": {
+            "tests": 30,
+            "hits": 12,
+            "rate": 40,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 2400
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 12,
+          "rate": 40,
+          "profit": 2400
+        }
+      }
+    },
+    {
+      "market": "Star Tara Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 12600,
+        "profit": 1650,
+        "from": "2026-05-21",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 32,
+        "rate": 53.333333333333336,
+        "stake": 25200,
+        "profit": 5200,
+        "from": "2026-04-21",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 51,
+        "rate": 56.666666666666664,
+        "stake": 37800,
+        "profit": 10650,
+        "from": "2026-03-17",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 454,
+        "hits": 208,
+        "rate": 45.81497797356828,
+        "stake": 190680,
+        "profit": 6920,
+        "from": "2025-03-03",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-18",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "p3d_c",
+            "lw_o",
+            "lw_c",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 384,
+            "hits": 132,
+            "rate": 34.375,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 10200
+          },
+          "test": {
+            "tests": 30,
+            "hits": 9,
+            "rate": 30,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -450
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_c",
+            "lw_o",
+            "lw_c",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 43,
+            "rate": 47.77777777777778,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 13850
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -1400
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 9,
+          "rate": 30,
+          "profit": -2850
+        }
+      }
+    },
+    {
+      "market": "Star Tara Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 700,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 28,
+        "rate": 46.666666666666664,
+        "stake": 25200,
+        "profit": 1400,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 47,
+        "rate": 52.22222222222222,
+        "stake": 37800,
+        "profit": 6850,
+        "from": "2026-03-20",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 442,
+        "hits": 193,
+        "rate": 43.665158371040725,
+        "stake": 185640,
+        "profit": -2290,
+        "from": "2025-03-03",
+        "to": "2026-06-22"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-24",
+        "testTo": "2026-06-22",
+        "fullTraining": {
+          "rule": [
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 2,
+          "training": {
+            "tests": 357,
+            "hits": 228,
+            "rate": 63.865546218487395,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 16680
+          },
+          "test": {
+            "tests": 30,
+            "hits": 19,
+            "rate": 63.333333333333336,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 1250
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "pd_o",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 3,
+          "training": {
+            "tests": 90,
+            "hits": 53,
+            "rate": 58.888888888888886,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 12550
+          },
+          "test": {
+            "tests": 30,
+            "hits": 14,
+            "rate": 46.666666666666664,
+            "jodiCount": 42,
+            "stakePerDay": 420,
+            "profit": 700
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 14,
+          "rate": 46.666666666666664,
+          "profit": 420
+        }
+      }
+    },
+    {
+      "market": "Supreme Night",
+      "source": "fresh",
+      "latestDate": "2026-06-21",
+      "last30": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "stake": 12600,
+        "profit": -250,
+        "from": "2026-05-23",
+        "to": "2026-06-21"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 30,
+        "rate": 50,
+        "stake": 25200,
+        "profit": 3300,
+        "from": "2026-04-23",
+        "to": "2026-06-21"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 44,
+        "rate": 48.888888888888886,
+        "stake": 37800,
+        "profit": 4000,
+        "from": "2026-03-24",
+        "to": "2026-06-21"
+      },
+      "allTime": {
+        "tests": 1850,
+        "hits": 822,
+        "rate": 44.432432432432435,
+        "stake": 777000,
+        "profit": 3900,
+        "from": "2021-04-12",
+        "to": "2026-06-21"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-05-23",
+        "testTo": "2026-06-21",
+        "fullTraining": {
+          "rule": [
+            "pd_c",
+            "p2d_o",
+            "p3d_o",
+            "p3d_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 1744,
+            "hits": 692,
+            "rate": 39.678899082568805,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 134200
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -1400
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_o",
+            "p3d_c",
+            "lw_o",
+            "lw_c"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 90,
+            "hits": 41,
+            "rate": 45.55555555555556,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 11950
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -1400
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 12,
+          "rate": 40,
+          "profit": 1080
+        }
+      }
+    },
+    {
+      "market": "Time Bazar",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "last30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12600,
+        "profit": -1200,
+        "from": "2026-05-12",
+        "to": "2026-06-20"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "stake": 25200,
+        "profit": -500,
+        "from": "2026-03-31",
+        "to": "2026-06-20"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 37,
+        "rate": 41.111111111111114,
+        "stake": 37800,
+        "profit": -2650,
+        "from": "2026-02-12",
+        "to": "2026-06-20"
+      },
+      "allTime": {
+        "tests": 1403,
+        "hits": 592,
+        "rate": 42.19529579472559,
+        "stake": 589260,
+        "profit": -26860,
+        "from": "2021-01-11",
+        "to": "2026-06-20"
+      },
+      "ruleSearch": {
+        "available": true,
+        "testFrom": "2026-04-16",
+        "testTo": "2026-06-20",
+        "fullTraining": {
+          "rule": [
+            "p2d_o",
+            "p3d_c",
+            "p2w_o",
+            "p3w_o"
+          ],
+          "skipCount": 4,
+          "training": {
+            "tests": 836,
+            "hits": 284,
+            "rate": 33.97129186602871,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": 19000
+          },
+          "test": {
+            "tests": 30,
+            "hits": 8,
+            "rate": 26.666666666666668,
+            "jodiCount": 30,
+            "stakePerDay": 300,
+            "profit": -1400
+          }
+        },
+        "recent90Training": {
+          "rule": [
+            "p2d_o",
+            "p3d_c"
+          ],
+          "skipCount": 2,
+          "training": {
+            "tests": 90,
+            "hits": 65,
+            "rate": 72.22222222222223,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 11350
+          },
+          "test": {
+            "tests": 30,
+            "hits": 20,
+            "rate": 66.66666666666667,
+            "jodiCount": 56,
+            "stakePerDay": 560,
+            "profit": 2200
+          }
+        },
+        "walkForward180": {
+          "tests": 30,
+          "hits": 15,
+          "rate": 50,
+          "profit": 5250
+        }
+      }
+    }
+  ],
+  "totals": {
+    "last30": {
+      "tests": 960,
+      "hits": 454,
+      "stake": 403200,
+      "profit": 28100,
+      "rate": 47.291666666666664
+    },
+    "last60": {
+      "tests": 1920,
+      "hits": 925,
+      "stake": 806400,
+      "profit": 72350,
+      "rate": 48.177083333333336
+    },
+    "last90": {
+      "tests": 2880,
+      "hits": 1412,
+      "stake": 1209600,
+      "profit": 131800,
+      "rate": 49.02777777777778
+    },
+    "allTime": {
+      "tests": 35075,
+      "hits": 15800,
+      "stake": 14731500,
+      "profit": 278500,
+      "rate": 45.04632929436921
+    }
+  }
+}

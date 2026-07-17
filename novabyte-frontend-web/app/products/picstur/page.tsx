@@ -90,9 +90,17 @@ export default function PicsturProductPage() {
             <p className="lead">
               This is a complete sellable website project for businesses that need customer ordering, vendor management, admin control, payment workflow, delivery tracking, and backend APIs. This showcase uses static dummy UI previews only, with no real customer data or secret keys.
             </p>
+            <div className="productPriceBox">
+              <span>Starting Price</span>
+              <strong>INR 49,999 onwards</strong>
+              <p>Final quote depends on branding, deployment, payment gateway setup, storage, and custom changes.</p>
+            </div>
             <div className="actions">
               <a className="button buttonPrimary" href="#screens">
                 View Frontend Preview
+              </a>
+              <a className="button buttonPrimary" href="/checkout?service=Digital+Product+Selling+Website&amount=49999&reference=PicStur+Project+Quote">
+                Proceed To Checkout
               </a>
               <a className="button buttonSecondary" href="mailto:novabytetechnoai@gmail.com?subject=Digital%20Product%20Website%20Project%20Sale">
                 Ask For Project Details
@@ -271,10 +279,14 @@ export default function PicsturProductPage() {
               <h3>Commercial Package</h3>
               <div className="invoiceBox">
                 <div className="invoiceRow"><span>Product</span><strong>Digital Product Selling Website</strong></div>
+                <div className="invoiceRow"><span>Starting Price</span><strong>INR 49,999 onwards</strong></div>
                 <div className="invoiceRow"><span>Category</span><strong>Digital Product / Source Code / Setup</strong></div>
                 <div className="invoiceRow"><span>Demo</span><strong>Dummy UI preview only</strong></div>
                 <div className="invoiceRow"><span>Secrets</span><strong>Not included in demo</strong></div>
               </div>
+              <a className="button buttonPrimary fullButton" href="/checkout?service=Digital+Product+Selling+Website&amount=49999&reference=PicStur+Project+Quote">
+                Pay For Approved Product Quote
+              </a>
               <a className="button buttonPrimary fullButton" href="mailto:novabytetechnoai@gmail.com?subject=Digital%20Product%20Website%20Proposal">
                 Request Product Proposal
               </a>

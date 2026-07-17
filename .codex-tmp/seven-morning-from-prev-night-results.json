@@ -1,0 +1,237 @@
+{
+  "mapping": {
+    "0": "7",
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6"
+  },
+  "results": [
+    {
+      "morning": "Andhra Morning",
+      "nightSource": "Andhra Night",
+      "latest30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "profit": -1200,
+        "monthlyAverage": -1200
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 20,
+        "rate": 33.333333333333336,
+        "profit": -6200,
+        "monthlyAverage": -3100
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 35,
+        "rate": 38.888888888888886,
+        "profit": -4550,
+        "monthlyAverage": -1516.6666666666667
+      },
+      "allTime": {
+        "tests": 971,
+        "hits": 415,
+        "rate": 42.739443872296604,
+        "profit": -13570,
+        "monthlyAverage": -419.25849639546857
+      }
+    },
+    {
+      "morning": "Mahadevi Morning",
+      "nightSource": "Mahadevi Night",
+      "latest30": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "profit": -250,
+        "monthlyAverage": -250
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 28,
+        "rate": 46.666666666666664,
+        "profit": 1400,
+        "monthlyAverage": 700
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 37,
+        "rate": 41.111111111111114,
+        "profit": -2650,
+        "monthlyAverage": -883.3333333333334
+      },
+      "allTime": {
+        "tests": 895,
+        "hits": 387,
+        "rate": 43.24022346368715,
+        "profit": -8250,
+        "monthlyAverage": -276.536312849162
+      }
+    },
+    {
+      "morning": "Milan Morning",
+      "nightSource": "Milan Night",
+      "latest30": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "profit": 2600,
+        "monthlyAverage": 2600
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 31,
+        "rate": 51.666666666666664,
+        "profit": 4250,
+        "monthlyAverage": 2125
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 45,
+        "rate": 50,
+        "profit": 4950,
+        "monthlyAverage": 1650
+      },
+      "allTime": {
+        "tests": 1339,
+        "hits": 589,
+        "rate": 43.98805078416729,
+        "profit": -2830,
+        "monthlyAverage": -63.40552651232263
+      }
+    },
+    {
+      "morning": "NTR Morning",
+      "nightSource": "NTR Night",
+      "latest30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "profit": 700,
+        "monthlyAverage": 700
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 29,
+        "rate": 48.333333333333336,
+        "profit": 2350,
+        "monthlyAverage": 1175
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 42,
+        "rate": 46.666666666666664,
+        "profit": 2100,
+        "monthlyAverage": 700
+      },
+      "allTime": {
+        "tests": 315,
+        "hits": 136,
+        "rate": 43.17460317460318,
+        "profit": -3100,
+        "monthlyAverage": -295.23809523809524
+      }
+    },
+    {
+      "morning": "SITA Morning",
+      "nightSource": "SITA Night",
+      "latest30": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "profit": -3100,
+        "monthlyAverage": -3100
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 18,
+        "rate": 30,
+        "profit": -8100,
+        "monthlyAverage": -4050
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 33,
+        "rate": 36.666666666666664,
+        "profit": -6450,
+        "monthlyAverage": -2150
+      },
+      "allTime": {
+        "tests": 984,
+        "hits": 421,
+        "rate": 42.78455284552845,
+        "profit": -13330,
+        "monthlyAverage": -406.4024390243902
+      }
+    },
+    {
+      "morning": "Star Tara Morning",
+      "nightSource": "Star Tara Night",
+      "latest30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "profit": -1200,
+        "monthlyAverage": -1200
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 30,
+        "rate": 50,
+        "profit": 3300,
+        "monthlyAverage": 1650
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 45,
+        "rate": 50,
+        "profit": 4950,
+        "monthlyAverage": 1650
+      },
+      "allTime": {
+        "tests": 464,
+        "hits": 203,
+        "rate": 43.75,
+        "profit": -2030,
+        "monthlyAverage": -131.25
+      }
+    },
+    {
+      "morning": "Sridevi",
+      "nightSource": "Sridevi Night",
+      "latest30": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "profit": 6400,
+        "monthlyAverage": 6400
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 33,
+        "rate": 55,
+        "profit": 6150,
+        "monthlyAverage": 3075
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 43,
+        "rate": 47.77777777777778,
+        "profit": 3050,
+        "monthlyAverage": 1016.6666666666666
+      },
+      "allTime": {
+        "tests": 1945,
+        "hits": 872,
+        "rate": 44.832904884318765,
+        "profit": 11500,
+        "monthlyAverage": 177.37789203084833
+      }
+    }
+  ]
+}

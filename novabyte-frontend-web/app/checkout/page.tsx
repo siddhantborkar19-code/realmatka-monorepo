@@ -33,6 +33,7 @@ export default async function CheckoutPage({
   const params = searchParams ? await searchParams : {};
   const amount = firstQueryValue(params.amount);
   const reference = firstQueryValue(params.reference);
+  const selectedService = firstQueryValue(params.service);
   const paymentSessionId = firstQueryValue(params.session);
   const mode = firstQueryValue(params.mode) || "production";
   const hasPaymentSession = Boolean(paymentSessionId);
@@ -58,7 +59,7 @@ export default async function CheckoutPage({
               <h2 className="sectionTitle">{hasPaymentSession ? "Payment ready" : "Service checkout"}</h2>
               <p>
                 {hasPaymentSession
-                  ? "Amount aur reference verify karein. Cashfree checkout automatically open hoga; agar open na ho to button dabayein."
+                  ? "Amount aur reference verify karein. Secure checkout automatically open hoga; agar open na ho to button dabayein."
                   : "Payments collected here are for NovaByte Technologies services such as websites, mobile app interfaces, admin dashboards, cloud support, maintenance, hosting support, digital service consultation, and approved service credit."}
               </p>
 
@@ -93,7 +94,7 @@ export default async function CheckoutPage({
                   </label>
                   <label>
                     <span>Service Category</span>
-                    <select name="service" defaultValue="">
+                    <select name="service" defaultValue={selectedService}>
                       <option value="" disabled>Select service</option>
                       {checkoutServices.map((service) => (
                         <option key={service} value={service}>{service}</option>
@@ -117,7 +118,7 @@ export default async function CheckoutPage({
 
               <div className="checkoutNotice">
                 {hasPaymentSession
-                  ? "Secure Cashfree checkout automatically open ho raha hai. Agar open na ho to niche button dabao."
+                  ? "Secure checkout automatically open ho raha hai. Agar open na ho to niche button dabao."
                   : "Secure payment link ya approved account credit request milne ke baad hi payment karein."}
               </div>
 

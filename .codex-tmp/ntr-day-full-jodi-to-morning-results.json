@@ -1,0 +1,87 @@
+{
+  "closeDigit": {
+    "last30": {
+      "requested": 30,
+      "tests": 30,
+      "open": 2,
+      "openRate": 6.666666666666667,
+      "close": 2,
+      "closeRate": 6.666666666666667,
+      "either": 4,
+      "eitherRate": 13.333333333333334,
+      "neither": 26,
+      "from": "2026-05-24",
+      "to": "2026-06-22"
+    },
+    "last60": {
+      "requested": 60,
+      "tests": 60,
+      "open": 5,
+      "openRate": 8.333333333333334,
+      "close": 8,
+      "closeRate": 13.333333333333334,
+      "either": 12,
+      "eitherRate": 20,
+      "neither": 48,
+      "from": "2026-04-24",
+      "to": "2026-06-22"
+    },
+    "last90": {
+      "requested": 90,
+      "tests": 90,
+      "open": 8,
+      "openRate": 8.88888888888889,
+      "close": 14,
+      "closeRate": 15.555555555555555,
+      "either": 20,
+      "eitherRate": 22.22222222222222,
+      "neither": 70,
+      "from": "2026-03-25",
+      "to": "2026-06-22"
+    }
+  },
+  "fullNightJodiDigits": {
+    "last30": {
+      "requested": 30,
+      "tests": 30,
+      "none": 24,
+      "noneRate": 80,
+      "any": 6,
+      "anyRate": 20,
+      "one": 5,
+      "oneRate": 16.666666666666668,
+      "both": 1,
+      "bothRate": 3.3333333333333335,
+      "from": "2026-05-24",
+      "to": "2026-06-22"
+    },
+    "last60": {
+      "requested": 60,
+      "tests": 60,
+      "none": 41,
+      "noneRate": 68.33333333333333,
+      "any": 19,
+      "anyRate": 31.666666666666668,
+      "one": 18,
+      "oneRate": 30,
+      "both": 1,
+      "bothRate": 1.6666666666666667,
+      "from": "2026-04-24",
+      "to": "2026-06-22"
+    },
+    "last90": {
+      "requested": 90,
+      "tests": 90,
+      "none": 57,
+      "noneRate": 63.333333333333336,
+      "any": 33,
+      "anyRate": 36.666666666666664,
+      "one": 32,
+      "oneRate": 35.55555555555556,
+      "both": 1,
+      "bothRate": 1.1111111111111112,
+      "from": "2026-03-25",
+      "to": "2026-06-22"
+    }
+  }
+}

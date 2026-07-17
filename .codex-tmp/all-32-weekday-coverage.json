@@ -1,0 +1,452 @@
+{
+  "results": [
+    {
+      "market": "Andhra Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Andhra Morning",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Andhra Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 12,
+        "Tuesday": 13,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Kalyan",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 15,
+        "Tuesday": 15,
+        "Wednesday": 15,
+        "Thursday": 15,
+        "Friday": 15,
+        "Saturday": 15
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Kalyan Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 18,
+        "Tuesday": 18,
+        "Wednesday": 18,
+        "Thursday": 18,
+        "Friday": 18,
+        "Saturday": 0
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Karnataka Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Madhur Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Madhur Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 15,
+        "Tuesday": 15,
+        "Wednesday": 15,
+        "Thursday": 15,
+        "Friday": 15,
+        "Saturday": 15
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Mahadevi",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Mahadevi Morning",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 12,
+        "Tuesday": 13,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Mahadevi Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Main Bazar",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 18,
+        "Tuesday": 19,
+        "Wednesday": 17,
+        "Thursday": 18,
+        "Friday": 18,
+        "Saturday": 0
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Mangal Bazar",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 15,
+        "Tuesday": 15,
+        "Wednesday": 15,
+        "Thursday": 15,
+        "Friday": 15,
+        "Saturday": 15
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Maya Bazar",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 19,
+        "Tuesday": 18,
+        "Wednesday": 16,
+        "Thursday": 18,
+        "Friday": 19,
+        "Saturday": 0
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Milan Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 15,
+        "Tuesday": 15,
+        "Wednesday": 15,
+        "Thursday": 15,
+        "Friday": 15,
+        "Saturday": 15
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Milan Morning",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Milan Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 15,
+        "Tuesday": 15,
+        "Wednesday": 15,
+        "Thursday": 15,
+        "Friday": 15,
+        "Saturday": 15
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "NTR Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "NTR Morning",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "NTR Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Rajdhani Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 15,
+        "Tuesday": 15,
+        "Wednesday": 15,
+        "Thursday": 15,
+        "Friday": 15,
+        "Saturday": 15
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "Rajdhani Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 18,
+        "Tuesday": 18,
+        "Wednesday": 18,
+        "Thursday": 18,
+        "Friday": 18,
+        "Saturday": 0
+      },
+      "playsAll7": false
+    },
+    {
+      "market": "SITA Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "SITA Morning",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "SITA Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Sridevi",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Sridevi Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 12,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Star Tara Day",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 13,
+        "Tuesday": 13,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 12,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Star Tara Morning",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 14,
+        "Monday": 14,
+        "Tuesday": 13,
+        "Wednesday": 13,
+        "Thursday": 12,
+        "Friday": 11,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Star Tara Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 14,
+        "Tuesday": 13,
+        "Wednesday": 13,
+        "Thursday": 12,
+        "Friday": 12,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Supreme Night",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 13,
+        "Monday": 12,
+        "Tuesday": 13,
+        "Wednesday": 13,
+        "Thursday": 13,
+        "Friday": 13,
+        "Saturday": 13
+      },
+      "playsAll7": true
+    },
+    {
+      "market": "Time Bazar",
+      "recentTests": 90,
+      "counts": {
+        "Sunday": 0,
+        "Monday": 15,
+        "Tuesday": 15,
+        "Wednesday": 15,
+        "Thursday": 15,
+        "Friday": 15,
+        "Saturday": 15
+      },
+      "playsAll7": false
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "featureDefs": {
+    "pd_o": {
+      "days": -1,
+      "side": "open"
+    },
+    "pd_c": {
+      "days": -1,
+      "side": "close"
+    },
+    "p2d_o": {
+      "days": -2,
+      "side": "open"
+    },
+    "p2d_c": {
+      "days": -2,
+      "side": "close"
+    },
+    "p3d_o": {
+      "days": -3,
+      "side": "open"
+    },
+    "p3d_c": {
+      "days": -3,
+      "side": "close"
+    },
+    "p4d_o": {
+      "days": -4,
+      "side": "open"
+    },
+    "p4d_c": {
+      "days": -4,
+      "side": "close"
+    },
+    "lw_o": {
+      "days": -7,
+      "side": "open"
+    },
+    "lw_c": {
+      "days": -7,
+      "side": "close"
+    },
+    "p2w_o": {
+      "days": -14,
+      "side": "open"
+    },
+    "p2w_c": {
+      "days": -14,
+      "side": "close"
+    },
+    "p3w_o": {
+      "days": -21,
+      "side": "open"
+    },
+    "p3w_c": {
+      "days": -21,
+      "side": "close"
+    }
+  },
+  "results": [
+    {
+      "market": "Andhra Morning",
+      "dayDigits": {
+        "0": "7",
+        "1": "2",
+        "2": "3",
+        "3": "6",
+        "4": "5",
+        "5": "6",
+        "6": "6"
+      },
+      "fullHistoryPair": {
+        "pair": [
+          "pd_c",
+          "lw_o"
+        ],
+        "training": {
+          "tests": 871,
+          "avoided": 518,
+          "rate": 59.47187141216992
+        },
+        "latest30": {
+          "tests": 30,
+          "avoided": 15,
+          "rate": 50
+        },
+        "allTime": {
+          "tests": 901,
+          "avoided": 533,
+          "rate": 59.15649278579356
+        }
+      },
+      "recent90Pair": {
+        "pair": [
+          "pd_c",
+          "p4d_c"
+        ],
+        "training": {
+          "tests": 90,
+          "avoided": 59,
+          "rate": 65.55555555555556
+        },
+        "latest30": {
+          "tests": 30,
+          "avoided": 15,
+          "rate": 50
+        }
+      }
+    },
+    {
+      "market": "Andhra Day",
+      "dayDigits": {
+        "0": "6",
+        "1": "6",
+        "2": "7",
+        "3": "8",
+        "4": "3",
+        "5": "8",
+        "6": "5"
+      },
+      "fullHistoryPair": {
+        "pair": [
+          "lw_o",
+          "lw_c"
+        ],
+        "training": {
+          "tests": 855,
+          "avoided": 517,
+          "rate": 60.46783625730994
+        },
+        "latest30": {
+          "tests": 30,
+          "avoided": 18,
+          "rate": 60
+        },
+        "allTime": {
+          "tests": 885,
+          "avoided": 535,
+          "rate": 60.451977401129945
+        }
+      },
+      "recent90Pair": {
+        "pair": [
+          "pd_o",
+          "lw_c"
+        ],
+        "training": {
+          "tests": 90,
+          "avoided": 56,
+          "rate": 62.22222222222222
+        },
+        "latest30": {
+          "tests": 30,
+          "avoided": 16,
+          "rate": 53.333333333333336
+        }
+      }
+    },
+    {
+      "market": "Andhra Night",
+      "dayDigits": {
+        "0": "6",
+        "1": "7",
+        "2": "3",
+        "3": "1",
+        "4": "7",
+        "5": "9",
+        "6": "8"
+      },
+      "fullHistoryPair": {
+        "pair": [
+          "lw_o",
+          "lw_c"
+        ],
+        "training": {
+          "tests": 849,
+          "avoided": 496,
+          "rate": 58.42167255594818
+        },
+        "latest30": {
+          "tests": 30,
+          "avoided": 18,
+          "rate": 60
+        },
+        "allTime": {
+          "tests": 879,
+          "avoided": 514,
+          "rate": 58.47554038680318
+        }
+      },
+      "recent90Pair": {
+        "pair": [
+          "p2d_c",
+          "lw_c"
+        ],
+        "training": {
+          "tests": 90,
+          "avoided": 55,
+          "rate": 61.111111111111114
+        },
+        "latest30": {
+          "tests": 30,
+          "avoided": 14,
+          "rate": 46.666666666666664
+        }
+      }
+    }
+  ]
+}

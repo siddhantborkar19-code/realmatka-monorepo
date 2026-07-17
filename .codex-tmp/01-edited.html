@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hybrid Jodi Predictor</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #101827;
+      --muted: #61708a;
+      --line: #d8e1ee;
+      --accent: #ff5a1f;
+      --accent-2: #0a8f76;
+      --soft: #fff1e8;
+      --chip: #eef5ff;
+      --danger: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(980px, calc(100% - 28px));
+      margin: 28px auto;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #071b3a, #0a8f76 58%, #ff5a1f);
+      color: #fff;
+      padding: 24px;
+      border-radius: 6px;
+      box-shadow: 0 16px 38px rgba(16, 24, 39, 0.18);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .panel {
+      margin-top: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 18px;
+      box-shadow: 0 10px 26px rgba(16, 24, 39, 0.08);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 5px;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      padding: 0 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.14);
+    }
+
+    button {
+      border: 0;
+      background: linear-gradient(135deg, #ff6b1a, #ef3340);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(239, 51, 64, 0.24);
+    }
+
+    .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .error {
+      display: none;
+      margin-top: 12px;
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .box {
+      border: 1px solid var(--line);
+      background: #fbfdff;
+      border-radius: 5px;
+      padding: 14px;
+    }
+
+    .box span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .box strong {
+      display: block;
+      font-size: 22px;
+      letter-spacing: 0;
+      word-break: break-word;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      min-width: 42px;
+      padding: 10px 12px;
+      border-radius: 5px;
+      background: var(--chip);
+      border: 1px solid #cfe0ff;
+      text-align: center;
+      font-weight: 800;
+      color: #072a60;
+    }
+
+    .chip.skip {
+      background: var(--soft);
+      border-color: #ffc7a6;
+      color: #9a3412;
+    }
+
+    .chip.extra {
+      background: #e9fbf5;
+      border-color: #a8ead8;
+      color: #04735e;
+    }
+
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .result-head h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .copy {
+      width: auto;
+      min-height: 40px;
+      padding: 0 18px;
+      background: #10213f;
+      box-shadow: none;
+    }
+
+    .jodi-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .jodi {
+      min-height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 5px;
+      border: 1px solid #bdd1f7;
+      background: linear-gradient(180deg, #ffffff, #edf5ff);
+      color: #072a60;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .logic {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 5px;
+      background: #f7fafc;
+      border: 1px dashed #cad6e7;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 18px, 980px);
+        margin: 12px auto;
+      }
+
+      .hero,
+      .panel {
+        padding: 15px;
+      }
+
+      .grid,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .jodi-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .result-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .copy {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>Hybrid Jodi Predictor</h1>
+      <p>Open ke 7 digit old rule se, close ke 7 digit optimized close-skip rule se niklenge. Market-wise close skip choose karke better jodi generate karo.</p>
+    </section>
+
+    <section class="panel">
+      <div class="grid">
+        <div>
+          <label for="lastWeek">Last Week Jodi</label>
+          <input id="lastWeek" inputmode="numeric" maxlength="2" placeholder="29" value="29" />
+        </div>
+        <div>
+          <label for="prevWeek">Uske Pichle Week Jodi</label>
+          <input id="prevWeek" inputmode="numeric" maxlength="2" placeholder="82" value="82" />
+        </div>
+        <div>
+          <label for="extraSkip">Open Extra Skip</label>
+          <select id="extraSkip">
+            <option value="auto">Auto (last open based)</option>
+          </select>
+        </div>
+        <div>
+          <label for="marketSelect">Profitable Market</label>
+          <select id="marketSelect">
+            <option value="3">Mangal Bazar</option>
+            <option value="8">Andhra Night</option>
+            <option value="2">Sita Day</option>
+            <option value="7">NTR Night</option>
+            <option value="8">Andhra Morning</option>
+            <option value="0">Mahadevi Morning</option>
+            <option value="9">NTR Morning</option>
+            <option value="3">Andhra Day</option>
+            <option value="6">Sridevi Night</option>
+            <option value="5">NTR Day</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="generate" type="button" style="margin-top: 14px;">Generate Hybrid Jodi</button>
+      <div id="error" class="error"></div>
+      <div class="note">Open side duplicate me uske pichle week ka open digit extra skip hota hai. Market select karte hi us market ka best close skip auto use hota hai.</div>
+
+      <div class="summary">
+        <div class="box">
+          <span>Open Skip</span>
+          <strong id="openSkipText">-</strong>
+          <div id="openSkipChips" class="chips"></div>
+        </div>
+        <div class="box">
+          <span>Open 7 Digits</span>
+          <strong id="openSelectedText">-</strong>
+          <div id="openSelectedChips" class="chips"></div>
+        </div>
+        <div class="box">
+          <span>Close Skip</span>
+          <strong id="closeSkipText">-</strong>
+          <div id="closeSkipChips" class="chips"></div>
+        </div>
+        <div class="box">
+          <span>Close 7 Digits</span>
+          <strong id="closeSelectedText">-</strong>
+          <div id="closeSelectedChips" class="chips"></div>
+        </div>
+        <div class="box">
+          <span>Total Jodi</span>
+          <strong id="jodiCountText">-</strong>
+        </div>
+        <div class="box">
+          <span>Bet Amount @ Rs 10</span>
+          <strong id="betAmountText">-</strong>
+        </div>
+      </div>
+
+      <div class="logic" id="logicText">Generate par click karo.</div>
+
+      <div class="result-head">
+        <h2>Final Hybrid Jodi</h2>
+        <button class="copy" id="copyBtn" type="button">Copy</button>
+      </div>
+      <div id="jodiGrid" class="jodi-grid"></div>
+    </section>
+  </main>
+
+  <script>
+    const allDigits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    const lastWeekInput = document.getElementById("lastWeek");
+    const prevWeekInput = document.getElementById("prevWeek");
+    const extraSkipSelect = document.getElementById("extraSkip");
+    const marketSelect = document.getElementById("marketSelect");
+    const errorBox = document.getElementById("error");
+    const openSkipText = document.getElementById("openSkipText");
+    const openSelectedText = document.getElementById("openSelectedText");
+    const closeSkipText = document.getElementById("closeSkipText");
+    const closeSelectedText = document.getElementById("closeSelectedText");
+    const jodiCountText = document.getElementById("jodiCountText");
+    const betAmountText = document.getElementById("betAmountText");
+    const openSkipChips = document.getElementById("openSkipChips");
+    const openSelectedChips = document.getElementById("openSelectedChips");
+    const closeSkipChips = document.getElementById("closeSkipChips");
+    const closeSelectedChips = document.getElementById("closeSelectedChips");
+    const logicText = document.getElementById("logicText");
+    const jodiGrid = document.getElementById("jodiGrid");
+    const copyBtn = document.getElementById("copyBtn");
+
+    let lastJodis = [];
+
+    function normalizeJodi(value) {
+      const digits = String(value || "").replace(/\D/g, "").slice(0, 2);
+      return digits.length === 1 ? `0${digits}` : digits;
+    }
+
+    function isValidJodi(value) {
+      return /^\d{2}$/.test(value);
+    }
+
+    function uniqueSorted(values) {
+      return [...new Set(values)].sort((a, b) => Number(a) - Number(b));
+    }
+
+    function uniqueInOrder(values) {
+      const result = [];
+      values.forEach((value) => {
+        if (value !== "" && value !== undefined && !result.includes(value)) {
+          result.push(value);
+        }
+      });
+      return result;
+    }
+
+    function renderChips(target, values, className) {
+      target.innerHTML = "";
+      values.forEach((value) => {
+        const chip = document.createElement("div");
+        chip.className = `chip ${className || ""}`;
+        chip.textContent = value;
+        target.appendChild(chip);
+      });
+    }
+
+    function setError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = message ? "block" : "none";
+    }
+
+    function updateExtraOptions() {
+      const lastWeek = normalizeJodi(lastWeekInput.value);
+      const prevWeek = normalizeJodi(prevWeekInput.value);
+      const previousValue = extraSkipSelect.value;
+      extraSkipSelect.innerHTML = '<option value="auto">Auto (last open based)</option>';
+
+      if (!isValidJodi(lastWeek) || !isValidJodi(prevWeek)) return;
+
+      const baseSkip = uniqueSorted([lastWeek[0], lastWeek[1], prevWeek[1]]);
+      const remaining = allDigits.filter((digit) => !baseSkip.includes(digit));
+      remaining.forEach((digit) => {
+        const option = document.createElement("option");
+        option.value = digit;
+        option.textContent = digit;
+        extraSkipSelect.appendChild(option);
+      });
+
+      if ([...extraSkipSelect.options].some((option) => option.value === previousValue)) {
+        extraSkipSelect.value = previousValue;
+      }
+    }
+
+    function generate() {
+      const lastWeek = normalizeJodi(lastWeekInput.value);
+      const prevWeek = normalizeJodi(prevWeekInput.value);
+      lastWeekInput.value = lastWeek;
+      prevWeekInput.value = prevWeek;
+      updateExtraOptions();
+
+      if (!isValidJodi(lastWeek) || !isValidJodi(prevWeek)) {
+        setError("Dono jodi 2 digit me daalo. Example: 29 aur 82.");
+        return;
+      }
+
+      function hasDuplicateSkipDigits(values) {
+        return new Set(values).size !== values.length;
+      }
+
+      function getAutoExtraSkip(lastWeekJodi, prevWeekJodi, remainingDigits, rawSkipDigits) {
+        const lastOpen = Number(lastWeekJodi[0]);
+        const nearbyOrder = [
+          String((lastOpen + 1) % 10),
+          String((lastOpen + 9) % 10),
+          String((lastOpen + 2) % 10),
+          String((lastOpen + 8) % 10)
+        ];
+
+        if (hasDuplicateSkipDigits(rawSkipDigits)) {
+          if (remainingDigits.includes(prevWeekJodi[0])) return prevWeekJodi[0];
+          const nearby = nearbyOrder.find((digit) => remainingDigits.includes(digit));
+          if (nearby) return nearby;
+        }
+
+      return remainingDigits[0] || "";
+      }
+
+      function fillSkipDigits(skipDigits, fallbackDigits) {
+        const skip = uniqueInOrder(skipDigits);
+        fallbackDigits.forEach((digit) => {
+          if (skip.length < 3 && !skip.includes(digit)) {
+            skip.push(digit);
+          }
+        });
+        allDigits.forEach((digit) => {
+          if (skip.length < 3 && !skip.includes(digit)) {
+            skip.push(digit);
+          }
+        });
+        return uniqueSorted(skip.slice(0, 3));
+      }
+
+      setError("");
+
+      const rawSkipDigits = [lastWeek[0], lastWeek[1], prevWeek[1]];
+      let openSkip = uniqueSorted(rawSkipDigits);
+      let openRemaining = allDigits.filter((digit) => !openSkip.includes(digit));
+
+      if (openRemaining.length > 7) {
+        const extraSkip = extraSkipSelect.value === "auto"
+          ? getAutoExtraSkip(lastWeek, prevWeek, openRemaining, rawSkipDigits)
+          : extraSkipSelect.value;
+        openSkip = uniqueSorted([...openSkip, extraSkip]);
+        openRemaining = openRemaining.filter((digit) => digit !== extraSkip);
+      }
+
+      const openSelected = openRemaining.slice(0, 7);
+      const closeFixedSkip = marketSelect.value;
+      const marketName = marketSelect.options[marketSelect.selectedIndex].textContent;
+      const closeSkip = fillSkipDigits(
+        [lastWeek[0], lastWeek[1], closeFixedSkip],
+        [prevWeek[1], prevWeek[0]]
+      );
+      const closeSelected = allDigits.filter((digit) => !closeSkip.includes(digit)).slice(0, 7);
+      const jodis = [];
+      openSelected.forEach((openDigit) => {
+        closeSelected.forEach((closeDigit) => {
+          if (openDigit !== closeDigit) {
+            jodis.push(`${openDigit}${closeDigit}`);
+          }
+        });
+      });
+
+      lastJodis = jodis;
+
+      openSkipText.textContent = openSkip.join(", ");
+      openSelectedText.textContent = openSelected.join(", ");
+      closeSkipText.textContent = closeSkip.join(", ");
+      closeSelectedText.textContent = closeSelected.join(", ");
+      jodiCountText.textContent = String(jodis.length);
+      betAmountText.textContent = `Rs ${jodis.length * 10}`;
+      renderChips(openSkipChips, openSkip, "skip");
+      renderChips(openSelectedChips, openSelected, "");
+      renderChips(closeSkipChips, closeSkip, "skip");
+      renderChips(closeSelectedChips, closeSelected, "");
+
+      logicText.innerHTML = [
+        `Open rule: last week <strong>${lastWeek}</strong> ke dono digit + pichle week <strong>${prevWeek}</strong> ka close digit skip.`,
+        `Duplicate aaye toh pichle week ka open digit extra skip hota hai.`,
+        `Close rule: <strong>${marketName}</strong> ke liye close skip <strong>${closeFixedSkip}</strong> use hua.`,
+        `Open 7 x Close 7 = 49 possible jodi. Same digit wali double jodi skip karke final <strong>${jodis.length}</strong> jodi.`
+      ].join("<br>");
+
+      jodiGrid.innerHTML = "";
+      jodis.forEach((jodi) => {
+        const item = document.createElement("div");
+        item.className = "jodi";
+        item.textContent = jodi;
+        jodiGrid.appendChild(item);
+      });
+    }
+
+    function copyJodis() {
+      if (!lastJodis.length) generate();
+      const text = lastJodis.join("\n");
+      navigator.clipboard?.writeText(text).then(() => {
+        copyBtn.textContent = "Copied";
+        setTimeout(() => {
+          copyBtn.textContent = "Copy";
+        }, 1000);
+      });
+    }
+
+    [lastWeekInput, prevWeekInput].forEach((input) => {
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "").slice(0, 2);
+        updateExtraOptions();
+      });
+    });
+    extraSkipSelect.addEventListener("change", generate);
+    marketSelect.addEventListener("change", generate);
+    document.getElementById("generate").addEventListener("click", generate);
+    copyBtn.addEventListener("click", copyJodis);
+
+    updateExtraOptions();
+    generate();
+  </script>
+</body>
+</html>

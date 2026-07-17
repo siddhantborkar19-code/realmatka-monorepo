@@ -1,0 +1,243 @@
+{
+  "market": "Karnataka Day",
+  "assumptions": {
+    "jodis": 42,
+    "betPerJodi": 10,
+    "dailyStake": 420,
+    "hitReturn": 950
+  },
+  "fixedWeekday": {
+    "mapping": {
+      "0": "7",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "4": "4",
+      "5": "5",
+      "6": "6"
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 10,
+      "rate": 33.333333333333336,
+      "profit": -3100
+    },
+    "allTime": {
+      "tests": 1920,
+      "hits": 856,
+      "rate": 44.583333333333336,
+      "profit": 6800
+    }
+  },
+  "fullOlderHistory": {
+    "mapping": {
+      "0": "4",
+      "1": "3",
+      "2": "2",
+      "3": "6",
+      "4": "8",
+      "5": "8",
+      "6": "6"
+    },
+    "details": {
+      "Sunday": {
+        "digit": "4",
+        "hits": 126,
+        "tests": 270
+      },
+      "Monday": {
+        "digit": "3",
+        "hits": 140,
+        "tests": 269
+      },
+      "Tuesday": {
+        "digit": "2",
+        "hits": 128,
+        "tests": 270
+      },
+      "Wednesday": {
+        "digit": "6",
+        "hits": 116,
+        "tests": 268
+      },
+      "Thursday": {
+        "digit": "8",
+        "hits": 133,
+        "tests": 272
+      },
+      "Friday": {
+        "digit": "8",
+        "hits": 118,
+        "tests": 267
+      },
+      "Saturday": {
+        "digit": "6",
+        "hits": 131,
+        "tests": 274
+      }
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 11,
+      "rate": 36.666666666666664,
+      "profit": -2150
+    },
+    "last60": {
+      "tests": 60,
+      "hits": 25,
+      "rate": 41.666666666666664,
+      "profit": -1450
+    },
+    "last90": {
+      "tests": 90,
+      "hits": 41,
+      "rate": 45.55555555555556,
+      "profit": 1150
+    },
+    "allTime": {
+      "tests": 1920,
+      "hits": 903,
+      "rate": 47.03125,
+      "profit": 51450
+    }
+  },
+  "recent8SameDays": {
+    "mapping": {
+      "0": "4",
+      "1": "0",
+      "2": "1",
+      "3": "3",
+      "4": "2",
+      "5": "3",
+      "6": "2"
+    },
+    "details": {
+      "Sunday": {
+        "digit": "4",
+        "hits": 6,
+        "tests": 8
+      },
+      "Monday": {
+        "digit": "0",
+        "hits": 5,
+        "tests": 8
+      },
+      "Tuesday": {
+        "digit": "1",
+        "hits": 3,
+        "tests": 8
+      },
+      "Wednesday": {
+        "digit": "3",
+        "hits": 4,
+        "tests": 8
+      },
+      "Thursday": {
+        "digit": "2",
+        "hits": 5,
+        "tests": 8
+      },
+      "Friday": {
+        "digit": "3",
+        "hits": 6,
+        "tests": 8
+      },
+      "Saturday": {
+        "digit": "2",
+        "hits": 2,
+        "tests": 8
+      }
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 11,
+      "rate": 36.666666666666664,
+      "profit": -2150
+    }
+  },
+  "recent12SameDays": {
+    "mapping": {
+      "0": "4",
+      "1": "0",
+      "2": "2",
+      "3": "8",
+      "4": "2",
+      "5": "3",
+      "6": "2"
+    },
+    "details": {
+      "Sunday": {
+        "digit": "4",
+        "hits": 7,
+        "tests": 12
+      },
+      "Monday": {
+        "digit": "0",
+        "hits": 8,
+        "tests": 12
+      },
+      "Tuesday": {
+        "digit": "2",
+        "hits": 6,
+        "tests": 12
+      },
+      "Wednesday": {
+        "digit": "8",
+        "hits": 6,
+        "tests": 12
+      },
+      "Thursday": {
+        "digit": "2",
+        "hits": 9,
+        "tests": 12
+      },
+      "Friday": {
+        "digit": "3",
+        "hits": 8,
+        "tests": 12
+      },
+      "Saturday": {
+        "digit": "2",
+        "hits": 4,
+        "tests": 12
+      }
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 12,
+      "rate": 40,
+      "profit": -1200
+    }
+  },
+  "halfSplit": {
+    "mapping": {
+      "0": "4",
+      "1": "5",
+      "2": "3",
+      "3": "4",
+      "4": "6",
+      "5": "7",
+      "6": "4"
+    },
+    "validation": {
+      "tests": 960,
+      "hits": 431,
+      "rate": 44.895833333333336,
+      "profit": 6250
+    }
+  },
+  "walkForward8": {
+    "tests": 1864,
+    "hits": 765,
+    "rate": 41.04077253218884,
+    "profit": -56130,
+    "monthlyAverage": -903.3798283261802
+  },
+  "walkForward12": {
+    "tests": 1836,
+    "hits": 773,
+    "rate": 42.10239651416122,
+    "profit": -36770,
+    "monthlyAverage": -600.8169934640523
+  }
+}

@@ -69,8 +69,11 @@ export default function HomePage() {
                 <a className="button buttonPrimary" href="#contact">
                   Start A Project
                 </a>
-                <a className="button buttonSecondary" href="#services">
-                  View Services
+                <a className="button buttonSecondary" href="/pricing">
+                  View Plans & Pricing
+                </a>
+                <a className="button buttonSecondary" href="/checkout">
+                  Pay For Approved Service
                 </a>
               </div>
             </div>
@@ -154,6 +157,9 @@ export default function HomePage() {
             <a className="button buttonSecondary" href="/pricing">
               View Pricing Details
             </a>
+            <a className="button buttonPrimary" href="/checkout">
+              Proceed To Checkout
+            </a>
             <a className="button buttonSecondary" href="/support-plans">
               Support Plans
             </a>
@@ -196,6 +202,14 @@ export default function HomePage() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
+              <div className="actions">
+                <a className="button buttonPrimary" href="/checkout">
+                  Open Secure Checkout
+                </a>
+                <a className="button buttonSecondary" href="/billing">
+                  Billing Details
+                </a>
+              </div>
             </div>
             <div className="panel invoiceCard">
               <h3>Business Details</h3>

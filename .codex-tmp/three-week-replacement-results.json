@@ -1,0 +1,691 @@
+{
+  "output": [
+    {
+      "market": "Andhra Day",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 23,
+        "replacements": 23
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12370,
+        "profit": 7630,
+        "avg": 41.233333333333334,
+        "removed": 23,
+        "replacements": 23
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 23,
+        "replacements": 23
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 16380,
+        "profit": 3620,
+        "avg": 54.6,
+        "removed": 23,
+        "replacements": 23
+      }
+    },
+    {
+      "market": "Andhra Morning",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 35,
+        "replacements": 35
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12250,
+        "profit": 5750,
+        "avg": 40.833333333333336,
+        "removed": 35,
+        "replacements": 35
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12600,
+        "profit": 5400,
+        "avg": 42,
+        "removed": 35,
+        "replacements": 35
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 16260,
+        "profit": 3740,
+        "avg": 54.2,
+        "removed": 35,
+        "replacements": 35
+      }
+    },
+    {
+      "market": "Andhra Night",
+      "base": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 18,
+        "replacements": 18
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12420,
+        "profit": 8580,
+        "avg": 41.4,
+        "removed": 18,
+        "replacements": 18
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 12600,
+        "profit": 9400,
+        "avg": 42,
+        "removed": 18,
+        "replacements": 18
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 23,
+        "rate": 76.66666666666667,
+        "stake": 16550,
+        "profit": 6450,
+        "avg": 55.166666666666664,
+        "removed": 18,
+        "replacements": 18
+      }
+    },
+    {
+      "market": "Madhur Day",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 10,
+        "replacements": 10
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12500,
+        "profit": 6500,
+        "avg": 41.666666666666664,
+        "removed": 10,
+        "replacements": 10
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12600,
+        "profit": 6400,
+        "avg": 42,
+        "removed": 10,
+        "replacements": 10
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 16520,
+        "profit": 3480,
+        "avg": 55.06666666666667,
+        "removed": 10,
+        "replacements": 10
+      }
+    },
+    {
+      "market": "Mahadevi Morning",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 49,
+        "replacements": 49
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12110,
+        "profit": 7890,
+        "avg": 40.36666666666667,
+        "removed": 49,
+        "replacements": 49
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 49,
+        "replacements": 49
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 16200,
+        "profit": 4800,
+        "avg": 54,
+        "removed": 49,
+        "replacements": 49
+      }
+    },
+    {
+      "market": "Mahadevi",
+      "base": {
+        "tests": 30,
+        "hits": 23,
+        "rate": 76.66666666666667,
+        "stake": 12600,
+        "profit": 10400,
+        "avg": 42,
+        "removed": 24,
+        "replacements": 24
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 23,
+        "rate": 76.66666666666667,
+        "stake": 12360,
+        "profit": 10640,
+        "avg": 41.2,
+        "removed": 24,
+        "replacements": 24
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 23,
+        "rate": 76.66666666666667,
+        "stake": 12600,
+        "profit": 10400,
+        "avg": 42,
+        "removed": 24,
+        "replacements": 24
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 23,
+        "rate": 76.66666666666667,
+        "stake": 16490,
+        "profit": 6510,
+        "avg": 54.96666666666667,
+        "removed": 24,
+        "replacements": 24
+      }
+    },
+    {
+      "market": "Mangal Bazar",
+      "base": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 12600,
+        "profit": 2400,
+        "avg": 42,
+        "removed": 21,
+        "replacements": 21
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 12390,
+        "profit": 2610,
+        "avg": 41.3,
+        "removed": 21,
+        "replacements": 21
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 12600,
+        "profit": 2400,
+        "avg": 42,
+        "removed": 21,
+        "replacements": 21
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 16430,
+        "profit": 570,
+        "avg": 54.766666666666666,
+        "removed": 21,
+        "replacements": 21
+      }
+    },
+    {
+      "market": "Maya Bazar",
+      "base": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 12600,
+        "profit": -2600,
+        "avg": 42,
+        "removed": 31,
+        "replacements": 31
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 12290,
+        "profit": -2290,
+        "avg": 40.96666666666667,
+        "removed": 31,
+        "replacements": 31
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 12600,
+        "profit": -2600,
+        "avg": 42,
+        "removed": 31,
+        "replacements": 31
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 16390,
+        "profit": -2390,
+        "avg": 54.63333333333333,
+        "removed": 31,
+        "replacements": 31
+      }
+    },
+    {
+      "market": "Milan Night",
+      "base": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "stake": 12600,
+        "profit": 400,
+        "avg": 42,
+        "removed": 28,
+        "replacements": 28
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12320,
+        "profit": -320,
+        "avg": 41.06666666666667,
+        "removed": 28,
+        "replacements": 28
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12600,
+        "profit": -600,
+        "avg": 42,
+        "removed": 28,
+        "replacements": 28
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "stake": 16370,
+        "profit": -1370,
+        "avg": 54.56666666666667,
+        "removed": 28,
+        "replacements": 28
+      }
+    },
+    {
+      "market": "NTR Day",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 8,
+        "replacements": 8
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12520,
+        "profit": 7480,
+        "avg": 41.733333333333334,
+        "removed": 8,
+        "replacements": 8
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 8,
+        "replacements": 8
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 16530,
+        "profit": 3470,
+        "avg": 55.1,
+        "removed": 8,
+        "replacements": 8
+      }
+    },
+    {
+      "market": "NTR Morning",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 29,
+        "replacements": 29
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12310,
+        "profit": 6690,
+        "avg": 41.03333333333333,
+        "removed": 29,
+        "replacements": 29
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12600,
+        "profit": 6400,
+        "avg": 42,
+        "removed": 29,
+        "replacements": 29
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 16420,
+        "profit": 5580,
+        "avg": 54.733333333333334,
+        "removed": 29,
+        "replacements": 29
+      }
+    },
+    {
+      "market": "NTR Night",
+      "base": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 27,
+        "replacements": 27
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12330,
+        "profit": 8670,
+        "avg": 41.1,
+        "removed": 27,
+        "replacements": 27
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 27,
+        "replacements": 27
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 26,
+        "rate": 86.66666666666667,
+        "stake": 16390,
+        "profit": 9610,
+        "avg": 54.63333333333333,
+        "removed": 27,
+        "replacements": 27
+      }
+    },
+    {
+      "market": "SITA Day",
+      "base": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 12600,
+        "profit": 9400,
+        "avg": 42,
+        "removed": 32,
+        "replacements": 32
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12280,
+        "profit": 8720,
+        "avg": 40.93333333333333,
+        "removed": 32,
+        "replacements": 32
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 12600,
+        "profit": 9400,
+        "avg": 42,
+        "removed": 32,
+        "replacements": 32
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 24,
+        "rate": 80,
+        "stake": 16290,
+        "profit": 7710,
+        "avg": 54.3,
+        "removed": 32,
+        "replacements": 32
+      }
+    },
+    {
+      "market": "SITA Night",
+      "base": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12600,
+        "profit": 6400,
+        "avg": 42,
+        "removed": 25,
+        "replacements": 25
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12350,
+        "profit": 5650,
+        "avg": 41.166666666666664,
+        "removed": 25,
+        "replacements": 25
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12600,
+        "profit": 5400,
+        "avg": 42,
+        "removed": 25,
+        "replacements": 25
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 16390,
+        "profit": 3610,
+        "avg": 54.63333333333333,
+        "removed": 25,
+        "replacements": 25
+      }
+    },
+    {
+      "market": "Star Tara Night",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 11,
+        "replacements": 11
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12490,
+        "profit": 7510,
+        "avg": 41.63333333333333,
+        "removed": 11,
+        "replacements": 11
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 11,
+        "replacements": 11
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 16540,
+        "profit": 5460,
+        "avg": 55.13333333333333,
+        "removed": 11,
+        "replacements": 11
+      }
+    }
+  ],
+  "aggregate": {
+    "base": {
+      "tests": 450,
+      "hits": 284,
+      "stake": 189000,
+      "profit": 95000,
+      "removed": 371,
+      "replacements": 371,
+      "rate": 63.111111111111114,
+      "avg": 42
+    },
+    "filtered": {
+      "tests": 450,
+      "hits": 277,
+      "stake": 185290,
+      "profit": 91710,
+      "removed": 371,
+      "replacements": 371,
+      "rate": 61.55555555555556,
+      "avg": 41.175555555555555
+    },
+    "replaced": {
+      "tests": 450,
+      "hits": 280,
+      "stake": 189000,
+      "profit": 91000,
+      "removed": 371,
+      "replacements": 371,
+      "rate": 62.22222222222222,
+      "avg": 42
+    },
+    "full8": {
+      "tests": 450,
+      "hits": 307,
+      "stake": 246150,
+      "profit": 60850,
+      "removed": 371,
+      "replacements": 371,
+      "rate": 68.22222222222223,
+      "avg": 54.7
+    }
+  }
+}

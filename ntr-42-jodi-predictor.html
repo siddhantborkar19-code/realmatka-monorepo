@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NTR 42 Jodi Predictor</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f6fa;
+      --panel: #ffffff;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8e0eb;
+      --navy: #102a43;
+      --orange: #f4511e;
+      --orange-soft: #fff2ec;
+      --green: #087f5b;
+      --green-soft: #e8f7f1;
+      --blue-soft: #eef5ff;
+      --danger: #b42318;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .shell {
+      width: min(980px, calc(100% - 28px));
+      margin: 24px auto 48px;
+    }
+
+    header {
+      background: var(--navy);
+      color: #fff;
+      border-left: 6px solid var(--orange);
+      padding: 22px;
+      box-shadow: 0 12px 28px rgba(16, 42, 67, 0.16);
+    }
+
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 7px; font-size: clamp(25px, 5vw, 38px); letter-spacing: 0; }
+    header p { margin-bottom: 0; color: #dbeafe; font-size: 14px; }
+
+    .panel {
+      margin-top: 16px;
+      padding: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    select, input, button {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 5px;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    select, input {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      padding: 0 13px;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(244, 81, 30, 0.13);
+    }
+
+    .generate, .copy {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .generate { margin-top: 14px; background: var(--orange); color: #fff; }
+    .generate:hover { background: #d94316; }
+    .copy { width: auto; min-width: 128px; padding: 0 18px; background: var(--green); color: #fff; }
+    .copy:hover { background: #066b4c; }
+
+    .error {
+      display: none;
+      margin: 12px 0 0;
+      color: var(--danger);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .result { display: none; }
+    .result.visible { display: block; }
+
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .result-head h2 { margin-bottom: 4px; font-size: 22px; }
+    .result-head p { margin-bottom: 0; color: var(--muted); font-size: 14px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .stat {
+      min-height: 82px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: var(--blue-soft);
+      border-radius: 5px;
+    }
+
+    .stat:nth-child(1) { background: var(--orange-soft); }
+    .stat:nth-child(2) { background: var(--green-soft); }
+    .stat span { display: block; margin-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .stat strong { font-size: 18px; overflow-wrap: anywhere; }
+
+    .jodi-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .jodi {
+      display: grid;
+      place-items: center;
+      min-height: 45px;
+      border: 1px solid #c8d7ea;
+      border-radius: 4px;
+      background: #fff;
+      color: var(--navy);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .status {
+      min-height: 20px;
+      margin: 10px 0 0;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 20px, 620px); margin-top: 10px; }
+      header, .panel { padding: 15px; }
+      .controls { grid-template-columns: 1fr; gap: 11px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .jodi-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .result-head { align-items: flex-start; }
+      .copy { min-width: 104px; }
+    }
+
+    @media (max-width: 410px) {
+      .jodi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .result-head { display: block; }
+      .copy { width: 100%; margin-top: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>NTR 42 Jodi Predictor</h1>
+      <p>Morning, Day aur Night ke tested weekday rules</p>
+    </header>
+
+    <section class="panel" aria-label="Prediction controls">
+      <div class="controls">
+        <div>
+          <label for="market">NTR Market</label>
+          <select id="market">
+            <option value="morning">NTR Morning</option>
+            <option value="day">NTR Day</option>
+            <option value="night">NTR Night</option>
+          </select>
+        </div>
+        <div>
+          <label for="targetDate">Target Date</label>
+          <input id="targetDate" type="date" />
+        </div>
+        <div>
+          <label for="previousJodi">Previous Week Same-Day Jodi</label>
+          <input id="previousJodi" inputmode="numeric" maxlength="2" placeholder="Example: 53" autocomplete="off" />
+        </div>
+      </div>
+      <button class="generate" id="generate" type="button">Generate 42 Jodi</button>
+      <p class="error" id="error" role="alert"></p>
+    </section>
+
+    <section class="panel result" id="result" aria-live="polite">
+      <div class="result-head">
+        <div>
+          <h2 id="resultTitle">NTR Morning</h2>
+          <p id="ruleLine"></p>
+        </div>
+        <button class="copy" id="copy" type="button">Copy Jodi</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span>Skip Digits</span><strong id="skipDigits">-</strong></div>
+        <div class="stat"><span>Selected 7 Digits</span><strong id="selectedDigits">-</strong></div>
+        <div class="stat"><span>Total Jodi</span><strong id="totalJodi">42</strong></div>
+        <div class="stat"><span>Bet @ Rs10</span><strong id="betAmount">Rs420</strong></div>
+      </div>
+
+      <div class="jodi-grid" id="jodiGrid"></div>
+      <p class="status" id="copyStatus"></p>
+    </section>
+  </main>
+
+  <script>
+    const digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const marketNames = { morning: "NTR Morning", day: "NTR Day", night: "NTR Night" };
+    const rules = {
+      morning: { 0: "3", 1: "4", 2: "7", 3: "3", 4: "6", 5: "5", 6: "2" },
+      day: { 0: "1", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2" },
+      night: { 0: "7", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6" }
+    };
+
+    const market = document.getElementById("market");
+    const targetDate = document.getElementById("targetDate");
+    const previousJodi = document.getElementById("previousJodi");
+    const error = document.getElementById("error");
+    const result = document.getElementById("result");
+    const jodiGrid = document.getElementById("jodiGrid");
+    const copyStatus = document.getElementById("copyStatus");
+    let generatedJodis = [];
+
+    function localDateValue(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    targetDate.value = localDateValue(new Date());
+    previousJodi.addEventListener("input", () => {
+      previousJodi.value = previousJodi.value.replace(/\D/g, "").slice(0, 2);
+    });
+
+    function cutDigit(digit) {
+      return String((10 - Number(digit)) % 10);
+    }
+
+    function generate() {
+      const jodi = previousJodi.value.trim();
+      if (!/^\d{2}$/.test(jodi)) {
+        error.textContent = "Previous week ki 2-digit jodi enter karo.";
+        error.style.display = "block";
+        result.classList.remove("visible");
+        return;
+      }
+      if (!targetDate.value) {
+        error.textContent = "Target date select karo.";
+        error.style.display = "block";
+        result.classList.remove("visible");
+        return;
+      }
+
+      error.style.display = "none";
+      copyStatus.textContent = "";
+      const date = new Date(`${targetDate.value}T12:00:00`);
+      const weekday = date.getDay();
+      const type = market.value;
+      const dayDigit = rules[type][weekday];
+      const duplicate = jodi.includes(dayDigit);
+      const dayOrCut = duplicate ? cutDigit(dayDigit) : dayDigit;
+      const skip = [...new Set(jodi.split(""))];
+
+      for (const candidate of [dayOrCut, dayDigit, ...digits]) {
+        if (!skip.includes(candidate)) skip.push(candidate);
+        if (skip.length === 3) break;
+      }
+
+      const selected = digits.filter((digit) => !skip.includes(digit));
+      generatedJodis = [];
+      for (const open of selected) {
+        for (const close of selected) {
+          if (open !== close) generatedJodis.push(open + close);
+        }
+      }
+
+      document.getElementById("resultTitle").textContent = marketNames[type];
+      document.getElementById("ruleLine").textContent = `${weekdayNames[weekday]} | Rule digit ${dayDigit}${duplicate ? ` duplicate, cut/fallback applied` : ""} | Previous jodi ${jodi}`;
+      document.getElementById("skipDigits").textContent = skip.join(", ");
+      document.getElementById("selectedDigits").textContent = selected.join(", ");
+      document.getElementById("totalJodi").textContent = String(generatedJodis.length);
+      document.getElementById("betAmount").textContent = `Rs${generatedJodis.length * 10}`;
+      jodiGrid.replaceChildren(...generatedJodis.map((value) => {
+        const item = document.createElement("div");
+        item.className = "jodi";
+        item.textContent = value;
+        return item;
+      }));
+      result.classList.add("visible");
+    }
+
+    async function copyJodis() {
+      if (!generatedJodis.length) return;
+      const text = generatedJodis.join(" ");
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+      copyStatus.textContent = "42 jodi copied.";
+    }
+
+    document.getElementById("generate").addEventListener("click", generate);
+    document.getElementById("copy").addEventListener("click", copyJodis);
+    previousJodi.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") generate();
+    });
+  </script>
+</body>
+</html>

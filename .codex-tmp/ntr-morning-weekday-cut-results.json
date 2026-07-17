@@ -1,0 +1,82 @@
+{
+  "assumptions": {
+    "pannaPerDigit": 12,
+    "selectedDigits": 7,
+    "betPerPanna": 5,
+    "dailyStake": 420,
+    "winReturn": 800,
+    "breakEvenHitRate": 52.5
+  },
+  "results": [
+    {
+      "market": "NTR Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "digitMismatch": 1,
+      "last30": {
+        "tests": 30,
+        "hits": 19,
+        "hitRate": 63.333333333333336,
+        "singlePanna": 25,
+        "singlePannaRate": 83.33333333333333,
+        "stake": 12600,
+        "returns": 15200,
+        "profit": 2600,
+        "jodiHits": 18,
+        "jodiHitRate": 60,
+        "jodiProfit": 4500,
+        "monthlyAverage": 2600,
+        "from": "2026-05-24",
+        "to": "2026-06-22"
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 39,
+        "hitRate": 65,
+        "singlePanna": 48,
+        "singlePannaRate": 80,
+        "stake": 25200,
+        "returns": 31200,
+        "profit": 6000,
+        "jodiHits": 35,
+        "jodiHitRate": 58.333333333333336,
+        "jodiProfit": 8050,
+        "monthlyAverage": 3000,
+        "from": "2026-04-24",
+        "to": "2026-06-22"
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 58,
+        "hitRate": 64.44444444444444,
+        "singlePanna": 71,
+        "singlePannaRate": 78.88888888888889,
+        "stake": 37800,
+        "returns": 46400,
+        "profit": 8600,
+        "jodiHits": 56,
+        "jodiHitRate": 62.22222222222222,
+        "jodiProfit": 15400,
+        "monthlyAverage": 2866.6666666666665,
+        "from": "2026-03-25",
+        "to": "2026-06-22"
+      },
+      "allTime": {
+        "tests": 309,
+        "hits": 183,
+        "hitRate": 59.22330097087379,
+        "singlePanna": 236,
+        "singlePannaRate": 76.37540453074433,
+        "stake": 129780,
+        "returns": 146400,
+        "profit": 16620,
+        "jodiHits": 180,
+        "jodiHitRate": 58.25242718446602,
+        "jodiProfit": 41220,
+        "monthlyAverage": 1613.5922330097087,
+        "from": "2025-08-04",
+        "to": "2026-06-22"
+      }
+    }
+  ]
+}

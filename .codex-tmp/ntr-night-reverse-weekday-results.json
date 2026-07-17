@@ -1,0 +1,255 @@
+{
+  "market": "NTR Night",
+  "assumptions": {
+    "jodis": 42,
+    "betPerJodi": 10,
+    "dailyStake": 420,
+    "hitReturn": 950
+  },
+  "fixedWeekday": {
+    "mapping": {
+      "0": "1",
+      "1": "7",
+      "2": "6",
+      "3": "5",
+      "4": "4",
+      "5": "3",
+      "6": "2"
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 20,
+      "rate": 66.66666666666667,
+      "profit": 6400
+    },
+    "last60": {
+      "tests": 60,
+      "hits": 37,
+      "rate": 61.666666666666664,
+      "profit": 9950
+    },
+    "last90": {
+      "tests": 90,
+      "hits": 51,
+      "rate": 56.666666666666664,
+      "profit": 10650
+    },
+    "allTime": {
+      "tests": 303,
+      "hits": 169,
+      "rate": 55.775577557755774,
+      "profit": 33290
+    }
+  },
+  "fullOlderHistory": {
+    "mapping": {
+      "0": "7",
+      "1": "6",
+      "2": "9",
+      "3": "0",
+      "4": "8",
+      "5": "6",
+      "6": "3"
+    },
+    "details": {
+      "Sunday": {
+        "digit": "7",
+        "hits": 25,
+        "tests": 39
+      },
+      "Monday": {
+        "digit": "6",
+        "hits": 28,
+        "tests": 38
+      },
+      "Tuesday": {
+        "digit": "9",
+        "hits": 26,
+        "tests": 40
+      },
+      "Wednesday": {
+        "digit": "0",
+        "hits": 23,
+        "tests": 34
+      },
+      "Thursday": {
+        "digit": "8",
+        "hits": 26,
+        "tests": 40
+      },
+      "Friday": {
+        "digit": "6",
+        "hits": 30,
+        "tests": 40
+      },
+      "Saturday": {
+        "digit": "3",
+        "hits": 24,
+        "tests": 42
+      }
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 16,
+      "rate": 53.333333333333336,
+      "profit": 2600
+    },
+    "last60": {
+      "tests": 60,
+      "hits": 32,
+      "rate": 53.333333333333336,
+      "profit": 5200
+    },
+    "last90": {
+      "tests": 90,
+      "hits": 51,
+      "rate": 56.666666666666664,
+      "profit": 10650
+    },
+    "allTime": {
+      "tests": 303,
+      "hits": 198,
+      "rate": 65.34653465346534,
+      "profit": 60840
+    }
+  },
+  "recent8SameDays": {
+    "mapping": {
+      "0": "5",
+      "1": "3",
+      "2": "0",
+      "3": "4",
+      "4": "0",
+      "5": "7",
+      "6": "2"
+    },
+    "details": {
+      "Sunday": {
+        "digit": "5",
+        "hits": 5,
+        "tests": 8
+      },
+      "Monday": {
+        "digit": "3",
+        "hits": 7,
+        "tests": 8
+      },
+      "Tuesday": {
+        "digit": "0",
+        "hits": 4,
+        "tests": 8
+      },
+      "Wednesday": {
+        "digit": "4",
+        "hits": 5,
+        "tests": 8
+      },
+      "Thursday": {
+        "digit": "0",
+        "hits": 4,
+        "tests": 8
+      },
+      "Friday": {
+        "digit": "7",
+        "hits": 6,
+        "tests": 8
+      },
+      "Saturday": {
+        "digit": "2",
+        "hits": 7,
+        "tests": 8
+      }
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 17,
+      "rate": 56.666666666666664,
+      "profit": 3550
+    }
+  },
+  "recent12SameDays": {
+    "mapping": {
+      "0": "3",
+      "1": "3",
+      "2": "5",
+      "3": "8",
+      "4": "2",
+      "5": "7",
+      "6": "2"
+    },
+    "details": {
+      "Sunday": {
+        "digit": "3",
+        "hits": 7,
+        "tests": 12
+      },
+      "Monday": {
+        "digit": "3",
+        "hits": 10,
+        "tests": 12
+      },
+      "Tuesday": {
+        "digit": "5",
+        "hits": 8,
+        "tests": 12
+      },
+      "Wednesday": {
+        "digit": "8",
+        "hits": 9,
+        "tests": 12
+      },
+      "Thursday": {
+        "digit": "2",
+        "hits": 7,
+        "tests": 12
+      },
+      "Friday": {
+        "digit": "7",
+        "hits": 10,
+        "tests": 12
+      },
+      "Saturday": {
+        "digit": "2",
+        "hits": 10,
+        "tests": 12
+      }
+    },
+    "latest30": {
+      "tests": 30,
+      "hits": 18,
+      "rate": 60,
+      "profit": 4500
+    }
+  },
+  "halfSplit": {
+    "mapping": {
+      "0": "0",
+      "1": "6",
+      "2": "2",
+      "3": "0",
+      "4": "5",
+      "5": "6",
+      "6": "8"
+    },
+    "validation": {
+      "tests": 152,
+      "hits": 78,
+      "rate": 51.31578947368421,
+      "profit": 10260
+    }
+  },
+  "walkForward8": {
+    "tests": 247,
+    "hits": 147,
+    "rate": 59.51417004048583,
+    "profit": 35910,
+    "monthlyAverage": 4361.538461538462
+  },
+  "walkForward12": {
+    "tests": 219,
+    "hits": 127,
+    "rate": 57.990867579908674,
+    "profit": 28670,
+    "monthlyAverage": 3927.3972602739727
+  }
+}

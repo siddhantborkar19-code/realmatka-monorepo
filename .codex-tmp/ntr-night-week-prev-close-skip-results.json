@@ -1,0 +1,140 @@
+{
+  "twoWeekOpenFirst": {
+    "last30": {
+      "tests": 30,
+      "hits": 20,
+      "misses": 10,
+      "rate": 66.66666666666667,
+      "stake": 6300,
+      "returned": 9500,
+      "profit": 3200,
+      "from": "2026-05-24",
+      "to": "2026-06-22"
+    },
+    "last60": {
+      "tests": 60,
+      "hits": 35,
+      "misses": 25,
+      "rate": 58.333333333333336,
+      "stake": 12600,
+      "returned": 16625,
+      "profit": 4025,
+      "from": "2026-04-24",
+      "to": "2026-06-22"
+    },
+    "last90": {
+      "tests": 90,
+      "hits": 58,
+      "misses": 32,
+      "rate": 64.44444444444444,
+      "stake": 18900,
+      "returned": 27550,
+      "profit": 8650,
+      "from": "2026-03-23",
+      "to": "2026-06-22"
+    },
+    "allTime": {
+      "tests": 280,
+      "hits": 185,
+      "misses": 95,
+      "rate": 66.07142857142857,
+      "stake": 58800,
+      "returned": 87875,
+      "profit": 29075,
+      "from": "2025-08-11",
+      "to": "2026-06-22"
+    }
+  },
+  "twoWeekCloseFirst": {
+    "last30": {
+      "tests": 30,
+      "hits": 20,
+      "misses": 10,
+      "rate": 66.66666666666667,
+      "stake": 6300,
+      "returned": 9500,
+      "profit": 3200,
+      "from": "2026-05-24",
+      "to": "2026-06-22"
+    },
+    "last60": {
+      "tests": 60,
+      "hits": 35,
+      "misses": 25,
+      "rate": 58.333333333333336,
+      "stake": 12600,
+      "returned": 16625,
+      "profit": 4025,
+      "from": "2026-04-24",
+      "to": "2026-06-22"
+    },
+    "last90": {
+      "tests": 90,
+      "hits": 59,
+      "misses": 31,
+      "rate": 65.55555555555556,
+      "stake": 18900,
+      "returned": 28025,
+      "profit": 9125,
+      "from": "2026-03-23",
+      "to": "2026-06-22"
+    },
+    "allTime": {
+      "tests": 280,
+      "hits": 183,
+      "misses": 97,
+      "rate": 65.35714285714286,
+      "stake": 58800,
+      "returned": 86925,
+      "profit": 28125,
+      "from": "2025-08-11",
+      "to": "2026-06-22"
+    }
+  },
+  "previousNightOpenFirst": {
+    "last30": {
+      "tests": 30,
+      "hits": 20,
+      "misses": 10,
+      "rate": 66.66666666666667,
+      "stake": 6300,
+      "returned": 9500,
+      "profit": 3200,
+      "from": "2026-05-24",
+      "to": "2026-06-22"
+    },
+    "last60": {
+      "tests": 60,
+      "hits": 36,
+      "misses": 24,
+      "rate": 60,
+      "stake": 12600,
+      "returned": 17100,
+      "profit": 4500,
+      "from": "2026-04-24",
+      "to": "2026-06-22"
+    },
+    "last90": {
+      "tests": 90,
+      "hits": 60,
+      "misses": 30,
+      "rate": 66.66666666666667,
+      "stake": 18900,
+      "returned": 28500,
+      "profit": 9600,
+      "from": "2026-03-23",
+      "to": "2026-06-22"
+    },
+    "allTime": {
+      "tests": 280,
+      "hits": 187,
+      "misses": 93,
+      "rate": 66.78571428571429,
+      "stake": 58800,
+      "returned": 88825,
+      "profit": 30025,
+      "from": "2025-08-11",
+      "to": "2026-06-22"
+    }
+  }
+}

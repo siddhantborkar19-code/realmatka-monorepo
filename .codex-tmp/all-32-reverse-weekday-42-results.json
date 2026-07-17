@@ -1,0 +1,973 @@
+{
+  "mapping": {
+    "0": "1",
+    "1": "7",
+    "2": "6",
+    "3": "5",
+    "4": "4",
+    "5": "3",
+    "6": "2"
+  },
+  "results": [
+    {
+      "market": "Andhra Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "profit": 3550
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 30,
+        "rate": 50,
+        "profit": 3300
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 46,
+        "rate": 51.111111111111114,
+        "profit": 5900
+      },
+      "allTime": {
+        "tests": 965,
+        "hits": 417,
+        "rate": 43.21243523316062,
+        "profit": -9150,
+        "monthlyAverage": -284.45595854922277
+      }
+    },
+    {
+      "market": "Andhra Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "profit": 700
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 28,
+        "rate": 46.666666666666664,
+        "profit": 1400
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "profit": 1150
+      },
+      "allTime": {
+        "tests": 969,
+        "hits": 455,
+        "rate": 46.95562435500516,
+        "profit": 25270,
+        "monthlyAverage": 782.3529411764706
+      }
+    },
+    {
+      "market": "Andhra Night",
+      "source": "fresh",
+      "latestDate": "2026-06-21",
+      "latest30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "profit": 700
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 31,
+        "rate": 51.666666666666664,
+        "profit": 4250
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 50,
+        "rate": 55.55555555555556,
+        "profit": 9700
+      },
+      "allTime": {
+        "tests": 961,
+        "hits": 475,
+        "rate": 49.42767950052029,
+        "profit": 47630,
+        "monthlyAverage": 1486.888657648283
+      }
+    },
+    {
+      "market": "Kalyan",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 9,
+        "rate": 30,
+        "profit": -4050
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 22,
+        "rate": 36.666666666666664,
+        "profit": -4300
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 34,
+        "rate": 37.77777777777778,
+        "profit": -5500
+      },
+      "allTime": {
+        "tests": 1074,
+        "hits": 446,
+        "rate": 41.527001862197395,
+        "profit": -27380,
+        "monthlyAverage": -764.804469273743
+      }
+    },
+    {
+      "market": "Kalyan Night",
+      "source": "cached",
+      "latestDate": "2026-06-10",
+      "latest30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "profit": -1200
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 24,
+        "rate": 40,
+        "profit": -2400
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 33,
+        "rate": 36.666666666666664,
+        "profit": -6450
+      },
+      "allTime": {
+        "tests": 1764,
+        "hits": 729,
+        "rate": 41.326530612244895,
+        "profit": -48330,
+        "monthlyAverage": -821.9387755102041
+      }
+    },
+    {
+      "market": "Karnataka Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "profit": -250
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 27,
+        "rate": 45,
+        "profit": 450
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "profit": 1150
+      },
+      "allTime": {
+        "tests": 1920,
+        "hits": 851,
+        "rate": 44.322916666666664,
+        "profit": 2050,
+        "monthlyAverage": 32.03125
+      }
+    },
+    {
+      "market": "Madhur Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "profit": -3100
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "profit": -500
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 43,
+        "rate": 47.77777777777778,
+        "profit": 3050
+      },
+      "allTime": {
+        "tests": 2824,
+        "hits": 1215,
+        "rate": 43.024079320113316,
+        "profit": -31830,
+        "monthlyAverage": -338.13739376770536
+      }
+    },
+    {
+      "market": "Madhur Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "profit": -1200
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 26,
+        "rate": 43.333333333333336,
+        "profit": -500
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 43,
+        "rate": 47.77777777777778,
+        "profit": 3050
+      },
+      "allTime": {
+        "tests": 1529,
+        "hits": 687,
+        "rate": 44.931327665140614,
+        "profit": 10470,
+        "monthlyAverage": 205.42838456507522
+      }
+    },
+    {
+      "market": "Mahadevi",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "profit": 1650
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 29,
+        "rate": 48.333333333333336,
+        "profit": 2350
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 45,
+        "rate": 50,
+        "profit": 4950
+      },
+      "allTime": {
+        "tests": 1059,
+        "hits": 498,
+        "rate": 47.02549575070822,
+        "profit": 28320,
+        "monthlyAverage": 802.2662889518414
+      }
+    },
+    {
+      "market": "Mahadevi Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "profit": 2600
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 35,
+        "rate": 58.333333333333336,
+        "profit": 8050
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 50,
+        "rate": 55.55555555555556,
+        "profit": 9700
+      },
+      "allTime": {
+        "tests": 886,
+        "hits": 443,
+        "rate": 50,
+        "profit": 48730,
+        "monthlyAverage": 1650
+      }
+    },
+    {
+      "market": "Mahadevi Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "profit": -250
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 28,
+        "rate": 46.666666666666664,
+        "profit": 1400
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 44,
+        "rate": 48.888888888888886,
+        "profit": 4000
+      },
+      "allTime": {
+        "tests": 892,
+        "hits": 447,
+        "rate": 50.11210762331839,
+        "profit": 50010,
+        "monthlyAverage": 1681.9506726457398
+      }
+    },
+    {
+      "market": "Main Bazar",
+      "source": "cached",
+      "latestDate": "2026-06-10",
+      "latest30": {
+        "tests": 30,
+        "hits": 7,
+        "rate": 23.333333333333332,
+        "profit": -5950
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 20,
+        "rate": 33.333333333333336,
+        "profit": -6200
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 31,
+        "rate": 34.44444444444444,
+        "profit": -8350
+      },
+      "allTime": {
+        "tests": 1087,
+        "hits": 458,
+        "rate": 42.1343146274149,
+        "profit": -21440,
+        "monthlyAverage": -591.7203311867526
+      }
+    },
+    {
+      "market": "Mangal Bazar",
+      "source": "fresh",
+      "latestDate": "2026-06-20",
+      "latest30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "profit": 1650
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 29,
+        "rate": 48.333333333333336,
+        "profit": 2350
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 48,
+        "rate": 53.333333333333336,
+        "profit": 7800
+      },
+      "allTime": {
+        "tests": 679,
+        "hits": 336,
+        "rate": 49.48453608247423,
+        "profit": 34020,
+        "monthlyAverage": 1503.0927835051546
+      }
+    },
+    {
+      "market": "Maya Bazar",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "profit": 1650
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 30,
+        "rate": 50,
+        "profit": 3300
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 48,
+        "rate": 53.333333333333336,
+        "profit": 7800
+      },
+      "allTime": {
+        "tests": 205,
+        "hits": 110,
+        "rate": 53.65853658536585,
+        "profit": 18400,
+        "monthlyAverage": 2692.682926829268
+      }
+    },
+    {
+      "market": "Milan Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "profit": 5450
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 35,
+        "rate": 58.333333333333336,
+        "profit": 8050
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 46,
+        "rate": 51.111111111111114,
+        "profit": 5900
+      },
+      "allTime": {
+        "tests": 1124,
+        "hits": 499,
+        "rate": 44.395017793594306,
+        "profit": 1970,
+        "monthlyAverage": 52.580071174377224
+      }
+    },
+    {
+      "market": "Milan Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 11,
+        "rate": 36.666666666666664,
+        "profit": -2150
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 27,
+        "rate": 45,
+        "profit": 450
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "profit": 1150
+      },
+      "allTime": {
+        "tests": 2139,
+        "hits": 948,
+        "rate": 44.31977559607293,
+        "profit": 2220,
+        "monthlyAverage": 31.136044880785413
+      }
+    },
+    {
+      "market": "Milan Night",
+      "source": "fresh",
+      "latestDate": "2026-06-20",
+      "latest30": {
+        "tests": 30,
+        "hits": 11,
+        "rate": 36.666666666666664,
+        "profit": -2150
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 25,
+        "rate": 41.666666666666664,
+        "profit": -1450
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 40,
+        "rate": 44.44444444444444,
+        "profit": 200
+      },
+      "allTime": {
+        "tests": 1298,
+        "hits": 558,
+        "rate": 42.98921417565485,
+        "profit": -15060,
+        "monthlyAverage": -348.0739599383667
+      }
+    },
+    {
+      "market": "NTR Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "profit": 2600
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 33,
+        "rate": 55,
+        "profit": 6150
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 47,
+        "rate": 52.22222222222222,
+        "profit": 6850
+      },
+      "allTime": {
+        "tests": 307,
+        "hits": 170,
+        "rate": 55.37459283387622,
+        "profit": 32560,
+        "monthlyAverage": 3181.758957654723
+      }
+    },
+    {
+      "market": "NTR Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "profit": -1200
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 28,
+        "rate": 46.666666666666664,
+        "profit": 1400
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 50,
+        "rate": 55.55555555555556,
+        "profit": 9700
+      },
+      "allTime": {
+        "tests": 309,
+        "hits": 170,
+        "rate": 55.016181229773466,
+        "profit": 31720,
+        "monthlyAverage": 3079.6116504854367
+      }
+    },
+    {
+      "market": "NTR Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "profit": 6400
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 37,
+        "rate": 61.666666666666664,
+        "profit": 9950
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 51,
+        "rate": 56.666666666666664,
+        "profit": 10650
+      },
+      "allTime": {
+        "tests": 303,
+        "hits": 169,
+        "rate": 55.775577557755774,
+        "profit": 33290,
+        "monthlyAverage": 3296.039603960396
+      }
+    },
+    {
+      "market": "Rajdhani Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 6,
+        "rate": 20,
+        "profit": -6900
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 17,
+        "rate": 28.333333333333332,
+        "profit": -9050
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 34,
+        "rate": 37.77777777777778,
+        "profit": -5500
+      },
+      "allTime": {
+        "tests": 2467,
+        "hits": 1009,
+        "rate": 40.89987839481151,
+        "profit": -77590,
+        "monthlyAverage": -943.534657478719
+      }
+    },
+    {
+      "market": "Rajdhani Night",
+      "source": "cached",
+      "latestDate": "2026-06-10",
+      "latest30": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "profit": 700
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 27,
+        "rate": 45,
+        "profit": 450
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 39,
+        "rate": 43.333333333333336,
+        "profit": -750
+      },
+      "allTime": {
+        "tests": 1332,
+        "hits": 557,
+        "rate": 41.81681681681682,
+        "profit": -30290,
+        "monthlyAverage": -682.2072072072073
+      }
+    },
+    {
+      "market": "SITA Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "profit": 4500
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 32,
+        "rate": 53.333333333333336,
+        "profit": 5200
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 46,
+        "rate": 51.111111111111114,
+        "profit": 5900
+      },
+      "allTime": {
+        "tests": 982,
+        "hits": 432,
+        "rate": 43.9918533604888,
+        "profit": -2040,
+        "monthlyAverage": -62.32179226069246
+      }
+    },
+    {
+      "market": "SITA Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 9,
+        "rate": 30,
+        "profit": -4050
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 21,
+        "rate": 35,
+        "profit": -5250
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 36,
+        "rate": 40,
+        "profit": -3600
+      },
+      "allTime": {
+        "tests": 1124,
+        "hits": 534,
+        "rate": 47.50889679715303,
+        "profit": 35220,
+        "monthlyAverage": 940.0355871886121
+      }
+    },
+    {
+      "market": "SITA Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "profit": 4500
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 31,
+        "rate": 51.666666666666664,
+        "profit": 4250
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 46,
+        "rate": 51.111111111111114,
+        "profit": 5900
+      },
+      "allTime": {
+        "tests": 974,
+        "hits": 428,
+        "rate": 43.94250513347023,
+        "profit": -2480,
+        "monthlyAverage": -76.38603696098562
+      }
+    },
+    {
+      "market": "Sridevi",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "profit": -1200
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 27,
+        "rate": 45,
+        "profit": 450
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 39,
+        "rate": 43.333333333333336,
+        "profit": -750
+      },
+      "allTime": {
+        "tests": 1953,
+        "hits": 859,
+        "rate": 43.983614951356884,
+        "profit": -4210,
+        "monthlyAverage": -64.66973886328725
+      }
+    },
+    {
+      "market": "Sridevi Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "profit": 3550
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 29,
+        "rate": 48.333333333333336,
+        "profit": 2350
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 42,
+        "rate": 46.666666666666664,
+        "profit": 2100
+      },
+      "allTime": {
+        "tests": 1937,
+        "hits": 824,
+        "rate": 42.54001032524523,
+        "profit": -30740,
+        "monthlyAverage": -476.097057305111
+      }
+    },
+    {
+      "market": "Star Tara Day",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "profit": 2600
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 30,
+        "rate": 50,
+        "profit": 3300
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "profit": 1150
+      },
+      "allTime": {
+        "tests": 461,
+        "hits": 217,
+        "rate": 47.071583514099785,
+        "profit": 12530,
+        "monthlyAverage": 815.4013015184382
+      }
+    },
+    {
+      "market": "Star Tara Morning",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "profit": -250
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 24,
+        "rate": 40,
+        "profit": -2400
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "profit": 1150
+      },
+      "allTime": {
+        "tests": 461,
+        "hits": 206,
+        "rate": 44.68546637744035,
+        "profit": 2080,
+        "monthlyAverage": 135.35791757049893
+      }
+    },
+    {
+      "market": "Star Tara Night",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "profit": 1650
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 28,
+        "rate": 46.666666666666664,
+        "profit": 1400
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 41,
+        "rate": 45.55555555555556,
+        "profit": 1150
+      },
+      "allTime": {
+        "tests": 453,
+        "hits": 211,
+        "rate": 46.57836644591612,
+        "profit": 10190,
+        "monthlyAverage": 674.8344370860927
+      }
+    },
+    {
+      "market": "Supreme Night",
+      "source": "fresh",
+      "latestDate": "2026-06-21",
+      "latest30": {
+        "tests": 30,
+        "hits": 15,
+        "rate": 50,
+        "profit": 1650
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 30,
+        "rate": 50,
+        "profit": 3300
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 46,
+        "rate": 51.111111111111114,
+        "profit": 5900
+      },
+      "allTime": {
+        "tests": 1865,
+        "hits": 721,
+        "rate": 38.65951742627346,
+        "profit": -98350,
+        "monthlyAverage": -1582.0375335120643
+      }
+    },
+    {
+      "market": "Time Bazar",
+      "source": "fresh",
+      "latestDate": "2026-06-22",
+      "latest30": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "profit": -3100
+      },
+      "last60": {
+        "tests": 60,
+        "hits": 25,
+        "rate": 41.666666666666664,
+        "profit": -1450
+      },
+      "last90": {
+        "tests": 90,
+        "hits": 38,
+        "rate": 42.22222222222222,
+        "profit": -1700
+      },
+      "allTime": {
+        "tests": 1637,
+        "hits": 689,
+        "rate": 42.089187538179594,
+        "profit": -32990,
+        "monthlyAverage": -604.581551618815
+      }
+    }
+  ]
+}

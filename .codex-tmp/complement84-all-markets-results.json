@@ -1,0 +1,1602 @@
+{
+  "output": [
+    {
+      "market": "Andhra Day",
+      "base": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12600,
+        "profit": 6400,
+        "avg": 42,
+        "removed": 30,
+        "replacements": 30
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 12810,
+        "profit": 4190,
+        "avg": 42.7,
+        "removed": 30,
+        "replacements": 30
+      },
+      "complement": {
+        "both": 14,
+        "oldOnly": 5,
+        "file01Only": 3,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6405,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 17100,
+        "profit950": 4395
+      },
+      "learnedComplement": {
+        "fixedDigit": "6",
+        "both": 12,
+        "oldOnly": 7,
+        "file01Only": 6,
+        "bothMiss": 5,
+        "oldStake": 6300,
+        "file01Stake": 6435,
+        "covered": 25,
+        "coverageRate": 83.33333333333333,
+        "return950": 17575,
+        "profit950": 4840
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 8,
+        "oldOnly": 11,
+        "secondOnly": 9,
+        "bothMiss": 2,
+        "stake": 12600,
+        "returned": 17100,
+        "profit": 4500,
+        "covered": 28,
+        "coverageRate": 93.33333333333333
+      },
+      "complement84AllTime": {
+        "tests": 896,
+        "both": 127,
+        "oldOnly": 268,
+        "secondOnly": 264,
+        "bothMiss": 237,
+        "stake": 376320,
+        "returned": 373350,
+        "profit": -2970,
+        "covered": 659,
+        "coverageRate": 73.54910714285714
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12300,
+        "profit": 6700,
+        "avg": 41,
+        "removed": 30,
+        "replacements": 30
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12600,
+        "profit": 6400,
+        "avg": 42,
+        "removed": 30,
+        "replacements": 30
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 16320,
+        "profit": 5680,
+        "avg": 54.4,
+        "removed": 30,
+        "replacements": 30
+      }
+    },
+    {
+      "market": "Andhra Morning",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 41,
+        "replacements": 41
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12810,
+        "profit": 5190,
+        "avg": 42.7,
+        "removed": 41,
+        "replacements": 41
+      },
+      "complement": {
+        "both": 11,
+        "oldOnly": 9,
+        "file01Only": 7,
+        "bothMiss": 3,
+        "oldStake": 6300,
+        "file01Stake": 6405,
+        "covered": 27,
+        "coverageRate": 90,
+        "return950": 18050,
+        "profit950": 5345
+      },
+      "learnedComplement": {
+        "fixedDigit": "7",
+        "both": 11,
+        "oldOnly": 9,
+        "file01Only": 6,
+        "bothMiss": 4,
+        "oldStake": 6300,
+        "file01Stake": 6410,
+        "covered": 26,
+        "coverageRate": 86.66666666666667,
+        "return950": 17575,
+        "profit950": 4865
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 3,
+        "oldOnly": 17,
+        "secondOnly": 5,
+        "bothMiss": 5,
+        "stake": 12600,
+        "returned": 13300,
+        "profit": 700,
+        "covered": 25,
+        "coverageRate": 83.33333333333333
+      },
+      "complement84AllTime": {
+        "tests": 910,
+        "both": 103,
+        "oldOnly": 263,
+        "secondOnly": 275,
+        "bothMiss": 269,
+        "stake": 382200,
+        "returned": 353400,
+        "profit": -28800,
+        "covered": 641,
+        "coverageRate": 70.43956043956044
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12190,
+        "profit": 6810,
+        "avg": 40.63333333333333,
+        "removed": 41,
+        "replacements": 41
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 41,
+        "replacements": 41
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 16240,
+        "profit": 5760,
+        "avg": 54.13333333333333,
+        "removed": 41,
+        "replacements": 41
+      }
+    },
+    {
+      "market": "Andhra Night",
+      "base": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 14,
+        "replacements": 14
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12810,
+        "profit": 6190,
+        "avg": 42.7,
+        "removed": 14,
+        "replacements": 14
+      },
+      "complement": {
+        "both": 16,
+        "oldOnly": 5,
+        "file01Only": 3,
+        "bothMiss": 6,
+        "oldStake": 6300,
+        "file01Stake": 6405,
+        "covered": 24,
+        "coverageRate": 80,
+        "return950": 19000,
+        "profit950": 6295
+      },
+      "learnedComplement": {
+        "fixedDigit": "7",
+        "both": 15,
+        "oldOnly": 6,
+        "file01Only": 4,
+        "bothMiss": 5,
+        "oldStake": 6300,
+        "file01Stake": 6415,
+        "covered": 25,
+        "coverageRate": 83.33333333333333,
+        "return950": 19000,
+        "profit950": 6285
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 7,
+        "oldOnly": 14,
+        "secondOnly": 2,
+        "bothMiss": 7,
+        "stake": 12600,
+        "returned": 14250,
+        "profit": 1650,
+        "covered": 23,
+        "coverageRate": 76.66666666666667
+      },
+      "complement84AllTime": {
+        "tests": 890,
+        "both": 112,
+        "oldOnly": 280,
+        "secondOnly": 263,
+        "bothMiss": 235,
+        "stake": 373800,
+        "returned": 364325,
+        "profit": -9475,
+        "covered": 655,
+        "coverageRate": 73.59550561797752
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12460,
+        "profit": 7540,
+        "avg": 41.53333333333333,
+        "removed": 14,
+        "replacements": 14
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 14,
+        "replacements": 14
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 24,
+        "rate": 80,
+        "stake": 16570,
+        "profit": 7430,
+        "avg": 55.233333333333334,
+        "removed": 14,
+        "replacements": 14
+      }
+    },
+    {
+      "market": "Madhur Day",
+      "base": {
+        "tests": 30,
+        "hits": 8,
+        "rate": 26.666666666666668,
+        "stake": 12600,
+        "profit": -4600,
+        "avg": 42,
+        "removed": 9,
+        "replacements": 9
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 0,
+        "rate": 0,
+        "stake": 0,
+        "profit": 0,
+        "avg": 0,
+        "removed": 9,
+        "replacements": 9
+      },
+      "complement": {
+        "both": 0,
+        "oldOnly": 8,
+        "file01Only": 0,
+        "bothMiss": 22,
+        "oldStake": 6300,
+        "file01Stake": 0,
+        "covered": 8,
+        "coverageRate": 26.666666666666668,
+        "return950": 3800,
+        "profit950": -2500
+      },
+      "learnedComplement": {
+        "fixedDigit": "4",
+        "both": 4,
+        "oldOnly": 4,
+        "file01Only": 6,
+        "bothMiss": 16,
+        "oldStake": 6300,
+        "file01Stake": 6385,
+        "covered": 14,
+        "coverageRate": 46.666666666666664,
+        "return950": 8550,
+        "profit950": -4135
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 1,
+        "oldOnly": 7,
+        "secondOnly": 8,
+        "bothMiss": 14,
+        "stake": 12600,
+        "returned": 8075,
+        "profit": -4525,
+        "covered": 16,
+        "coverageRate": 53.333333333333336
+      },
+      "complement84AllTime": {
+        "tests": 2486,
+        "both": 313,
+        "oldOnly": 757,
+        "secondOnly": 749,
+        "bothMiss": 667,
+        "stake": 1044120,
+        "returned": 1012700,
+        "profit": -31420,
+        "covered": 1819,
+        "coverageRate": 73.16975060337892
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 6,
+        "rate": 20,
+        "stake": 12510,
+        "profit": -6510,
+        "avg": 41.7,
+        "removed": 9,
+        "replacements": 9
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 6,
+        "rate": 20,
+        "stake": 12600,
+        "profit": -6600,
+        "avg": 42,
+        "removed": 9,
+        "replacements": 9
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 16470,
+        "profit": -6470,
+        "avg": 54.9,
+        "removed": 9,
+        "replacements": 9
+      }
+    },
+    {
+      "market": "Mahadevi Morning",
+      "base": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 3400,
+        "avg": 42,
+        "removed": 38,
+        "replacements": 38
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12760,
+        "profit": 3240,
+        "avg": 42.53333333333333,
+        "removed": 38,
+        "replacements": 38
+      },
+      "complement": {
+        "both": 10,
+        "oldOnly": 6,
+        "file01Only": 6,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6380,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 15200,
+        "profit950": 2520
+      },
+      "learnedComplement": {
+        "fixedDigit": "7",
+        "both": 7,
+        "oldOnly": 9,
+        "file01Only": 7,
+        "bothMiss": 7,
+        "oldStake": 6300,
+        "file01Stake": 6420,
+        "covered": 23,
+        "coverageRate": 76.66666666666667,
+        "return950": 14250,
+        "profit950": 1530
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 4,
+        "oldOnly": 12,
+        "secondOnly": 8,
+        "bothMiss": 6,
+        "stake": 12600,
+        "returned": 13300,
+        "profit": 700,
+        "covered": 24,
+        "coverageRate": 80
+      },
+      "complement84AllTime": {
+        "tests": 796,
+        "both": 99,
+        "oldOnly": 256,
+        "secondOnly": 226,
+        "bothMiss": 215,
+        "stake": 334320,
+        "returned": 323000,
+        "profit": -11320,
+        "covered": 581,
+        "coverageRate": 72.98994974874371
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12220,
+        "profit": 3780,
+        "avg": 40.733333333333334,
+        "removed": 38,
+        "replacements": 38
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 3400,
+        "avg": 42,
+        "removed": 38,
+        "replacements": 38
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 16280,
+        "profit": 4720,
+        "avg": 54.266666666666666,
+        "removed": 38,
+        "replacements": 38
+      }
+    },
+    {
+      "market": "Mahadevi",
+      "base": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 21,
+        "replacements": 21
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 13,
+        "rate": 43.333333333333336,
+        "stake": 12820,
+        "profit": 180,
+        "avg": 42.733333333333334,
+        "removed": 21,
+        "replacements": 21
+      },
+      "complement": {
+        "both": 11,
+        "oldOnly": 9,
+        "file01Only": 2,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6410,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 15675,
+        "profit950": 2965
+      },
+      "learnedComplement": {
+        "fixedDigit": "8",
+        "both": 12,
+        "oldOnly": 8,
+        "file01Only": 2,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6425,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 16150,
+        "profit950": 3425
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 7,
+        "oldOnly": 13,
+        "secondOnly": 5,
+        "bothMiss": 5,
+        "stake": 12600,
+        "returned": 15200,
+        "profit": 2600,
+        "covered": 25,
+        "coverageRate": 83.33333333333333
+      },
+      "complement84AllTime": {
+        "tests": 970,
+        "both": 101,
+        "oldOnly": 296,
+        "secondOnly": 298,
+        "bothMiss": 275,
+        "stake": 407400,
+        "returned": 378100,
+        "profit": -29300,
+        "covered": 695,
+        "coverageRate": 71.64948453608247
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12390,
+        "profit": 7610,
+        "avg": 41.3,
+        "removed": 21,
+        "replacements": 21
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 21,
+        "replacements": 21
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 16510,
+        "profit": 3490,
+        "avg": 55.03333333333333,
+        "removed": 21,
+        "replacements": 21
+      }
+    },
+    {
+      "market": "Mangal Bazar",
+      "base": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 1400,
+        "avg": 42,
+        "removed": 26,
+        "replacements": 26
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12820,
+        "profit": 3180,
+        "avg": 42.733333333333334,
+        "removed": 26,
+        "replacements": 26
+      },
+      "complement": {
+        "both": 8,
+        "oldOnly": 6,
+        "file01Only": 8,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6410,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 14250,
+        "profit950": 1540
+      },
+      "learnedComplement": {
+        "fixedDigit": "0",
+        "both": 6,
+        "oldOnly": 8,
+        "file01Only": 8,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6425,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 13300,
+        "profit950": 575
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 4,
+        "oldOnly": 10,
+        "secondOnly": 14,
+        "bothMiss": 2,
+        "stake": 12600,
+        "returned": 15200,
+        "profit": 2600,
+        "covered": 28,
+        "coverageRate": 93.33333333333333
+      },
+      "complement84AllTime": {
+        "tests": 294,
+        "both": 26,
+        "oldOnly": 99,
+        "secondOnly": 92,
+        "bothMiss": 77,
+        "stake": 123480,
+        "returned": 115425,
+        "profit": -8055,
+        "covered": 217,
+        "coverageRate": 73.80952380952381
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12340,
+        "profit": 1660,
+        "avg": 41.13333333333333,
+        "removed": 26,
+        "replacements": 26
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 1400,
+        "avg": 42,
+        "removed": 26,
+        "replacements": 26
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 16410,
+        "profit": 590,
+        "avg": 54.7,
+        "removed": 26,
+        "replacements": 26
+      }
+    },
+    {
+      "market": "Maya Bazar",
+      "base": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 12600,
+        "profit": -2600,
+        "avg": 42,
+        "removed": 34,
+        "replacements": 34
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 0,
+        "rate": 0,
+        "stake": 0,
+        "profit": 0,
+        "avg": 0,
+        "removed": 34,
+        "replacements": 34
+      },
+      "complement": {
+        "both": 0,
+        "oldOnly": 10,
+        "file01Only": 0,
+        "bothMiss": 20,
+        "oldStake": 6300,
+        "file01Stake": 0,
+        "covered": 10,
+        "coverageRate": 33.333333333333336,
+        "return950": 4750,
+        "profit950": -1550
+      },
+      "learnedComplement": {
+        "fixedDigit": "3",
+        "both": 7,
+        "oldOnly": 3,
+        "file01Only": 3,
+        "bothMiss": 17,
+        "oldStake": 6300,
+        "file01Stake": 6385,
+        "covered": 13,
+        "coverageRate": 43.333333333333336,
+        "return950": 9500,
+        "profit950": -3185
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 1,
+        "oldOnly": 9,
+        "secondOnly": 9,
+        "bothMiss": 11,
+        "stake": 12600,
+        "returned": 9500,
+        "profit": -3100,
+        "covered": 19,
+        "coverageRate": 63.333333333333336
+      },
+      "complement84AllTime": {
+        "tests": 72,
+        "both": 6,
+        "oldOnly": 24,
+        "secondOnly": 17,
+        "bothMiss": 25,
+        "stake": 30240,
+        "returned": 25175,
+        "profit": -5065,
+        "covered": 47,
+        "coverageRate": 65.27777777777777
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 12260,
+        "profit": -2260,
+        "avg": 40.86666666666667,
+        "removed": 34,
+        "replacements": 34
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 10,
+        "rate": 33.333333333333336,
+        "stake": 12600,
+        "profit": -2600,
+        "avg": 42,
+        "removed": 34,
+        "replacements": 34
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 16340,
+        "profit": -340,
+        "avg": 54.46666666666667,
+        "removed": 34,
+        "replacements": 34
+      }
+    },
+    {
+      "market": "Milan Night",
+      "base": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 1400,
+        "avg": 42,
+        "removed": 26,
+        "replacements": 26
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 12,
+        "rate": 40,
+        "stake": 12840,
+        "profit": -840,
+        "avg": 42.8,
+        "removed": 26,
+        "replacements": 26
+      },
+      "complement": {
+        "both": 7,
+        "oldOnly": 7,
+        "file01Only": 5,
+        "bothMiss": 11,
+        "oldStake": 6300,
+        "file01Stake": 6420,
+        "covered": 19,
+        "coverageRate": 63.333333333333336,
+        "return950": 12350,
+        "profit950": -370
+      },
+      "learnedComplement": {
+        "fixedDigit": "8",
+        "both": 8,
+        "oldOnly": 6,
+        "file01Only": 4,
+        "bothMiss": 12,
+        "oldStake": 6300,
+        "file01Stake": 6385,
+        "covered": 18,
+        "coverageRate": 60,
+        "return950": 12350,
+        "profit950": -335
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 8,
+        "oldOnly": 6,
+        "secondOnly": 9,
+        "bothMiss": 7,
+        "stake": 12600,
+        "returned": 14725,
+        "profit": 2125,
+        "covered": 23,
+        "coverageRate": 76.66666666666667
+      },
+      "complement84AllTime": {
+        "tests": 568,
+        "both": 76,
+        "oldOnly": 165,
+        "secondOnly": 170,
+        "bothMiss": 157,
+        "stake": 238560,
+        "returned": 231325,
+        "profit": -7235,
+        "covered": 411,
+        "coverageRate": 72.35915492957747
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12340,
+        "profit": 1660,
+        "avg": 41.13333333333333,
+        "removed": 26,
+        "replacements": 26
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 1400,
+        "avg": 42,
+        "removed": 26,
+        "replacements": 26
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 16390,
+        "profit": 610,
+        "avg": 54.63333333333333,
+        "removed": 26,
+        "replacements": 26
+      }
+    },
+    {
+      "market": "NTR Day",
+      "base": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 3400,
+        "avg": 42,
+        "removed": 11,
+        "replacements": 11
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12850,
+        "profit": 3150,
+        "avg": 42.833333333333336,
+        "removed": 11,
+        "replacements": 11
+      },
+      "complement": {
+        "both": 13,
+        "oldOnly": 3,
+        "file01Only": 3,
+        "bothMiss": 11,
+        "oldStake": 6300,
+        "file01Stake": 6425,
+        "covered": 19,
+        "coverageRate": 63.333333333333336,
+        "return950": 15200,
+        "profit950": 2475
+      },
+      "learnedComplement": {
+        "fixedDigit": "5",
+        "both": 13,
+        "oldOnly": 3,
+        "file01Only": 3,
+        "bothMiss": 11,
+        "oldStake": 6300,
+        "file01Stake": 6425,
+        "covered": 19,
+        "coverageRate": 63.333333333333336,
+        "return950": 15200,
+        "profit950": 2475
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 2,
+        "oldOnly": 14,
+        "secondOnly": 7,
+        "bothMiss": 7,
+        "stake": 12600,
+        "returned": 11875,
+        "profit": -725,
+        "covered": 23,
+        "coverageRate": 76.66666666666667
+      },
+      "complement84AllTime": {
+        "tests": 267,
+        "both": 27,
+        "oldOnly": 125,
+        "secondOnly": 49,
+        "bothMiss": 66,
+        "stake": 112140,
+        "returned": 108300,
+        "profit": -3840,
+        "covered": 201,
+        "coverageRate": 75.28089887640449
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12490,
+        "profit": 3510,
+        "avg": 41.63333333333333,
+        "removed": 11,
+        "replacements": 11
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 3400,
+        "avg": 42,
+        "removed": 11,
+        "replacements": 11
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 16540,
+        "profit": 460,
+        "avg": 55.13333333333333,
+        "removed": 11,
+        "replacements": 11
+      }
+    },
+    {
+      "market": "NTR Morning",
+      "base": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 12600,
+        "profit": 8400,
+        "avg": 42,
+        "removed": 28,
+        "replacements": 28
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 12780,
+        "profit": 4220,
+        "avg": 42.6,
+        "removed": 28,
+        "replacements": 28
+      },
+      "complement": {
+        "both": 16,
+        "oldOnly": 5,
+        "file01Only": 1,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6390,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 18050,
+        "profit950": 5360
+      },
+      "learnedComplement": {
+        "fixedDigit": "8",
+        "both": 17,
+        "oldOnly": 4,
+        "file01Only": 2,
+        "bothMiss": 7,
+        "oldStake": 6300,
+        "file01Stake": 6400,
+        "covered": 23,
+        "coverageRate": 76.66666666666667,
+        "return950": 19000,
+        "profit950": 6300
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 5,
+        "oldOnly": 16,
+        "secondOnly": 5,
+        "bothMiss": 4,
+        "stake": 12600,
+        "returned": 14725,
+        "profit": 2125,
+        "covered": 26,
+        "coverageRate": 86.66666666666667
+      },
+      "complement84AllTime": {
+        "tests": 272,
+        "both": 32,
+        "oldOnly": 128,
+        "secondOnly": 41,
+        "bothMiss": 71,
+        "stake": 114240,
+        "returned": 110675,
+        "profit": -3565,
+        "covered": 201,
+        "coverageRate": 73.8970588235294
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12320,
+        "profit": 7680,
+        "avg": 41.06666666666667,
+        "removed": 28,
+        "replacements": 28
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 20,
+        "rate": 66.66666666666667,
+        "stake": 12600,
+        "profit": 7400,
+        "avg": 42,
+        "removed": 28,
+        "replacements": 28
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 21,
+        "rate": 70,
+        "stake": 16420,
+        "profit": 4580,
+        "avg": 54.733333333333334,
+        "removed": 28,
+        "replacements": 28
+      }
+    },
+    {
+      "market": "NTR Night",
+      "base": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 3400,
+        "avg": 42,
+        "removed": 28,
+        "replacements": 28
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12840,
+        "profit": 6160,
+        "avg": 42.8,
+        "removed": 28,
+        "replacements": 28
+      },
+      "complement": {
+        "both": 12,
+        "oldOnly": 4,
+        "file01Only": 7,
+        "bothMiss": 7,
+        "oldStake": 6300,
+        "file01Stake": 6420,
+        "covered": 23,
+        "coverageRate": 76.66666666666667,
+        "return950": 16625,
+        "profit950": 3905
+      },
+      "learnedComplement": {
+        "fixedDigit": "5",
+        "both": 12,
+        "oldOnly": 4,
+        "file01Only": 7,
+        "bothMiss": 7,
+        "oldStake": 6300,
+        "file01Stake": 6420,
+        "covered": 23,
+        "coverageRate": 76.66666666666667,
+        "return950": 16625,
+        "profit950": 3905
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 6,
+        "oldOnly": 10,
+        "secondOnly": 5,
+        "bothMiss": 9,
+        "stake": 12600,
+        "returned": 12825,
+        "profit": 225,
+        "covered": 21,
+        "coverageRate": 70
+      },
+      "complement84AllTime": {
+        "tests": 253,
+        "both": 19,
+        "oldOnly": 121,
+        "secondOnly": 51,
+        "bothMiss": 62,
+        "stake": 106260,
+        "returned": 99750,
+        "profit": -6510,
+        "covered": 191,
+        "coverageRate": 75.49407114624506
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12320,
+        "profit": 3680,
+        "avg": 41.06666666666667,
+        "removed": 28,
+        "replacements": 28
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 16,
+        "rate": 53.333333333333336,
+        "stake": 12600,
+        "profit": 3400,
+        "avg": 42,
+        "removed": 28,
+        "replacements": 28
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 24,
+        "rate": 80,
+        "stake": 16400,
+        "profit": 7600,
+        "avg": 54.666666666666664,
+        "removed": 28,
+        "replacements": 28
+      }
+    },
+    {
+      "market": "SITA Day",
+      "base": {
+        "tests": 30,
+        "hits": 23,
+        "rate": 76.66666666666667,
+        "stake": 12600,
+        "profit": 10400,
+        "avg": 42,
+        "removed": 34,
+        "replacements": 34
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 12830,
+        "profit": 6170,
+        "avg": 42.766666666666666,
+        "removed": 34,
+        "replacements": 34
+      },
+      "complement": {
+        "both": 15,
+        "oldOnly": 8,
+        "file01Only": 4,
+        "bothMiss": 3,
+        "oldStake": 6300,
+        "file01Stake": 6415,
+        "covered": 27,
+        "coverageRate": 90,
+        "return950": 19950,
+        "profit950": 7235
+      },
+      "learnedComplement": {
+        "fixedDigit": "5",
+        "both": 13,
+        "oldOnly": 10,
+        "file01Only": 4,
+        "bothMiss": 3,
+        "oldStake": 6300,
+        "file01Stake": 6410,
+        "covered": 27,
+        "coverageRate": 90,
+        "return950": 19000,
+        "profit950": 6290
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 11,
+        "oldOnly": 12,
+        "secondOnly": 6,
+        "bothMiss": 1,
+        "stake": 12600,
+        "returned": 19000,
+        "profit": 6400,
+        "covered": 29,
+        "coverageRate": 96.66666666666667
+      },
+      "complement84AllTime": {
+        "tests": 918,
+        "both": 98,
+        "oldOnly": 274,
+        "secondOnly": 281,
+        "bothMiss": 265,
+        "stake": 385560,
+        "returned": 356725,
+        "profit": -28835,
+        "covered": 653,
+        "coverageRate": 71.13289760348584
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 22,
+        "rate": 73.33333333333333,
+        "stake": 12260,
+        "profit": 9740,
+        "avg": 40.86666666666667,
+        "removed": 34,
+        "replacements": 34
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 23,
+        "rate": 76.66666666666667,
+        "stake": 12600,
+        "profit": 10400,
+        "avg": 42,
+        "removed": 34,
+        "replacements": 34
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 26,
+        "rate": 86.66666666666667,
+        "stake": 16230,
+        "profit": 9770,
+        "avg": 54.1,
+        "removed": 34,
+        "replacements": 34
+      }
+    },
+    {
+      "market": "SITA Night",
+      "base": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 1400,
+        "avg": 42,
+        "removed": 27,
+        "replacements": 27
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12830,
+        "profit": 1170,
+        "avg": 42.766666666666666,
+        "removed": 27,
+        "replacements": 27
+      },
+      "complement": {
+        "both": 8,
+        "oldOnly": 6,
+        "file01Only": 6,
+        "bothMiss": 10,
+        "oldStake": 6300,
+        "file01Stake": 6415,
+        "covered": 20,
+        "coverageRate": 66.66666666666667,
+        "return950": 13300,
+        "profit950": 585
+      },
+      "learnedComplement": {
+        "fixedDigit": "6",
+        "both": 8,
+        "oldOnly": 6,
+        "file01Only": 5,
+        "bothMiss": 11,
+        "oldStake": 6300,
+        "file01Stake": 6390,
+        "covered": 19,
+        "coverageRate": 63.333333333333336,
+        "return950": 12825,
+        "profit950": 135
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 4,
+        "oldOnly": 10,
+        "secondOnly": 8,
+        "bothMiss": 8,
+        "stake": 12600,
+        "returned": 12350,
+        "profit": -250,
+        "covered": 22,
+        "coverageRate": 73.33333333333333
+      },
+      "complement84AllTime": {
+        "tests": 896,
+        "both": 113,
+        "oldOnly": 267,
+        "secondOnly": 276,
+        "bothMiss": 240,
+        "stake": 376320,
+        "returned": 365275,
+        "profit": -11045,
+        "covered": 656,
+        "coverageRate": 73.21428571428571
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12330,
+        "profit": 1670,
+        "avg": 41.1,
+        "removed": 27,
+        "replacements": 27
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12600,
+        "profit": 1400,
+        "avg": 42,
+        "removed": 27,
+        "replacements": 27
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 16380,
+        "profit": 2620,
+        "avg": 54.6,
+        "removed": 27,
+        "replacements": 27
+      }
+    },
+    {
+      "market": "Star Tara Night",
+      "base": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 12600,
+        "profit": 4400,
+        "avg": 42,
+        "removed": 6,
+        "replacements": 6
+      },
+      "file01": {
+        "tests": 30,
+        "hits": 14,
+        "rate": 46.666666666666664,
+        "stake": 12820,
+        "profit": 1180,
+        "avg": 42.733333333333334,
+        "removed": 6,
+        "replacements": 6
+      },
+      "complement": {
+        "both": 9,
+        "oldOnly": 8,
+        "file01Only": 5,
+        "bothMiss": 8,
+        "oldStake": 6300,
+        "file01Stake": 6410,
+        "covered": 22,
+        "coverageRate": 73.33333333333333,
+        "return950": 14725,
+        "profit950": 2015
+      },
+      "learnedComplement": {
+        "fixedDigit": "4",
+        "both": 9,
+        "oldOnly": 8,
+        "file01Only": 6,
+        "bothMiss": 7,
+        "oldStake": 6300,
+        "file01Stake": 6415,
+        "covered": 23,
+        "coverageRate": 76.66666666666667,
+        "return950": 15200,
+        "profit950": 2485
+      },
+      "complement84Latest30": {
+        "tests": 30,
+        "both": 5,
+        "oldOnly": 12,
+        "secondOnly": 6,
+        "bothMiss": 7,
+        "stake": 12600,
+        "returned": 13300,
+        "profit": 700,
+        "covered": 23,
+        "coverageRate": 76.66666666666667
+      },
+      "complement84AllTime": {
+        "tests": 387,
+        "both": 52,
+        "oldOnly": 116,
+        "secondOnly": 120,
+        "bothMiss": 99,
+        "stake": 162540,
+        "returned": 161500,
+        "profit": -1040,
+        "covered": 288,
+        "coverageRate": 74.4186046511628
+      },
+      "filtered": {
+        "tests": 30,
+        "hits": 17,
+        "rate": 56.666666666666664,
+        "stake": 12540,
+        "profit": 4460,
+        "avg": 41.8,
+        "removed": 6,
+        "replacements": 6
+      },
+      "replaced": {
+        "tests": 30,
+        "hits": 18,
+        "rate": 60,
+        "stake": 12600,
+        "profit": 5400,
+        "avg": 42,
+        "removed": 6,
+        "replacements": 6
+      },
+      "full8": {
+        "tests": 30,
+        "hits": 19,
+        "rate": 63.333333333333336,
+        "stake": 16570,
+        "profit": 2430,
+        "avg": 55.233333333333334,
+        "removed": 6,
+        "replacements": 6
+      }
+    }
+  ],
+  "complementTop10": {
+    "both": 127,
+    "oldOnly": 62,
+    "file01Only": 41,
+    "bothMiss": 70,
+    "covered": 230,
+    "oldStake": 63000,
+    "file01Stake": 64065,
+    "return950": 169575,
+    "profit950": 42510,
+    "tests": 300,
+    "coverageRate": 76.66666666666667
+  },
+  "learnedComplementTop10": {
+    "both": 121,
+    "oldOnly": 68,
+    "file01Only": 47,
+    "bothMiss": 64,
+    "covered": 236,
+    "oldStake": 63000,
+    "file01Stake": 64175,
+    "return950": 169575,
+    "profit950": 42400,
+    "tests": 300,
+    "coverageRate": 78.66666666666667
+  },
+  "aggregate": {
+    "base": {
+      "tests": 450,
+      "hits": 249,
+      "stake": 189000,
+      "profit": 60000,
+      "removed": 373,
+      "replacements": 373,
+      "rate": 55.333333333333336,
+      "avg": 42
+    },
+    "filtered": {
+      "tests": 450,
+      "hits": 243,
+      "stake": 185270,
+      "profit": 57730,
+      "removed": 373,
+      "replacements": 373,
+      "rate": 54,
+      "avg": 41.17111111111111
+    },
+    "replaced": {
+      "tests": 450,
+      "hits": 248,
+      "stake": 189000,
+      "profit": 59000,
+      "removed": 373,
+      "replacements": 373,
+      "rate": 55.111111111111114,
+      "avg": 42
+    },
+    "full8": {
+      "tests": 450,
+      "hits": 295,
+      "stake": 246070,
+      "profit": 48930,
+      "removed": 373,
+      "replacements": 373,
+      "rate": 65.55555555555556,
+      "avg": 54.68222222222222
+    }
+  }
+}

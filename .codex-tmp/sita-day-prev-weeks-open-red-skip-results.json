@@ -1,0 +1,50 @@
+{
+  "basic": {
+    "latest30": {
+      "tests": 30,
+      "hits": 13,
+      "misses": 17,
+      "redResults": 1,
+      "rate": 43.333333333333336,
+      "profitRate1000Bet10": 400,
+      "profitRate950Bet5": -125,
+      "from": "2026-05-24",
+      "to": "2026-06-22"
+    },
+    "allTime": {
+      "tests": 946,
+      "hits": 395,
+      "misses": 551,
+      "redResults": 97,
+      "rate": 41.754756871035944,
+      "profitRate1000Bet10": -2320,
+      "profitRate950Bet5": -11035,
+      "from": "2023-10-11",
+      "to": "2026-06-22"
+    }
+  },
+  "redReplacement": {
+    "latest30": {
+      "tests": 30,
+      "hits": 16,
+      "misses": 14,
+      "redResults": 1,
+      "rate": 53.333333333333336,
+      "profitRate1000Bet10": 3400,
+      "profitRate950Bet5": 1300,
+      "from": "2026-05-24",
+      "to": "2026-06-22"
+    },
+    "allTime": {
+      "tests": 945,
+      "hits": 407,
+      "misses": 538,
+      "redResults": 97,
+      "rate": 43.06878306878307,
+      "profitRate1000Bet10": 10100,
+      "profitRate950Bet5": -5125,
+      "from": "2023-10-12",
+      "to": "2026-06-22"
+    }
+  }
+}

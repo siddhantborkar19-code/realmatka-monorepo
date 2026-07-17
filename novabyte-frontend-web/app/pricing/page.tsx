@@ -54,6 +54,20 @@ const plans = [
   }
 ];
 
+function checkoutHref(planName: string, price: string) {
+  const amount = price.match(/INR\s*([\d,]+)/)?.[1]?.replace(/,/g, "") || "";
+  const params = new URLSearchParams({
+    service: planName,
+    reference: `${planName} - NovaByte Technologies`
+  });
+
+  if (amount) {
+    params.set("amount", amount);
+  }
+
+  return `/checkout?${params.toString()}`;
+}
+
 export default function PricingPage() {
   return (
     <>
@@ -74,6 +88,9 @@ export default function PricingPage() {
                 <ul className="list">
                   {plan.details.map((item) => <li key={item}>{item}</li>)}
                 </ul>
+                <a className="button buttonPrimary serviceCheckoutButton" href={checkoutHref(plan.name, plan.price)}>
+                  Proceed To Checkout
+                </a>
               </article>
             ))}
           </div>
